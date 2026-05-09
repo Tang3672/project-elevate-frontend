@@ -604,45 +604,45 @@
           <div class="cb">
             <span class="lbl" style="margin-bottom:10px">Select product type</span>
             <div class="type-grid">
-              <button class="type-btn active" onclick="selectType('antibiotic',this)">
+              <button class="type-btn active" onclick="selectType('drug_small_molecule',this)">
                 <span class="type-icon">💊</span>
-                <span class="type-name">Antibiotic</span>
-                <span class="type-desc">Full FDA pathway analysis</span>
+                <span class="type-name">Drug (Chemical)</span>
+                <span class="type-desc">Pills, oral, injectable small molecules</span>
+              </button>
+              <button class="type-btn" onclick="selectType('biologic',this)">
+                <span class="type-icon">🧫</span>
+                <span class="type-name">Biologic</span>
+                <span class="type-desc">Antibodies, ADCs, enzyme replacement</span>
+              </button>
+              <button class="type-btn" onclick="selectType('gene_cell_therapy',this)">
+                <span class="type-icon">🧬</span>
+                <span class="type-name">Gene &amp; Cell Therapy</span>
+                <span class="type-desc">AAV, CAR-T, ASO, siRNA, mRNA</span>
               </button>
               <button class="type-btn" onclick="selectType('medical_device',this)">
                 <span class="type-icon">🔬</span>
-                <span class="type-name">Device</span>
-                <span class="type-desc">510(k)/PMA strategy</span>
-              </button>
-              <button class="type-btn" onclick="selectType('software',this)">
-                <span class="type-icon">💻</span>
-                <span class="type-name">Software</span>
-                <span class="type-desc">SaMD classification</span>
+                <span class="type-name">Medical Device</span>
+                <span class="type-desc">Hardware, implants, wearables</span>
               </button>
               <button class="type-btn" onclick="selectType('diagnostic',this)">
                 <span class="type-icon">🧪</span>
                 <span class="type-name">Diagnostic</span>
-                <span class="type-desc">CLIA/EUA pathway</span>
+                <span class="type-desc">PCR, NGS, companion diagnostics</span>
               </button>
-              <button class="type-btn" onclick="selectType('orphan_drug',this)">
-                <span class="type-icon">🌿</span>
-                <span class="type-name">Orphan Drug</span>
-                <span class="type-desc">ODD · 7yr exclusivity</span>
+              <button class="type-btn" onclick="selectType('digital_health',this)">
+                <span class="type-icon">💻</span>
+                <span class="type-name">Digital Health</span>
+                <span class="type-desc">SaMD, AI/ML, digital therapeutics</span>
               </button>
-              <button class="type-btn" onclick="selectType('oncology_drug',this)">
-                <span class="type-icon">🎗️</span>
-                <span class="type-name">Oncology</span>
-                <span class="type-desc">BTD · Accelerated approval</span>
+              <button class="type-btn" onclick="selectType('vaccine_immunotherapy',this)">
+                <span class="type-icon">💉</span>
+                <span class="type-name">Vaccine / Immunotherapy</span>
+                <span class="type-desc">Vaccines, cancer immunotherapy</span>
               </button>
-              <button class="type-btn" onclick="selectType('gene_therapy',this)">
-                <span class="type-icon">🧬</span>
-                <span class="type-name">Gene Therapy</span>
-                <span class="type-desc">BLA · RMAT designation</span>
-              </button>
-              <button class="type-btn" onclick="selectType('other',this)">
-                <span class="type-icon">⚕️</span>
-                <span class="type-name">Other</span>
-                <span class="type-desc">General analysis</span>
+              <button class="type-btn" onclick="selectType('other_platform',this)">
+                <span class="type-icon">⚗️</span>
+                <span class="type-name">Other / Platform</span>
+                <span class="type-desc">Microbiome, CRISPR, delivery platforms</span>
               </button>
             </div>
 
@@ -848,16 +848,16 @@ function selectType(type, el) {
   document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
   el.classList.add('active');
   document.getElementById('pt-badge').textContent = el.querySelector('.type-name').textContent;
-  document.getElementById('pathogen-row').style.display = type === 'antibiotic' ? '' : 'none';
+  document.getElementById('pathogen-row').style.display = type === 'drug_small_molecule' ? '' : 'none';
   const placeholders = {
-    antibiotic: 'Describe your antibiotic — target pathogen, mechanism of action, indication.',
-    orphan_drug: 'Describe the rare disease (<200,000 U.S. patients), mechanism, and target population.',
-    oncology_drug: 'Describe the cancer type, biomarker target, and mechanism (small molecule, biologic, CAR-T, or ADC).',
-    gene_therapy: 'Describe the genetic defect, delivery vector (AAV, LNP), target tissue, and patient population.',
-    medical_device: 'Describe the device, how it works, what condition it treats, and the care setting.',
-    diagnostic: 'Describe what the test detects, the technology platform, and the clinical gap.',
-    software: 'Describe the clinical problem, what data the software uses, and how clinicians would use it.',
-    other: 'Describe your healthcare innovation — what it does, who it is for, and what problem it solves.'
+    drug_small_molecule: 'Describe your drug — target disease, mechanism, patient population. For antibiotics include target pathogen.',
+    biologic: 'Describe your biologic — antibody target, indication, format (mAb, ADC, bispecific, enzyme replacement).',
+    gene_cell_therapy: 'Describe your therapy — genetic defect, delivery vector (AAV, LNP, ex vivo), target tissue, disease.',
+    medical_device: 'Describe your device — what it does, condition it addresses, care setting.',
+    diagnostic: 'Describe your diagnostic — what it detects, technology platform, clinical gap.',
+    digital_health: 'Describe your software — clinical problem, data it uses, how clinicians use it.',
+    vaccine_immunotherapy: 'Describe your vaccine or immunotherapy — target antigen, platform (mRNA, protein subunit, viral vector).',
+    other_platform: 'Describe your platform — what it does, diseases it addresses, what makes it novel.'
   };
   document.getElementById('idea').placeholder = placeholders[type] || placeholders.other;
 }
