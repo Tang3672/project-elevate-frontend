@@ -810,18 +810,21 @@
 // On Netlify, this gets injected via a _config.js file
 const API = (window.ELEVATE_API_URL || 'http://localhost:8000') + '/api/v1';
 let lastCount = 0;
-let selectedType = 'antibiotic';
+let selectedType = 'drug_small_molecule';
 
 const EXAMPLES = [
-  { type:'antibiotic', idea:'A novel beta-lactam/BLI combination targeting carbapenem-resistant Klebsiella pneumoniae and Acinetobacter baumannii in hospitalized patients with serious infections and limited treatment options.', pathogen:'Carbapenem-resistant Enterobacterales (CRE)' },
-  { type:'antibiotic', idea:'A first-in-class oral antibiotic with activity against MRSA for outpatient skin and soft tissue infections, addressing the resistance gap left by linezolid and daptomycin.', pathogen:'MRSA' },
-  { type:'orphan_drug', idea:'A small molecule SOD1 stabilizer for familial ALS patients carrying SOD1 mutations, targeting protein aggregation as the primary pathological mechanism in this rare fatal neurodegenerative disease affecting ~32,000 Americans.', pathogen:'' },
-  { type:'oncology_drug', idea:'A tumor-infiltrating lymphocyte (TIL) therapy for recurrent glioblastoma multiforme, using autologous T-cells expanded ex vivo engineered to overcome the immunosuppressive tumor microenvironment.', pathogen:'' },
-  { type:'gene_therapy', idea:'An AAV9-delivered SMN1 gene replacement therapy for spinal muscular atrophy type 2 and 3 patients beyond the neonatal window, using a tissue-specific promoter to achieve motor neuron expression with reduced systemic toxicity.', pathogen:'' },
-  { type:'oncology_drug', idea:'A KRAS G12D-targeted antibody-drug conjugate for pancreatic ductal adenocarcinoma, linking a novel anti-KRAS antibody to a topoisomerase I inhibitor payload with a cleavable linker.', pathogen:'' },
-  { type:'medical_device', idea:'A wearable continuous glucose monitor for rural diabetic patients with a 90-day sensor life and no smartphone requirement, targeting the 20% rural CGM adoption gap.', pathogen:'' },
-  { type:'software', idea:'An AI clinical decision support system that flags early sepsis in the ED 6 hours before deterioration by continuously analyzing vitals, lab trends, and nursing notes.', pathogen:'' },
+  { type:'drug_small_molecule', idea:'A novel beta-lactam/beta-lactamase inhibitor combination targeting carbapenem-resistant Klebsiella pneumoniae and Acinetobacter baumannii in hospitalized patients with serious infections.', pathogen:'Carbapenem-resistant Enterobacterales (CRE)' },
+  { type:'drug_small_molecule', idea:'A first-in-class oral antibiotic with activity against MRSA for outpatient skin and soft tissue infections, addressing the resistance gap left by linezolid and daptomycin.', pathogen:'MRSA' },
+  { type:'drug_small_molecule', idea:'A small molecule SOD1 stabilizer for familial ALS patients carrying SOD1 mutations, targeting protein aggregation as the primary pathological mechanism in this rare fatal neurodegenerative disease affecting approximately 32,000 Americans.', pathogen:'' },
+  { type:'biologic', idea:'A tumor-infiltrating lymphocyte (TIL) therapy for recurrent glioblastoma multiforme, using autologous T-cells expanded ex vivo and engineered to overcome the immunosuppressive tumor microenvironment.', pathogen:'' },
+  { type:'gene_cell_therapy', idea:'An AAV9-delivered SMN1 gene replacement therapy for spinal muscular atrophy type 2 patients beyond the neonatal window, using a tissue-specific promoter to achieve motor neuron expression with reduced systemic toxicity.', pathogen:'' },
+  { type:'biologic', idea:'A KRAS G12D-targeted antibody-drug conjugate for pancreatic ductal adenocarcinoma, linking a novel anti-KRAS antibody to a topoisomerase I inhibitor payload with a cleavable linker.', pathogen:'' },
+  { type:'medical_device', idea:'A wearable continuous glucose monitor for rural diabetic patients with a 90-day sensor life and no smartphone requirement, targeting the 20% rural CGM adoption gap versus urban populations.', pathogen:'' },
+  { type:'digital_health', idea:'An AI clinical decision support system that flags early sepsis in the emergency department 6 hours before deterioration by continuously analyzing vitals, lab trends, and nursing notes.', pathogen:'' },
   { type:'diagnostic', idea:'A rapid 30-minute PCR-based antibiotic susceptibility test that runs on existing hospital analyzers, eliminating the 48-72 hour culture wait time that drives empiric broad-spectrum antibiotic overuse.', pathogen:'' },
+  { type:'vaccine_immunotherapy', idea:'A personalized mRNA neoantigen vaccine for stage III melanoma patients, encoding patient-specific tumor mutations identified by whole exome sequencing, administered in combination with pembrolizumab.', pathogen:'' },
+  { type:'gene_cell_therapy', idea:'An exon-skipping antisense oligonucleotide for Duchenne muscular dystrophy patients with exon 51-amenable mutations, designed to restore partial dystrophin expression and slow disease progression.', pathogen:'' },
+  { type:'other_platform', idea:'An in vivo base editing therapy using adenine base editors delivered via LNP to permanently reduce PCSK9 expression in hepatocytes, providing lifelong LDL cholesterol reduction with a single dose.', pathogen:'' },
 ];
 
 const SRC_NAMES = {
@@ -862,17 +865,18 @@ function selectType(type, el) {
 function setEx(i) {
   const ex = EXAMPLES[i];
   if (!ex) return;
-  document.getElementById('idea').value = ex.idea;
+  document.getElementById('idea').value    = ex.idea;
   document.getElementById('pathogen').value = ex.pathogen || '';
-  // Find and activate the right type button
+  const typeOrder = ['drug_small_molecule','biologic','gene_cell_therapy','medical_device',
+                     'diagnostic','digital_health','vaccine_immunotherapy','other_platform'];
   const btns = document.querySelectorAll('.type-btn');
-  const typeOrder = ['antibiotic','orphan_drug','oncology_drug','gene_therapy','medical_device','diagnostic','software','other'];
-  const idx = typeOrder.indexOf(ex.type);
+  const idx  = typeOrder.indexOf(ex.type);
   btns.forEach(b => b.classList.remove('active'));
-  if (btns[idx >= 0 ? idx : 7]) btns[idx >= 0 ? idx : 7].classList.add('active');
+  const btn = btns[idx >= 0 ? idx : 7];
+  if (btn) btn.classList.add('active');
   selectedType = ex.type;
-  document.getElementById('pt-badge').textContent = btns[idx >= 0 ? idx : 7]?.querySelector('.type-name')?.textContent || ex.type;
-  document.getElementById('pathogen-row').style.display = ex.type === 'antibiotic' ? '' : 'none';
+  document.getElementById('pt-badge').textContent = btn?.querySelector('.type-name')?.textContent || ex.type;
+  document.getElementById('pathogen-row').style.display = ex.type === 'drug_small_molecule' ? '' : 'none';
 }
 
 function tab(name) {
@@ -915,7 +919,8 @@ async function runAnalysis() {
   try {
     const payload = {
       idea,
-      product_type: selectedType,
+      product_type: 'other',
+      tier1_category: selectedType,
       target_pathogen: document.getElementById('pathogen').value.trim() || null
     };
     const res = await fetch(`${API}/alignment/pi-report`, {
