@@ -731,6 +731,7 @@
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
         <div>
           <label class="lbl">Indication</label>
+        <button onclick="fillTrialExample()" style="font-family:var(--body);font-size:11px;color:var(--blue);background:none;border:1px solid var(--border);padding:4px 12px;cursor:pointer;margin-bottom:10px">↙ Fill example</button>
           <input type="text" id="trial-indication" placeholder="e.g. carbapenem-resistant infections in ICU patients" />
         </div>
         <div>
@@ -764,6 +765,7 @@
     <div class="cb">
       <div id="portfolio-ideas"></div>
       <button class="portfolio-add-btn" id="portfolio-add-btn" onclick="addPortfolioIdea()">+ Add idea</button>
+      <button onclick="fillPortfolioExample()" style="font-family:var(--body);font-size:11px;color:var(--blue);background:none;border:1px solid var(--border);padding:4px 12px;cursor:pointer;margin-bottom:8px;width:100%">↙ Fill 3 example ideas</button>
       <button class="btn-primary" onclick="runPortfolio()" id="portfolio-btn" style="margin-top:0" disabled>Analyze Portfolio</button>
     </div>
   </div>
@@ -788,6 +790,7 @@
         </div>
         <div style="margin-bottom:12px">
           <label class="lbl">Research / product description</label>
+        <button onclick="fillGrantExample()" style="font-family:var(--body);font-size:11px;color:var(--blue);background:none;border:1px solid var(--border);padding:4px 12px;cursor:pointer;margin-bottom:10px">↙ Fill example</button>
           <textarea id="grant-idea" placeholder="Describe your innovation — what it does, what problem it solves, target population" style="min-height:100px"></textarea>
         </div>
         <div style="margin-bottom:12px">
@@ -1963,6 +1966,35 @@ document.addEventListener('click', e => {
 
 // Refresh unread count every 2 minutes
 setInterval(() => { if (currentUser) loadUnreadCount(); }, 120000);
+
+
+// ── EXAMPLE FILL FUNCTIONS ────────────────────────────────────────────────────
+function fillTrialExample() {
+  document.getElementById('trial-indication').value = 'carbapenem-resistant infections in ICU patients';
+  document.getElementById('trial-idea').value = 'A novel beta-lactam/beta-lactamase inhibitor combination targeting carbapenem-resistant Klebsiella pneumoniae and Acinetobacter baumannii in hospitalized patients with serious infections.';
+  const sel = document.getElementById('trial-domain');
+  if (sel) sel.value = 'antibiotic_amr';
+}
+
+function fillGrantExample() {
+  document.getElementById('grant-idea').value = 'A novel beta-lactam/beta-lactamase inhibitor combination targeting carbapenem-resistant Enterobacterales (CRE), the most urgent antibiotic-resistant threat in U.S. hospitals affecting 13,100 patients annually with 40-50% mortality in bloodstream infections.';
+  document.getElementById('grant-aim').value = 'Aim 1: Characterize in vitro activity of the BLI against KPC and NDM carbapenemases. Aim 2: Evaluate pharmacokinetic/pharmacodynamic targets in murine infection models. Aim 3: Assess safety and efficacy in a Phase 1b/2a clinical trial in hospitalized patients with CRE infections.';
+  // Select NIH R01
+  document.querySelectorAll('.grant-type-tab').forEach(b => b.classList.remove('active'));
+  document.querySelector('.grant-type-tab')?.classList.add('active');
+  selectedGrantType = 'nih_r01';
+}
+
+function fillPortfolioExample() {
+  portfolioIdeas = [
+    { name: 'CRE Antibiotic', description: 'A novel beta-lactam/BLI combination targeting carbapenem-resistant Enterobacterales in hospitalized patients with serious infections and limited treatment options.' },
+    { name: 'Alzheimer AI Detection', description: 'An AI-powered speech pattern analysis tool for early detection of Alzheimer disease using cognitive biomarkers from routine clinical conversations.' },
+    { name: 'SMA Gene Therapy', description: 'An AAV9-delivered SMN1 gene replacement therapy for spinal muscular atrophy type 2 patients beyond the neonatal window using a tissue-specific promoter.' },
+    { name: 'Rural CGM Device', description: 'A 90-day wearable continuous glucose monitor for rural type 2 diabetes patients with no smartphone requirement, targeting the 20% rural CGM adoption gap.' },
+    { name: 'KRAS G12D ADC', description: 'A KRAS G12D-targeted antibody-drug conjugate for pancreatic ductal adenocarcinoma linking a novel anti-KRAS antibody to a topoisomerase I inhibitor payload.' },
+  ];
+  renderPortfolioInputs();
+}
 
 // Init
 loadIndex();
