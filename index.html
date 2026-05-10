@@ -751,6 +751,7 @@
         <label class="lbl">Product description</label>
         <textarea id="trial-idea" placeholder="Describe your product — used to match against hospital quality deficits" style="min-height:70px"></textarea>
       </div>
+      <button onclick="fillTrialExample()" style="font-family:var(--body);font-size:11px;color:var(--blue);background:var(--blue-lite);border:1px solid #d0d9f5;padding:5px 14px;cursor:pointer;margin-bottom:8px;display:block">↙ Fill example: CRE antibiotic trial sites</button>
       <button class="btn-primary" onclick="runTrialSites()" id="trial-btn" style="margin-top:0">Find Top Trial Sites</button>
     </div>
   </div>
@@ -766,6 +767,7 @@
       <div id="portfolio-ideas"></div>
       <button class="portfolio-add-btn" id="portfolio-add-btn" onclick="addPortfolioIdea()">+ Add idea</button>
       <button onclick="fillPortfolioExample()" style="font-family:var(--body);font-size:11px;color:var(--blue);background:none;border:1px solid var(--border);padding:4px 12px;cursor:pointer;margin-bottom:8px;width:100%">↙ Fill 3 example ideas</button>
+      <button onclick="fillPortfolioExample()" style="font-family:var(--body);font-size:11px;color:var(--blue);background:var(--blue-lite);border:1px solid #d0d9f5;padding:5px 14px;cursor:pointer;margin-bottom:8px;display:block">↙ Fill 5 example ideas</button>
       <button class="btn-primary" onclick="runPortfolio()" id="portfolio-btn" style="margin-top:0" disabled>Analyze Portfolio</button>
     </div>
   </div>
@@ -797,6 +799,7 @@
           <label class="lbl">Specific aim (optional)</label>
           <textarea id="grant-aim" placeholder="Paste your specific aim for more targeted output" style="min-height:70px"></textarea>
         </div>
+        <button onclick="fillGrantExample()" style="font-family:var(--body);font-size:11px;color:var(--blue);background:var(--blue-lite);border:1px solid #d0d9f5;padding:5px 14px;cursor:pointer;margin-bottom:8px;display:block">↙ Fill example: CRE antibiotic NIH R01</button>
         <button class="btn-primary" onclick="runGrant()" id="grant-btn" style="margin-top:0">Generate Grant Sections</button>
       </div>
     </div>
@@ -1991,6 +1994,33 @@ function fillPortfolioExample() {
     { name: 'Alzheimer AI Detection', description: 'An AI-powered speech pattern analysis tool for early detection of Alzheimer disease using cognitive biomarkers from routine clinical conversations.' },
     { name: 'SMA Gene Therapy', description: 'An AAV9-delivered SMN1 gene replacement therapy for spinal muscular atrophy type 2 patients beyond the neonatal window using a tissue-specific promoter.' },
     { name: 'Rural CGM Device', description: 'A 90-day wearable continuous glucose monitor for rural type 2 diabetes patients with no smartphone requirement, targeting the 20% rural CGM adoption gap.' },
+    { name: 'KRAS G12D ADC', description: 'A KRAS G12D-targeted antibody-drug conjugate for pancreatic ductal adenocarcinoma linking a novel anti-KRAS antibody to a topoisomerase I inhibitor payload.' },
+  ];
+  renderPortfolioInputs();
+}
+
+
+function fillTrialExample() {
+  document.getElementById('trial-indication').value = 'carbapenem-resistant infections in ICU patients';
+  document.getElementById('trial-idea').value = 'A novel beta-lactam/beta-lactamase inhibitor combination targeting carbapenem-resistant Klebsiella pneumoniae and Acinetobacter baumannii in hospitalized patients.';
+  const sel = document.getElementById('trial-domain');
+  if (sel) sel.value = 'antibiotic_amr';
+}
+
+function fillGrantExample() {
+  document.getElementById('grant-idea').value = 'A novel beta-lactam/BLI combination targeting carbapenem-resistant Enterobacterales (CRE) affecting 13,100 U.S. patients annually with 40-50% mortality in bloodstream infections. The innovation addresses a critical unmet need: no pan-CRE agent active against both KPC and NDM carbapenemases currently exists.';
+  document.getElementById('grant-aim').value = 'Aim 1: Characterize in vitro activity against KPC and NDM carbapenemases. Aim 2: Evaluate PK/PD targets in murine infection models. Aim 3: Assess safety and efficacy in a Phase 1b/2a clinical trial in hospitalized patients with CRE infections.';
+  document.querySelectorAll('.grant-type-tab').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.grant-type-tab')[0]?.classList.add('active');
+  selectedGrantType = 'nih_r01';
+}
+
+function fillPortfolioExample() {
+  portfolioIdeas = [
+    { name: 'CRE Antibiotic', description: 'A novel beta-lactam/BLI combination targeting carbapenem-resistant Enterobacterales in hospitalized patients with serious infections and limited treatment options.' },
+    { name: 'Alzheimer AI Detection', description: 'An AI-powered speech pattern analysis tool for early detection of Alzheimer disease using cognitive biomarkers from routine clinical conversations.' },
+    { name: 'SMA Gene Therapy', description: 'An AAV9-delivered SMN1 gene replacement therapy for spinal muscular atrophy type 2 patients beyond the neonatal window using a tissue-specific promoter.' },
+    { name: 'Rural CGM Device', description: 'A 90-day wearable continuous glucose monitor for rural type 2 diabetes patients with no smartphone requirement targeting the 20% rural CGM adoption gap.' },
     { name: 'KRAS G12D ADC', description: 'A KRAS G12D-targeted antibody-drug conjugate for pancreatic ductal adenocarcinoma linking a novel anti-KRAS antibody to a topoisomerase I inhibitor payload.' },
   ];
   renderPortfolioInputs();
