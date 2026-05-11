@@ -926,7 +926,37 @@ function setEx(i) {
   document.getElementById('pathogen-row').style.display = ex.type === 'drug_small_molecule' ? '' : 'none';
 }
 
+const DEV_EMAILS = ['test@projectelevate.io', 'isaac@rebuttal.ai', 'admin@projectelevate.io', 'ijw91021@gmail.com'];
+
 const LOCKED_TABS = ['trial', 'portfolio', 'grant', 'watchlists'];
+
+function tab(name) {
+  // Lock tools for non-subscribers (dev emails always bypass)
+  const isDev = currentUser && DEV_EMAILS.includes(currentUser.email);
+  const isActive = billingStatus && billingStatus.is_active;
+  if (LOCKED_TABS.includes(name) && !isDev && !isActive) {
+    showPaywall();
+    return;
+  }
+
+  // Hide all sections
+  document.querySelectorAll('.tab-section').forEach(s => s.style.display = 'none');
+  document.querySelectorAll('.ntab').forEach(b => b.classList.remove('on'));
+
+  // Show selected section
+  const section = document.getElementById('tab-' + name);
+  if (section) section.style.display = '';
+
+  // Activate nav button
+  const btn = document.querySelector(`[onclick="tab('${name}')"]`);
+  if (btn) btn.classList.add('on');
+
+  // Lazy-load tab content
+  if (name === 'reports')    loadReports();
+  if (name === 'watchlists') { loadWatchlists(); loadGrantDeadlines(); }
+  if (name === 'index')      loadIndex();
+  if (name === 'portfolio')  initPortfolio();
+}
 
 
 
