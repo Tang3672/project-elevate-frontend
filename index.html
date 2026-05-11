@@ -604,6 +604,7 @@
   </div>
 
   <!-- Watchlist list -->
+      <button onclick="runTrackerNow()" style="font-family:var(--body);font-size:11px;color:#fff;background:var(--blue);border:none;padding:6px 16px;cursor:pointer;margin-bottom:12px">▶ Run Weekly Tracker Now (test)</button>
   <div id="wl-list">
     <div class="empty"><div class="empty-icon">🔔</div><div class="empty-t">No watchlists yet</div><div class="empty-s">Create a watchlist to start monitoring your research area for new signals.</div></div>
   </div>
@@ -2068,6 +2069,42 @@ function fillPortfolioExample() {
     { name: 'KRAS G12D ADC', description: 'A KRAS G12D-targeted antibody-drug conjugate for pancreatic ductal adenocarcinoma linking a novel anti-KRAS antibody to a topoisomerase I inhibitor payload.' },
   ];
   renderPortfolioInputs();
+}
+
+
+// ── WEEKLY TRACKER ────────────────────────────────────────────────────────────
+function fillWatchlistExample() {
+  document.getElementById('wl-name').value = 'CRE Antibiotic Market';
+  document.getElementById('wl-desc').value = 'A novel beta-lactam/beta-lactamase inhibitor combination targeting carbapenem-resistant Enterobacterales (CRE) in hospitalized patients with serious infections and limited treatment options.';
+  document.getElementById('wl-keywords').value = 'CRE, carbapenem, QIDP, beta-lactamase, KPC, NDM, antibiotic resistance';
+  const sel = document.getElementById('wl-domain');
+  if (sel) sel.value = 'antibiotic_amr';
+}
+
+async function runTrackerNow() {
+  if (!currentUser) { openAuth('login'); return; }
+  const token = localStorage.getItem('pe_token');
+  const btn = event.target;
+  btn.disabled = true;
+  btn.textContent = '⏳ Running tracker…';
+  try {
+    const res  = await fetch(`${API}/tracker/run`, {
+      method: 'POST',
+      headers: {'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json'}
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || 'Tracker failed');
+    const recalc = data.recalculations_needed || 0;
+    const scanned = data.watchlists_scanned || 0;
+    alert(`✅ Tracker complete!\n\nScanned: ${scanned} watchlist(s)\nRecalculations needed: ${recalc}\n\nCheck your notification bell for new alerts.`);
+    loadUnreadCount();
+    loadNotifPanel();
+  } catch(e) {
+    alert('Tracker error: ' + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '▶ Run Weekly Tracker Now (test)';
+  }
 }
 
 // Init
