@@ -2182,7 +2182,23 @@ async function startCheckout() {
     });
     const data = await res.json();
     if (data.checkout_url) {
-      window.location.href = data.checkout_url;
+      // Open Stripe in new tab so user can return to app
+      const stripeTab = window.open(data.checkout_url, '_blank');
+      // Poll for return — close modal when billing status becomes active
+      const poll = setInterval(async () => {
+        await loadBillingStatus();
+        if (billingStatus && billingStatus.is_active) {
+          clearInterval(poll);
+          closePaywall();
+          const banner = document.createElement('div');
+          banner.style.cssText = 'position:fixed;top:16px;left:50%;transform:translateX(-50%);background:#059669;color:#fff;padding:12px 24px;font-family:var(--display);font-size:13px;font-weight:700;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.3);border-radius:2px';
+          banner.textContent = '🎉 Free trial activated! You have 7 days of full access.';
+          document.body.appendChild(banner);
+          setTimeout(() => banner.remove(), 5000);
+        }
+      }, 3000);
+      // Stop polling after 10 minutes
+      setTimeout(() => clearInterval(poll), 600000);
     } else {
       alert('Failed to start checkout: ' + (data.detail || 'Unknown error'));
     }
