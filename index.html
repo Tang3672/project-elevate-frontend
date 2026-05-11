@@ -443,6 +443,34 @@
       .di-grid{grid-template-columns:1fr}
       .trial-grid{grid-template-columns:1fr}
     }
+
+    /* PRICING MODAL */
+    .paywall-overlay{position:fixed;inset:0;background:rgba(10,22,40,.85);z-index:1000;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+    .paywall-modal{background:var(--bg-2);border:1px solid var(--border);width:100%;max-width:520px;box-shadow:0 24px 80px rgba(0,0,0,.4);animation:slideUp .2s ease}
+    @keyframes slideUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+    .paywall-header{background:var(--slate);padding:28px 32px 24px}
+    .paywall-badge{display:inline-block;font-family:var(--display);font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--blue-lite);background:rgba(26,79,214,.3);padding:3px 10px;margin-bottom:12px}
+    .paywall-title{font-family:var(--display);font-size:22px;font-weight:700;color:#fff;margin-bottom:6px}
+    .paywall-sub{font-family:var(--body);font-size:13px;color:rgba(255,255,255,.6);line-height:1.6}
+    .paywall-body{padding:28px 32px}
+    .pricing-card{border:2px solid var(--blue);padding:20px;margin-bottom:16px;position:relative}
+    .pricing-badge{position:absolute;top:-10px;left:16px;background:var(--blue);color:#fff;font-family:var(--display);font-size:9px;font-weight:700;letter-spacing:.08em;padding:2px 10px}
+    .pricing-name{font-family:var(--display);font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px}
+    .pricing-price{font-family:var(--display);font-size:32px;font-weight:700;color:var(--blue);margin-bottom:2px}
+    .pricing-price span{font-size:14px;font-weight:400;color:var(--text-3)}
+    .pricing-trial{font-family:var(--body);font-size:11px;color:var(--green);font-weight:600;margin-bottom:12px}
+    .pricing-features{list-style:none;padding:0;margin:0}
+    .pricing-features li{font-family:var(--body);font-size:12px;color:var(--text-2);padding:4px 0;display:flex;align-items:center;gap:8px}
+    .pricing-features li::before{content:"✓";color:var(--green);font-weight:700;flex-shrink:0}
+    .paywall-cta{width:100%;background:var(--blue);color:#fff;border:none;padding:14px;font-family:var(--display);font-size:13px;font-weight:700;letter-spacing:.04em;cursor:pointer;margin-top:16px;transition:background .12s}
+    .paywall-cta:hover{background:#1541b8}
+    .paywall-dismiss{width:100%;background:none;border:none;color:var(--text-3);font-family:var(--body);font-size:12px;cursor:pointer;padding:10px;margin-top:6px}
+    .paywall-dismiss:hover{color:var(--text)}
+    .trial-banner{background:linear-gradient(135deg,#1A4FD6,#6D28D9);color:#fff;padding:10px 16px;display:none;align-items:center;justify-content:space-between;gap:12px}
+    .trial-banner.show{display:flex}
+    .trial-banner-text{font-family:var(--body);font-size:12px}
+    .trial-banner-text strong{font-family:var(--display);font-weight:700}
+    .trial-upgrade-btn{background:#fff;color:var(--blue);border:none;padding:6px 14px;font-family:var(--display);font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0}
   </style>
   <script src="/_config.js"></script>
 </head>
@@ -1881,6 +1909,7 @@ async function deleteWatchlist(id, btn) {
     await fetch(`${API}/watchlists/${id}`, {method:'DELETE', headers:{'Authorization':`Bearer ${token}`}});
     loadWatchlists();
     loadUnreadCount();
+  loadBillingStatus();
   } catch(e) { alert('Failed: ' + e.message); }
 }
 
@@ -1963,6 +1992,102 @@ setInterval(() => { if (currentUser) loadUnreadCount(); }, 120000);
 loadIndex();
 // Hide pathogen field for non-antibiotic on load
 document.getElementById('pathogen-row').style.display = '';
+</script>
+
+<!-- PAYWALL MODAL -->
+<div id="paywall-overlay" class="paywall-overlay" style="display:none" onclick="if(event.target===this)closePaywall()">
+  <div class="paywall-modal">
+    <div class="paywall-header">
+      <div class="paywall-badge">Project Elevate</div>
+      <div class="paywall-title">Start your free trial</div>
+      <div class="paywall-sub">Your 7-day free trial gives you full access to all features. No charge until day 8.</div>
+    </div>
+    <div class="paywall-body">
+      <div class="pricing-card">
+        <div class="pricing-badge">MOST POPULAR</div>
+        <div class="pricing-name">Starter Plan</div>
+        <div class="pricing-price">$79<span>/month</span></div>
+        <div class="pricing-trial">🎉 7-day free trial — cancel anytime</div>
+        <ul class="pricing-features">
+          <li>Unlimited PI intelligence reports</li>
+          <li>32 sub-expert profiles across all disease domains</li>
+          <li>Live web search — current 2026 data in every report</li>
+          <li>19+ source citations per report with real URLs</li>
+          <li>Trial site optimizer — top 15 recruitment hospitals</li>
+          <li>Lab portfolio discovery — 2×2 innovation heatmap</li>
+          <li>Grant co-pilot — NIH R01, SBIR, NSF sections</li>
+          <li>LangGraph validation — independent AI fact-checking</li>
+        </ul>
+        <button class="paywall-cta" onclick="startCheckout()">Start 7-Day Free Trial →</button>
+        <button class="paywall-dismiss" onclick="closePaywall()">Maybe later</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TRIAL BANNER (shown when user is in trial) -->
+<div id="trial-banner" class="trial-banner">
+  <div class="trial-banner-text"><strong id="trial-days">7</strong> days left in your free trial</div>
+  <button class="trial-upgrade-btn" onclick="startCheckout()">Upgrade Now</button>
+</div>
+
+<script>
+// ── BILLING / PAYWALL ─────────────────────────────────────────────────────────
+let billingStatus = null;
+
+async function loadBillingStatus() {
+  if (!currentUser) return;
+  const token = localStorage.getItem('pe_token');
+  try {
+    const res  = await fetch(`${API}/billing/status`, {headers:{'Authorization':`Bearer ${token}`}});
+    billingStatus = await res.json();
+    // Show trial banner if in trial
+    if (billingStatus.subscription_status === 'trialing' && billingStatus.trial_ends_at) {
+      const daysLeft = Math.ceil((new Date(billingStatus.trial_ends_at) - new Date()) / 86400000);
+      if (daysLeft > 0 && daysLeft <= 3) {
+        document.getElementById('trial-days').textContent = daysLeft;
+        document.getElementById('trial-banner').classList.add('show');
+      }
+    }
+  } catch(e) { /* silent */ }
+}
+
+function showPaywall() {
+  document.getElementById('paywall-overlay').style.display = 'flex';
+}
+
+function closePaywall() {
+  document.getElementById('paywall-overlay').style.display = 'none';
+}
+
+async function startCheckout() {
+  if (!currentUser) { openAuth('login'); return; }
+  const token = localStorage.getItem('pe_token');
+  try {
+    const res  = await fetch(`${API}/billing/create-checkout`, {
+      method:'POST', headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`}
+    });
+    const data = await res.json();
+    if (data.checkout_url) {
+      window.location.href = data.checkout_url;
+    } else {
+      alert('Failed to start checkout: ' + (data.detail || 'Unknown error'));
+    }
+  } catch(e) { alert('Checkout failed: ' + e.message); }
+}
+
+// Intercept 402 errors from any API call and show paywall
+const _originalFetch = window.fetch;
+window.fetch = async function(...args) {
+  const response = await _originalFetch(...args);
+  if (response.status === 402) {
+    const clone = response.clone();
+    clone.json().then(data => {
+      if (data.detail?.error === 'subscription_required') showPaywall();
+    }).catch(() => showPaywall());
+  }
+  return response;
+};
 </script>
 </body>
 </html>
