@@ -2177,13 +2177,15 @@ async function startCheckout() {
   if (!currentUser) { openAuth('login'); return; }
   const token = localStorage.getItem('pe_token');
   try {
+    // Open blank tab BEFORE await to avoid browser popup blocker
+    const stripeTab = window.open('', '_blank');
     const res  = await fetch(`${API}/billing/create-checkout`, {
       method:'POST', headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`}
     });
     const data = await res.json();
     if (data.checkout_url) {
-      // Open Stripe in new tab so user can return to app
-      const stripeTab = window.open(data.checkout_url, '_blank');
+      stripeTab.location.href = data.checkout_url;
+      const stripeTabRef = stripeTab;
       // Poll for return — close modal when billing status becomes active
       const poll = setInterval(async () => {
         await loadBillingStatus();
