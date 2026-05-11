@@ -703,6 +703,10 @@
               </div>
             </div>
 
+            <div style="margin-bottom:6px">
+              <span id="free-report-badge" style="display:none;font-family:var(--body);font-size:11px;font-weight:600;color:#fff;padding:3px 10px;border-radius:2px"></span>
+            </div>
+            
             <button class="btn-primary" id="run-btn" onclick="runAnalysis()">Run PI Analysis</button>
           </div>
         </div>
@@ -917,19 +921,9 @@ function setEx(i) {
   document.getElementById('pathogen-row').style.display = ex.type === 'drug_small_molecule' ? '' : 'none';
 }
 
-function tab(name) {
-  ['pi','index','needs','reports','watchlists','trials','portfolio','grant'].forEach(t => {
-    document.getElementById('t-'+t).style.display = t === name ? '' : 'none';
-  });
-  document.querySelectorAll('.ntab').forEach((el,i) => {
-    el.classList.toggle('on', ['pi','index','needs','reports','watchlists','trials','portfolio','grant'][i] === name);
-  });
-  if (name === 'index') loadIndex();
-  if (name === 'needs') loadNeeds();
-  if (name === 'reports') loadReports();
-  if (name === 'watchlists') loadWatchlists();
-  if (name === 'portfolio') initPortfolio();
-}
+const LOCKED_TABS = ['trial', 'portfolio', 'grant', 'watchlists'];
+
+
 
 function tick() {
   document.getElementById('clock').textContent =
@@ -943,9 +937,14 @@ async function runAnalysis() {
   const idea = document.getElementById('idea').value.trim();
   if (!idea || idea.length < 30) { alert('Please describe your product in at least 30 characters.'); return; }
 
-  // Require login + active subscription
+  // Require login
   if (!currentUser) { showPaywall(); return; }
-  if (billingStatus && !billingStatus.is_active) { showPaywall(); return; }
+  // Check free report / subscription status
+  if (billingStatus) {
+    const isFreeAccount = !billingStatus.is_active;
+    const freeUsed = billingStatus.free_reports_used || 0;
+    if (isFreeAccount && freeUsed >= 1) { showPaywall(); return; }
+  }
 
   const btn = document.getElementById('run-btn');
   btn.disabled = true; btn.textContent = 'Analyzing…';
@@ -2118,15 +2117,15 @@ document.getElementById('pathogen-row').style.display = '';
   <div class="paywall-modal">
     <div class="paywall-header">
       <div class="paywall-badge">Project Elevate</div>
-      <div class="paywall-title">Start your free trial</div>
-      <div class="paywall-sub">Your 7-day free trial gives you full access to all features. No charge until day 8.</div>
+      <div class="paywall-title">Unlock full access</div>
+      <div class="paywall-sub">You've used your 1 free report. Subscribe to run unlimited reports and unlock all tools.</div>
     </div>
     <div class="paywall-body">
       <div class="pricing-card">
         <div class="pricing-badge">MOST POPULAR</div>
         <div class="pricing-name">Starter Plan</div>
         <div class="pricing-price">$79<span>/month</span></div>
-        <div class="pricing-trial">🎉 7-day free trial — cancel anytime</div>
+        <div class="pricing-trial">✓ Unlimited reports — cancel anytime</div>
         <ul class="pricing-features">
           <li>Unlimited PI intelligence reports</li>
           <li>32 sub-expert profiles across all disease domains</li>
@@ -2137,7 +2136,7 @@ document.getElementById('pathogen-row').style.display = '';
           <li>Grant co-pilot — NIH R01, SBIR, NSF sections</li>
           <li>LangGraph validation — independent AI fact-checking</li>
         </ul>
-        <button class="paywall-cta" onclick="startCheckout()">Start 7-Day Free Trial →</button>
+        <button class="paywall-cta" onclick="startCheckout()">Subscribe for $79/month →</button>
         <button class="paywall-dismiss" onclick="closePaywall()">Maybe later</button>
       </div>
     </div>
@@ -2198,10 +2197,29 @@ let billingStatus = null;
 
 async function loadBillingStatus() {
   if (!currentUser) return;
+  // Developer bypass
+  if (DEV_EMAILS.includes(currentUser.email)) {
+    billingStatus = {subscription_status:'active', is_active:true, plan:'developer', free_reports_used:0, free_reports_remaining:999};
+    return;
+  }
   const token = localStorage.getItem('pe_token');
   try {
     const res  = await fetch(`${API}/billing/status`, {headers:{'Authorization':`Bearer ${token}`}});
     billingStatus = await res.json();
+    // Show free report counter badge
+    if (billingStatus && !billingStatus.is_active) {
+      const used = billingStatus.free_reports_used || 0;
+      const badge = document.getElementById('free-report-badge');
+      if (badge) {
+        badge.textContent = used >= 1 ? '0 free reports left — subscribe to continue' : '1 free report remaining';
+        badge.style.display = 'inline-block';
+        badge.style.background = used >= 1 ? '#DC2626' : '#059669';
+        badge.style.color = '#fff';
+        badge.style.padding = '3px 10px';
+        badge.style.fontSize = '11px';
+        badge.style.fontWeight = '600';
+      }
+    }
     // Show trial banner if in trial
     if (billingStatus.subscription_status === 'trialing' && billingStatus.trial_ends_at) {
       const daysLeft = Math.ceil((new Date(billingStatus.trial_ends_at) - new Date()) / 86400000);
