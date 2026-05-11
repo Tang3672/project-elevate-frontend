@@ -928,7 +928,7 @@ function setEx(i) {
 
 const DEV_EMAILS = ['test@projectelevate.io', 'isaac@rebuttal.ai', 'admin@projectelevate.io', 'ijw91021@gmail.com'];
 
-const LOCKED_TABS = ['trial', 'portfolio', 'grant', 'watchlists'];
+const LOCKED_TABS = ['trials', 'portfolio', 'grant', 'watchlists'];
 
 function tab(name) {
   // Lock tools for non-subscribers (dev emails always bypass)
@@ -939,22 +939,20 @@ function tab(name) {
     return;
   }
 
-  // Hide all sections
-  document.querySelectorAll('.tab-section').forEach(s => s.style.display = 'none');
-  document.querySelectorAll('.ntab').forEach(b => b.classList.remove('on'));
-
-  // Show selected section
-  const section = document.getElementById('tab-' + name);
-  if (section) section.style.display = '';
-
-  // Activate nav button
-  const btn = document.querySelector(`[onclick="tab('${name}')"]`);
-  if (btn) btn.classList.add('on');
+  // Use original tab switching with t- prefix IDs
+  ['pi','index','needs','reports','watchlists','trials','portfolio','grant'].forEach(t => {
+    const el = document.getElementById('t-'+t);
+    if (el) el.style.display = t === name ? '' : 'none';
+  });
+  document.querySelectorAll('.ntab').forEach((el,i) => {
+    el.classList.toggle('on', ['pi','index','needs','reports','watchlists','trials','portfolio','grant'][i] === name);
+  });
 
   // Lazy-load tab content
+  if (name === 'index')      loadIndex();
+  if (name === 'needs')      loadNeeds();
   if (name === 'reports')    loadReports();
   if (name === 'watchlists') { loadWatchlists(); loadGrantDeadlines(); }
-  if (name === 'index')      loadIndex();
   if (name === 'portfolio')  initPortfolio();
 }
 
