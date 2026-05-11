@@ -2104,6 +2104,48 @@ document.getElementById('pathogen-row').style.display = '';
 
 <script>
 // ── BILLING / PAYWALL ─────────────────────────────────────────────────────────
+
+// Handle Stripe redirect back (success or cancel)
+
+(function handleStripeRedirect() {
+
+  const params = new URLSearchParams(window.location.search);
+
+  if (params.get('stripe') === 'success') {
+
+    // Clean URL
+
+    window.history.replaceState({}, '', window.location.pathname);
+
+    // Show success message and reload billing status
+
+    setTimeout(async () => {
+
+      await loadBillingStatus();
+
+      closePaywall();
+
+      const banner = document.createElement('div');
+
+      banner.style.cssText = 'position:fixed;top:16px;left:50%;transform:translateX(-50%);background:#059669;color:#fff;padding:12px 24px;font-family:var(--display);font-size:13px;font-weight:700;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.3)';
+
+      banner.textContent = '🎉 Free trial activated! You have 7 days of full access.';
+
+      document.body.appendChild(banner);
+
+      setTimeout(() => banner.remove(), 5000);
+
+    }, 1500);
+
+  }
+
+  if (params.get('stripe') === 'cancel') {
+
+    window.history.replaceState({}, '', window.location.pathname);
+
+  }
+
+})();
 let billingStatus = null;
 
 async function loadBillingStatus() {
