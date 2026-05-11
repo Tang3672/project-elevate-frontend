@@ -605,7 +605,12 @@
 
   <!-- Watchlist list -->
       <button onclick="runTrackerNow()" style="font-family:var(--body);font-size:11px;color:#fff;background:var(--blue);border:none;padding:6px 16px;cursor:pointer;margin-bottom:12px">▶ Run Weekly Tracker Now (test)</button>
-  <div id="wl-list">
+  
+      <div id="grant-deadlines-section" style="display:none;margin-bottom:24px">
+        <div style="font-family:var(--display);font-size:13px;font-weight:700;color:var(--text);margin-bottom:12px">💰 Upcoming Grant Deadlines</div>
+        <div id="grant-deadlines-list"></div>
+      </div>
+<div id="wl-list">
     <div class="empty"><div class="empty-icon">🔔</div><div class="empty-t">No watchlists yet</div><div class="empty-s">Create a watchlist to start monitoring your research area for new signals.</div></div>
   </div>
 </div>
@@ -2104,6 +2109,39 @@ async function runTrackerNow() {
     btn.disabled = false;
     btn.textContent = '▶ Run Weekly Tracker Now (test)';
   }
+}
+
+
+// ── GRANT DEADLINES ───────────────────────────────────────────────────────────
+async function loadGrantDeadlines() {
+  if (!currentUser || !billingStatus?.is_active) return;
+  const token = localStorage.getItem('pe_token');
+  try {
+    const res  = await fetch(`${API}/tracker/grants?domain=all`, {
+      headers: {'Authorization': `Bearer ${token}`}
+    });
+    const data = await res.json();
+    const grants = data.grants || [];
+    const section = document.getElementById('grant-deadlines-section');
+    const list    = document.getElementById('grant-deadlines-list');
+    if (!grants.length || !section || !list) return;
+    section.style.display = 'block';
+    list.innerHTML = grants.map(g => {
+      const urgency = g.days_until <= 14 ? '#DC2626' : g.days_until <= 30 ? '#D97706' : '#059669';
+      const daysStr = g.days_until != null ? `<span style="color:${urgency};font-weight:700">${g.days_until} days</span>` : '<span style="color:var(--text-3)">Rolling</span>';
+      return `<div style="border:1px solid var(--border);padding:12px 16px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div style="font-family:var(--display);font-size:12px;font-weight:700;color:var(--text)">${g.name}</div>
+          <div style="font-family:var(--body);font-size:11px;color:var(--text-3);margin-top:3px">${g.funder} · ${g.amount}</div>
+          <div style="font-family:var(--body);font-size:10px;color:var(--text-4);margin-top:2px">${g.notes || ''}</div>
+        </div>
+        <div style="text-align:right;flex-shrink:0;margin-left:16px">
+          ${daysStr}
+          <div><a href="${g.url}" target="_blank" style="font-family:var(--body);font-size:10px;color:var(--blue)">Apply →</a></div>
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e) { /* silent */ }
 }
 
 // Init
