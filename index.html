@@ -939,6 +939,10 @@ async function runAnalysis() {
   const idea = document.getElementById('idea').value.trim();
   if (!idea || idea.length < 30) { alert('Please describe your product in at least 30 characters.'); return; }
 
+  // Require login + active subscription
+  if (!currentUser) { showPaywall(); return; }
+  if (billingStatus && !billingStatus.is_active) { showPaywall(); return; }
+
   const btn = document.getElementById('run-btn');
   btn.disabled = true; btn.textContent = 'Analyzing…';
 
