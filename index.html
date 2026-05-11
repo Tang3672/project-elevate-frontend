@@ -632,45 +632,45 @@
           <div class="cb">
             <span class="lbl" style="margin-bottom:10px">Select product type</span>
             <div class="type-grid">
-              <button class="type-btn active" onclick="selectType('antibiotic',this)">
+              <button class="type-btn active" onclick="selectType('drug_small_molecule',this)">
                 <span class="type-icon">💊</span>
-                <span class="type-name">Antibiotic</span>
-                <span class="type-desc">Full FDA pathway analysis</span>
+                <span class="type-name">Drug (Chemical)</span>
+                <span class="type-desc">Pills, oral, injectable small molecules</span>
+              </button>
+              <button class="type-btn" onclick="selectType('biologic',this)">
+                <span class="type-icon">🧫</span>
+                <span class="type-name">Biologic</span>
+                <span class="type-desc">Antibodies, ADCs, enzyme replacement</span>
+              </button>
+              <button class="type-btn" onclick="selectType('gene_cell_therapy',this)">
+                <span class="type-icon">🧬</span>
+                <span class="type-name">Gene &amp; Cell Therapy</span>
+                <span class="type-desc">AAV, CAR-T, ASO, siRNA, mRNA</span>
               </button>
               <button class="type-btn" onclick="selectType('medical_device',this)">
                 <span class="type-icon">🔬</span>
-                <span class="type-name">Device</span>
-                <span class="type-desc">510(k)/PMA strategy</span>
-              </button>
-              <button class="type-btn" onclick="selectType('software',this)">
-                <span class="type-icon">💻</span>
-                <span class="type-name">Software</span>
-                <span class="type-desc">SaMD classification</span>
+                <span class="type-name">Medical Device</span>
+                <span class="type-desc">Hardware, implants, wearables</span>
               </button>
               <button class="type-btn" onclick="selectType('diagnostic',this)">
                 <span class="type-icon">🧪</span>
                 <span class="type-name">Diagnostic</span>
-                <span class="type-desc">CLIA/EUA pathway</span>
+                <span class="type-desc">PCR, NGS, companion diagnostics</span>
               </button>
-              <button class="type-btn" onclick="selectType('orphan_drug',this)">
-                <span class="type-icon">🌿</span>
-                <span class="type-name">Orphan Drug</span>
-                <span class="type-desc">ODD · 7yr exclusivity</span>
+              <button class="type-btn" onclick="selectType('digital_health',this)">
+                <span class="type-icon">💻</span>
+                <span class="type-name">Digital Health</span>
+                <span class="type-desc">SaMD, AI/ML, digital therapeutics</span>
               </button>
-              <button class="type-btn" onclick="selectType('oncology_drug',this)">
-                <span class="type-icon">🎗️</span>
-                <span class="type-name">Oncology</span>
-                <span class="type-desc">BTD · Accelerated approval</span>
+              <button class="type-btn" onclick="selectType('vaccine_immunotherapy',this)">
+                <span class="type-icon">💉</span>
+                <span class="type-name">Vaccine / Immunotherapy</span>
+                <span class="type-desc">Vaccines, cancer immunotherapy</span>
               </button>
-              <button class="type-btn" onclick="selectType('gene_therapy',this)">
-                <span class="type-icon">🧬</span>
-                <span class="type-name">Gene Therapy</span>
-                <span class="type-desc">BLA · RMAT designation</span>
-              </button>
-              <button class="type-btn" onclick="selectType('other',this)">
-                <span class="type-icon">⚕️</span>
-                <span class="type-name">Other</span>
-                <span class="type-desc">General analysis</span>
+              <button class="type-btn" onclick="selectType('other_platform',this)">
+                <span class="type-icon">⚗️</span>
+                <span class="type-name">Other / Platform</span>
+                <span class="type-desc">Microbiome, CRISPR, delivery platforms</span>
               </button>
             </div>
 
@@ -759,6 +759,7 @@
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
         <div>
           <label class="lbl">Indication</label>
+        <button onclick="fillTrialExample()" style="font-family:var(--body);font-size:11px;color:var(--blue);background:none;border:1px solid var(--border);padding:4px 12px;cursor:pointer;margin-bottom:10px">↙ Fill example</button>
           <input type="text" id="trial-indication" placeholder="e.g. carbapenem-resistant infections in ICU patients" />
         </div>
         <div>
@@ -778,6 +779,7 @@
         <label class="lbl">Product description</label>
         <textarea id="trial-idea" placeholder="Describe your product — used to match against hospital quality deficits" style="min-height:70px"></textarea>
       </div>
+      <button onclick="fillTrialExample()" style="font-family:var(--body);font-size:11px;color:var(--blue);background:var(--blue-lite);border:1px solid #d0d9f5;padding:5px 14px;cursor:pointer;margin-bottom:8px;display:block">↙ Fill example: CRE antibiotic trial sites</button>
       <button class="btn-primary" onclick="runTrialSites()" id="trial-btn" style="margin-top:0">Find Top Trial Sites</button>
     </div>
   </div>
@@ -792,6 +794,8 @@
     <div class="cb">
       <div id="portfolio-ideas"></div>
       <button class="portfolio-add-btn" id="portfolio-add-btn" onclick="addPortfolioIdea()">+ Add idea</button>
+      <button onclick="fillPortfolioExample()" style="font-family:var(--body);font-size:11px;color:var(--blue);background:none;border:1px solid var(--border);padding:4px 12px;cursor:pointer;margin-bottom:8px;width:100%">↙ Fill 3 example ideas</button>
+      <button onclick="fillPortfolioExample()" style="font-family:var(--body);font-size:11px;color:var(--blue);background:var(--blue-lite);border:1px solid #d0d9f5;padding:5px 14px;cursor:pointer;margin-bottom:8px;display:block">↙ Fill 5 example ideas</button>
       <button class="btn-primary" onclick="runPortfolio()" id="portfolio-btn" style="margin-top:0" disabled>Analyze Portfolio</button>
     </div>
   </div>
@@ -816,12 +820,14 @@
         </div>
         <div style="margin-bottom:12px">
           <label class="lbl">Research / product description</label>
+        <button onclick="fillGrantExample()" style="font-family:var(--body);font-size:11px;color:var(--blue);background:none;border:1px solid var(--border);padding:4px 12px;cursor:pointer;margin-bottom:10px">↙ Fill example</button>
           <textarea id="grant-idea" placeholder="Describe your innovation — what it does, what problem it solves, target population" style="min-height:100px"></textarea>
         </div>
         <div style="margin-bottom:12px">
           <label class="lbl">Specific aim (optional)</label>
           <textarea id="grant-aim" placeholder="Paste your specific aim for more targeted output" style="min-height:70px"></textarea>
         </div>
+        <button onclick="fillGrantExample()" style="font-family:var(--body);font-size:11px;color:var(--blue);background:var(--blue-lite);border:1px solid #d0d9f5;padding:5px 14px;cursor:pointer;margin-bottom:8px;display:block">↙ Fill example: CRE antibiotic NIH R01</button>
         <button class="btn-primary" onclick="runGrant()" id="grant-btn" style="margin-top:0">Generate Grant Sections</button>
       </div>
     </div>
@@ -838,18 +844,21 @@
 // On Netlify, this gets injected via a _config.js file
 const API = (window.ELEVATE_API_URL || 'http://localhost:8000') + '/api/v1';
 let lastCount = 0;
-let selectedType = 'antibiotic';
+let selectedType = 'drug_small_molecule';
 
 const EXAMPLES = [
-  { type:'antibiotic', idea:'A novel beta-lactam/BLI combination targeting carbapenem-resistant Klebsiella pneumoniae and Acinetobacter baumannii in hospitalized patients with serious infections and limited treatment options.', pathogen:'Carbapenem-resistant Enterobacterales (CRE)' },
-  { type:'antibiotic', idea:'A first-in-class oral antibiotic with activity against MRSA for outpatient skin and soft tissue infections, addressing the resistance gap left by linezolid and daptomycin.', pathogen:'MRSA' },
-  { type:'orphan_drug', idea:'A small molecule SOD1 stabilizer for familial ALS patients carrying SOD1 mutations, targeting protein aggregation as the primary pathological mechanism in this rare fatal neurodegenerative disease affecting ~32,000 Americans.', pathogen:'' },
-  { type:'oncology_drug', idea:'A tumor-infiltrating lymphocyte (TIL) therapy for recurrent glioblastoma multiforme, using autologous T-cells expanded ex vivo engineered to overcome the immunosuppressive tumor microenvironment.', pathogen:'' },
-  { type:'gene_therapy', idea:'An AAV9-delivered SMN1 gene replacement therapy for spinal muscular atrophy type 2 and 3 patients beyond the neonatal window, using a tissue-specific promoter to achieve motor neuron expression with reduced systemic toxicity.', pathogen:'' },
-  { type:'oncology_drug', idea:'A KRAS G12D-targeted antibody-drug conjugate for pancreatic ductal adenocarcinoma, linking a novel anti-KRAS antibody to a topoisomerase I inhibitor payload with a cleavable linker.', pathogen:'' },
-  { type:'medical_device', idea:'A wearable continuous glucose monitor for rural diabetic patients with a 90-day sensor life and no smartphone requirement, targeting the 20% rural CGM adoption gap.', pathogen:'' },
-  { type:'software', idea:'An AI clinical decision support system that flags early sepsis in the ED 6 hours before deterioration by continuously analyzing vitals, lab trends, and nursing notes.', pathogen:'' },
+  { type:'drug_small_molecule', idea:'A novel beta-lactam/beta-lactamase inhibitor combination targeting carbapenem-resistant Klebsiella pneumoniae and Acinetobacter baumannii in hospitalized patients with serious infections.', pathogen:'Carbapenem-resistant Enterobacterales (CRE)' },
+  { type:'drug_small_molecule', idea:'A first-in-class oral antibiotic with activity against MRSA for outpatient skin and soft tissue infections, addressing the resistance gap left by linezolid and daptomycin.', pathogen:'MRSA' },
+  { type:'drug_small_molecule', idea:'A small molecule SOD1 stabilizer for familial ALS patients carrying SOD1 mutations, targeting protein aggregation as the primary pathological mechanism in this rare fatal neurodegenerative disease affecting approximately 32,000 Americans.', pathogen:'' },
+  { type:'biologic', idea:'A tumor-infiltrating lymphocyte (TIL) therapy for recurrent glioblastoma multiforme, using autologous T-cells expanded ex vivo and engineered to overcome the immunosuppressive tumor microenvironment.', pathogen:'' },
+  { type:'gene_cell_therapy', idea:'An AAV9-delivered SMN1 gene replacement therapy for spinal muscular atrophy type 2 patients beyond the neonatal window, using a tissue-specific promoter to achieve motor neuron expression with reduced systemic toxicity.', pathogen:'' },
+  { type:'biologic', idea:'A KRAS G12D-targeted antibody-drug conjugate for pancreatic ductal adenocarcinoma, linking a novel anti-KRAS antibody to a topoisomerase I inhibitor payload with a cleavable linker.', pathogen:'' },
+  { type:'medical_device', idea:'A wearable continuous glucose monitor for rural diabetic patients with a 90-day sensor life and no smartphone requirement, targeting the 20% rural CGM adoption gap versus urban populations.', pathogen:'' },
+  { type:'digital_health', idea:'An AI clinical decision support system that flags early sepsis in the emergency department 6 hours before deterioration by continuously analyzing vitals, lab trends, and nursing notes.', pathogen:'' },
   { type:'diagnostic', idea:'A rapid 30-minute PCR-based antibiotic susceptibility test that runs on existing hospital analyzers, eliminating the 48-72 hour culture wait time that drives empiric broad-spectrum antibiotic overuse.', pathogen:'' },
+  { type:'vaccine_immunotherapy', idea:'A personalized mRNA neoantigen vaccine for stage III melanoma patients, encoding patient-specific tumor mutations identified by whole exome sequencing, administered in combination with pembrolizumab.', pathogen:'' },
+  { type:'gene_cell_therapy', idea:'An exon-skipping antisense oligonucleotide for Duchenne muscular dystrophy patients with exon 51-amenable mutations, designed to restore partial dystrophin expression and slow disease progression.', pathogen:'' },
+  { type:'other_platform', idea:'An in vivo base editing therapy using adenine base editors delivered via LNP to permanently reduce PCSK9 expression in hepatocytes, providing lifelong LDL cholesterol reduction with a single dose.', pathogen:'' },
 ];
 
 const SRC_NAMES = {
@@ -873,16 +882,16 @@ function selectType(type, el) {
   document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
   el.classList.add('active');
   document.getElementById('pt-badge').textContent = el.querySelector('.type-name').textContent;
-  document.getElementById('pathogen-row').style.display = type === 'antibiotic' ? '' : 'none';
+  document.getElementById('pathogen-row').style.display = type === 'drug_small_molecule' ? '' : 'none';
   const placeholders = {
-    antibiotic: 'Describe your antibiotic — target pathogen, mechanism of action, indication.',
-    orphan_drug: 'Describe the rare disease (<200,000 U.S. patients), mechanism, and target population.',
-    oncology_drug: 'Describe the cancer type, biomarker target, and mechanism (small molecule, biologic, CAR-T, or ADC).',
-    gene_therapy: 'Describe the genetic defect, delivery vector (AAV, LNP), target tissue, and patient population.',
-    medical_device: 'Describe the device, how it works, what condition it treats, and the care setting.',
-    diagnostic: 'Describe what the test detects, the technology platform, and the clinical gap.',
-    software: 'Describe the clinical problem, what data the software uses, and how clinicians would use it.',
-    other: 'Describe your healthcare innovation — what it does, who it is for, and what problem it solves.'
+    drug_small_molecule: 'Describe your drug — target disease, mechanism, patient population. For antibiotics include target pathogen.',
+    biologic: 'Describe your biologic — antibody target, indication, format (mAb, ADC, bispecific, enzyme replacement).',
+    gene_cell_therapy: 'Describe your therapy — genetic defect, delivery vector (AAV, LNP, ex vivo), target tissue, disease.',
+    medical_device: 'Describe your device — what it does, condition it addresses, care setting.',
+    diagnostic: 'Describe your diagnostic — what it detects, technology platform, clinical gap.',
+    digital_health: 'Describe your software — clinical problem, data it uses, how clinicians use it.',
+    vaccine_immunotherapy: 'Describe your vaccine or immunotherapy — target antigen, platform (mRNA, protein subunit, viral vector).',
+    other_platform: 'Describe your platform — what it does, diseases it addresses, what makes it novel.'
   };
   document.getElementById('idea').placeholder = placeholders[type] || placeholders.other;
 }
@@ -890,17 +899,18 @@ function selectType(type, el) {
 function setEx(i) {
   const ex = EXAMPLES[i];
   if (!ex) return;
-  document.getElementById('idea').value = ex.idea;
+  document.getElementById('idea').value    = ex.idea;
   document.getElementById('pathogen').value = ex.pathogen || '';
-  // Find and activate the right type button
+  const typeOrder = ['drug_small_molecule','biologic','gene_cell_therapy','medical_device',
+                     'diagnostic','digital_health','vaccine_immunotherapy','other_platform'];
   const btns = document.querySelectorAll('.type-btn');
-  const typeOrder = ['antibiotic','orphan_drug','oncology_drug','gene_therapy','medical_device','diagnostic','software','other'];
-  const idx = typeOrder.indexOf(ex.type);
+  const idx  = typeOrder.indexOf(ex.type);
   btns.forEach(b => b.classList.remove('active'));
-  if (btns[idx >= 0 ? idx : 7]) btns[idx >= 0 ? idx : 7].classList.add('active');
+  const btn = btns[idx >= 0 ? idx : 7];
+  if (btn) btn.classList.add('active');
   selectedType = ex.type;
-  document.getElementById('pt-badge').textContent = btns[idx >= 0 ? idx : 7]?.querySelector('.type-name')?.textContent || ex.type;
-  document.getElementById('pathogen-row').style.display = ex.type === 'antibiotic' ? '' : 'none';
+  document.getElementById('pt-badge').textContent = btn?.querySelector('.type-name')?.textContent || ex.type;
+  document.getElementById('pathogen-row').style.display = ex.type === 'drug_small_molecule' ? '' : 'none';
 }
 
 function tab(name) {
@@ -943,7 +953,8 @@ async function runAnalysis() {
   try {
     const payload = {
       idea,
-      product_type: selectedType,
+      product_type: 'other',
+      tier1_category: selectedType,
       target_pathogen: document.getElementById('pathogen').value.trim() || null
     };
     const res = await fetch(`${API}/alignment/pi-report`, {
@@ -1987,6 +1998,62 @@ document.addEventListener('click', e => {
 
 // Refresh unread count every 2 minutes
 setInterval(() => { if (currentUser) loadUnreadCount(); }, 120000);
+
+
+// ── EXAMPLE FILL FUNCTIONS ────────────────────────────────────────────────────
+function fillTrialExample() {
+  document.getElementById('trial-indication').value = 'carbapenem-resistant infections in ICU patients';
+  document.getElementById('trial-idea').value = 'A novel beta-lactam/beta-lactamase inhibitor combination targeting carbapenem-resistant Klebsiella pneumoniae and Acinetobacter baumannii in hospitalized patients with serious infections.';
+  const sel = document.getElementById('trial-domain');
+  if (sel) sel.value = 'antibiotic_amr';
+}
+
+function fillGrantExample() {
+  document.getElementById('grant-idea').value = 'A novel beta-lactam/beta-lactamase inhibitor combination targeting carbapenem-resistant Enterobacterales (CRE), the most urgent antibiotic-resistant threat in U.S. hospitals affecting 13,100 patients annually with 40-50% mortality in bloodstream infections.';
+  document.getElementById('grant-aim').value = 'Aim 1: Characterize in vitro activity of the BLI against KPC and NDM carbapenemases. Aim 2: Evaluate pharmacokinetic/pharmacodynamic targets in murine infection models. Aim 3: Assess safety and efficacy in a Phase 1b/2a clinical trial in hospitalized patients with CRE infections.';
+  // Select NIH R01
+  document.querySelectorAll('.grant-type-tab').forEach(b => b.classList.remove('active'));
+  document.querySelector('.grant-type-tab')?.classList.add('active');
+  selectedGrantType = 'nih_r01';
+}
+
+function fillPortfolioExample() {
+  portfolioIdeas = [
+    { name: 'CRE Antibiotic', description: 'A novel beta-lactam/BLI combination targeting carbapenem-resistant Enterobacterales in hospitalized patients with serious infections and limited treatment options.' },
+    { name: 'Alzheimer AI Detection', description: 'An AI-powered speech pattern analysis tool for early detection of Alzheimer disease using cognitive biomarkers from routine clinical conversations.' },
+    { name: 'SMA Gene Therapy', description: 'An AAV9-delivered SMN1 gene replacement therapy for spinal muscular atrophy type 2 patients beyond the neonatal window using a tissue-specific promoter.' },
+    { name: 'Rural CGM Device', description: 'A 90-day wearable continuous glucose monitor for rural type 2 diabetes patients with no smartphone requirement, targeting the 20% rural CGM adoption gap.' },
+    { name: 'KRAS G12D ADC', description: 'A KRAS G12D-targeted antibody-drug conjugate for pancreatic ductal adenocarcinoma linking a novel anti-KRAS antibody to a topoisomerase I inhibitor payload.' },
+  ];
+  renderPortfolioInputs();
+}
+
+
+function fillTrialExample() {
+  document.getElementById('trial-indication').value = 'carbapenem-resistant infections in ICU patients';
+  document.getElementById('trial-idea').value = 'A novel beta-lactam/beta-lactamase inhibitor combination targeting carbapenem-resistant Klebsiella pneumoniae and Acinetobacter baumannii in hospitalized patients.';
+  const sel = document.getElementById('trial-domain');
+  if (sel) sel.value = 'antibiotic_amr';
+}
+
+function fillGrantExample() {
+  document.getElementById('grant-idea').value = 'A novel beta-lactam/BLI combination targeting carbapenem-resistant Enterobacterales (CRE) affecting 13,100 U.S. patients annually with 40-50% mortality in bloodstream infections. The innovation addresses a critical unmet need: no pan-CRE agent active against both KPC and NDM carbapenemases currently exists.';
+  document.getElementById('grant-aim').value = 'Aim 1: Characterize in vitro activity against KPC and NDM carbapenemases. Aim 2: Evaluate PK/PD targets in murine infection models. Aim 3: Assess safety and efficacy in a Phase 1b/2a clinical trial in hospitalized patients with CRE infections.';
+  document.querySelectorAll('.grant-type-tab').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.grant-type-tab')[0]?.classList.add('active');
+  selectedGrantType = 'nih_r01';
+}
+
+function fillPortfolioExample() {
+  portfolioIdeas = [
+    { name: 'CRE Antibiotic', description: 'A novel beta-lactam/BLI combination targeting carbapenem-resistant Enterobacterales in hospitalized patients with serious infections and limited treatment options.' },
+    { name: 'Alzheimer AI Detection', description: 'An AI-powered speech pattern analysis tool for early detection of Alzheimer disease using cognitive biomarkers from routine clinical conversations.' },
+    { name: 'SMA Gene Therapy', description: 'An AAV9-delivered SMN1 gene replacement therapy for spinal muscular atrophy type 2 patients beyond the neonatal window using a tissue-specific promoter.' },
+    { name: 'Rural CGM Device', description: 'A 90-day wearable continuous glucose monitor for rural type 2 diabetes patients with no smartphone requirement targeting the 20% rural CGM adoption gap.' },
+    { name: 'KRAS G12D ADC', description: 'A KRAS G12D-targeted antibody-drug conjugate for pancreatic ductal adenocarcinoma linking a novel anti-KRAS antibody to a topoisomerase I inhibitor payload.' },
+  ];
+  renderPortfolioInputs();
+}
 
 // Init
 loadIndex();
