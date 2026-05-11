@@ -606,7 +606,7 @@
   <!-- Watchlist list -->
       <div style="display:flex;gap:8px;margin-bottom:12px">
         <button onclick="runTrackerNow()" style="font-family:var(--body);font-size:11px;color:#fff;background:var(--blue);border:none;padding:6px 16px;cursor:pointer">▶ Run Weekly Tracker</button>
-        <button onclick="runFullRetentionTest()" style="font-family:var(--body);font-size:11px;color:#fff;background:#059669;border:none;padding:6px 16px;cursor:pointer">🧪 Test All Features</button>
+        <button onclick="runFullRetentionTest(this)" style="font-family:var(--body);font-size:11px;color:#fff;background:#059669;border:none;padding:6px 16px;cursor:pointer">🧪 Test All Features</button>
       </div>
   
       <div id="grant-deadlines-section" style="display:none;margin-bottom:24px">
@@ -2108,10 +2108,10 @@ function fillPortfolioExample() {
 
 
 
-async function runFullRetentionTest() {
+async function runFullRetentionTest(btnEl) {
   if (!currentUser) { openAuth('login'); return; }
   const token = localStorage.getItem('pe_token');
-  const btn = event.target;
+  const btn = btnEl;
   btn.disabled = true;
   btn.textContent = '⏳ Running tests…';
 
