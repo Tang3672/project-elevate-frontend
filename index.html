@@ -604,7 +604,10 @@
   </div>
 
   <!-- Watchlist list -->
-      <button onclick="runTrackerNow()" style="font-family:var(--body);font-size:11px;color:#fff;background:var(--blue);border:none;padding:6px 16px;cursor:pointer;margin-bottom:12px">▶ Run Weekly Tracker Now (test)</button>
+      <div style="display:flex;gap:8px;margin-bottom:12px">
+        <button onclick="runTrackerNow()" style="font-family:var(--body);font-size:11px;color:#fff;background:var(--blue);border:none;padding:6px 16px;cursor:pointer">▶ Run Weekly Tracker</button>
+        <button onclick="runFullRetentionTest()" style="font-family:var(--body);font-size:11px;color:#fff;background:#059669;border:none;padding:6px 16px;cursor:pointer">🧪 Test All Features</button>
+      </div>
   
       <div id="grant-deadlines-section" style="display:none;margin-bottom:24px">
         <div style="font-family:var(--display);font-size:13px;font-weight:700;color:var(--text);margin-bottom:12px">💰 Upcoming Grant Deadlines</div>
@@ -2103,6 +2106,97 @@ function fillPortfolioExample() {
   renderPortfolioInputs();
 }
 
+
+
+async function runFullRetentionTest() {
+  if (!currentUser) { openAuth('login'); return; }
+  const token = localStorage.getItem('pe_token');
+  const btn = event.target;
+  btn.disabled = true;
+  btn.textContent = '⏳ Running tests…';
+
+  // Show results panel
+  let panel = document.getElementById('retention-test-panel');
+  if (!panel) {
+    panel = document.createElement('div');
+    panel.id = 'retention-test-panel';
+    panel.style.cssText = 'margin-top:16px;border:1px solid var(--border);padding:16px;background:var(--bg-2)';
+    btn.parentElement.parentElement.appendChild(panel);
+  }
+  panel.innerHTML = '<div style="font-family:var(--body);font-size:12px;color:var(--text-3)">Running retention tests...</div>';
+
+  try {
+    const res  = await fetch(`${API}/tracker/test-full`, {
+      method: 'POST',
+      headers: {'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json'}
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || 'Test failed');
+
+    const f = data.features || {};
+    const grants = f.grant_deadlines || [];
+    const milestones = f.competitor_milestones || [];
+    const delta = f.signal_delta || {};
+    const staleness = f.staleness || {};
+
+    panel.innerHTML = `
+      <div style="font-family:var(--display);font-size:13px;font-weight:700;color:var(--text);margin-bottom:12px">
+        🧪 Retention Test Results — ${data.watchlist || 'Test Watchlist'}
+      </div>
+
+      <div style="margin-bottom:12px">
+        <div style="font-family:var(--display);font-size:11px;font-weight:700;color:var(--text-2);margin-bottom:6px">📊 REPORT STALENESS</div>
+        <div style="font-family:var(--body);font-size:12px;color:var(--text)">
+          Score: ${staleness.staleness_score || 0}/10 &nbsp;|&nbsp;
+          Recalculate: <strong style="color:${staleness.recalculate ? '#DC2626' : '#059669'}">${staleness.recalculate ? 'YES' : 'No'}</strong>
+          ${staleness.recalculate_reason ? `<br><span style="color:#DC2626">${staleness.recalculate_reason}</span>` : ''}
+          ${staleness.note ? `<br><span style="color:var(--text-3)">${staleness.note}</span>` : ''}
+        </div>
+      </div>
+
+      <div style="margin-bottom:12px">
+        <div style="font-family:var(--display);font-size:11px;font-weight:700;color:var(--text-2);margin-bottom:6px">💰 GRANT DEADLINES (${grants.length} found)</div>
+        ${grants.slice(0,4).map(g => `
+          <div style="font-family:var(--body);font-size:11px;color:var(--text);padding:4px 0;border-bottom:1px solid var(--border)">
+            <strong>${g.name}</strong> — ${g.amount}
+            ${g.days_until != null ? `<span style="color:${g.days_until<=14?'#DC2626':'#D97706'};font-weight:700"> (${g.days_until} days)</span>` : ' (Rolling)'}
+            <br><span style="color:var(--text-3)">${g.notes || ''}</span>
+          </div>`).join('')}
+        ${!grants.length ? '<div style="font-family:var(--body);font-size:11px;color:var(--text-3)">No upcoming deadlines in next 90 days</div>' : ''}
+      </div>
+
+      <div style="margin-bottom:12px">
+        <div style="font-family:var(--display);font-size:11px;font-weight:700;color:var(--text-2);margin-bottom:6px">🎯 COMPETITOR MILESTONES (${milestones.length} found)</div>
+        ${milestones.slice(0,3).map(m => {
+          const emoji = {approval:'✅',phase3_success:'📈',phase3_failure:'❌',btd:'⭐',acquisition:'💼'}[m.event_type] || '•';
+          return `<div style="font-family:var(--body);font-size:11px;color:var(--text);padding:4px 0;border-bottom:1px solid var(--border)">
+            ${emoji} <strong>${m.company || ''}</strong> — ${m.description || ''}
+            ${m.impact_on_pi ? `<br><span style="color:var(--blue)">${m.impact_on_pi}</span>` : ''}
+          </div>`;
+        }).join('')}
+        ${!milestones.length ? '<div style="font-family:var(--body);font-size:11px;color:var(--text-3)">No major competitor milestones found this week</div>' : ''}
+      </div>
+
+      <div style="margin-bottom:12px">
+        <div style="font-family:var(--display);font-size:11px;font-weight:700;color:var(--text-2);margin-bottom:6px">📡 SIGNAL DELTA</div>
+        <div style="font-family:var(--body);font-size:12px;color:var(--text)">
+          ${delta.new_in_30_days || 0} new signals in last 30 days
+          ${delta.source_summary ? `<br><span style="color:var(--text-3)">${delta.source_summary}</span>` : ''}
+        </div>
+      </div>
+
+      <div style="margin-top:12px;padding:12px;background:var(--bg-3);border-left:3px solid var(--blue)">
+        <div style="font-family:var(--display);font-size:10px;font-weight:700;color:var(--text-2);margin-bottom:6px">FORMATTED ALERT PREVIEW</div>
+        <pre style="font-family:var(--body);font-size:11px;color:var(--text-2);white-space:pre-wrap;margin:0">${(data.formatted_alert || '').slice(0,500)}</pre>
+      </div>
+    `;
+  } catch(e) {
+    panel.innerHTML = `<div style="font-family:var(--body);font-size:12px;color:#DC2626">Error: ${e.message}</div>`;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '🧪 Test All Features';
+  }
+}
 
 // ── WEEKLY TRACKER ────────────────────────────────────────────────────────────
 function fillWatchlistExample() {
