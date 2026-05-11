@@ -556,7 +556,10 @@
       <div id="register-form" style="display:none">
         <div class="field"><label class="field-lbl">Name (optional)</label><input type="text" id="reg-name" placeholder="Dr. Jane Smith" /></div>
         <div class="field"><label class="field-lbl">Email</label><input type="email" id="reg-email" placeholder="you@example.com" /></div>
-        <div class="field"><label class="field-lbl">Password</label><input type="password" id="reg-password" placeholder="At least 8 characters" onkeydown="if(event.key==='Enter')submitRegister()" /></div>
+        <div class="field"><label class="field-lbl">Password</label><input type="password" id="reg-password" placeholder="At least 8 characters" onkeydown="if(event.key==='Enter')submitRegister()" />
+          <div style="font-family:var(--body);font-size:11px;color:var(--text-3);margin-top:5px;line-height:1.7">
+            Password must be at least <strong>8 characters</strong> and contain at least one <strong>letter</strong> and one <strong>number</strong>.
+          </div></div>
         <button class="auth-submit" id="reg-btn" onclick="submitRegister()">Create Account</button>
       </div>
     </div>
@@ -1411,6 +1414,8 @@ async function submitRegister() {
   const pass  = document.getElementById('reg-password').value;
   if (!email || !pass) return showAuthErr('Please enter your email and password.');
   if (pass.length < 8) return showAuthErr('Password must be at least 8 characters.');
+  if (!/[0-9]/.test(pass)) return showAuthErr('Password must contain at least one number.');
+  if (!/[a-zA-Z]/.test(pass)) return showAuthErr('Password must contain at least one letter.');
   const btn = document.getElementById('reg-btn');
   btn.disabled = true; btn.textContent = 'Creating account…';
   try {
@@ -1421,7 +1426,13 @@ async function submitRegister() {
     });
     const d = await res.json();
     if (!res.ok) { showAuthErr(d.detail || 'Registration failed.'); return; }
-    storeAuth(d);
+    // Show verification message instead of logging in immediately
+    document.getElementById('auth-modal').style.display = 'none';
+    const banner = document.createElement('div');
+    banner.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#1A4FD6;color:#fff;padding:16px 24px;font-family:var(--body);font-size:13px;z-index:9999;text-align:center;line-height:1.6';
+    banner.innerHTML = `<strong>Account created!</strong> We sent a verification email to <strong>${email}</strong>. Click the link in the email to activate your account before logging in.`;
+    document.body.prepend(banner);
+    setTimeout(() => banner.remove(), 12000);
   } catch(e) { showAuthErr('Connection error.'); }
   finally { btn.disabled = false; btn.textContent = 'Create Account'; }
 }
