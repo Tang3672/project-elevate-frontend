@@ -1437,7 +1437,7 @@ function storeAuth(d) {
 async function googleSignIn() {
   // Uses Google Identity Services (GIS) if loaded, otherwise shows message
   if (typeof google === 'undefined' || !google.accounts) {
-    showAuthErr('Google Sign-In requires the Google Client ID to be configured. Use email/password instead.');
+    showAuthErr('');
     return;
   }
   google.accounts.id.prompt();
