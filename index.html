@@ -2185,6 +2185,30 @@ async function runFullRetentionTest(btnEl) {
         </div>
       </div>
 
+      <div style="margin-bottom:12px">
+        <div style="font-family:var(--display);font-size:11px;font-weight:700;color:var(--text-2);margin-bottom:6px">🔬 LIVE CLINICAL TRIALS PIPELINE (ClinicalTrials.gov)</div>
+        ${(() => {
+          const ct = f.clinical_trials || {};
+          if (ct.error) return `<div style="font-family:var(--body);font-size:11px;color:#DC2626">Error: ${ct.error}</div>`;
+          const threatColor = ct.threat_level === 'high' ? '#DC2626' : ct.threat_level === 'medium' ? '#D97706' : '#059669';
+          return `<div style="font-family:var(--body);font-size:12px;color:var(--text)">
+            <strong>${ct.total_trials || 0}</strong> total trials | 
+            <strong>${ct.recruiting || 0}</strong> recruiting |
+            Threat: <strong style="color:${threatColor}">${(ct.threat_level||'unknown').toUpperCase()}</strong>
+            ${ct.summary ? `<br><span style="color:var(--text-3);font-size:11px">${ct.summary}</span>` : ''}
+          </div>
+          ${(ct.top_trials||[]).map(t => `
+            <div style="border:1px solid var(--border);padding:6px 10px;margin-top:6px;font-family:var(--body);font-size:10px">
+              <span style="color:${t.competitive_threat==='high'?'#DC2626':t.competitive_threat==='medium'?'#D97706':'#059669'};font-weight:700">${t.competitive_threat?.toUpperCase()||'?'}</span>
+              | <strong>${t.sponsor||'Unknown'}</strong> | ${(t.phase||[]).join(',')} | ${t.status||''}
+              <br>${t.title||''}
+              ${t.drugs?.length ? `<br>Drugs: ${t.drugs.join(', ')}` : ''}
+              ${t.expected_completion ? `<br>Completion: ${t.expected_completion}` : ''}
+              <br><a href="${t.url||'#'}" target="_blank" style="color:var(--blue)">View on ClinicalTrials.gov →</a>
+            </div>`).join('')}`;
+        })()}
+      </div>
+
       <div style="margin-top:12px;padding:12px;background:var(--bg-3);border-left:3px solid var(--blue)">
         <div style="font-family:var(--display);font-size:10px;font-weight:700;color:var(--text-2);margin-bottom:6px">FORMATTED ALERT PREVIEW</div>
         <pre style="font-family:var(--body);font-size:11px;color:var(--text-2);white-space:pre-wrap;margin:0">${(data.formatted_alert || '').slice(0,500)}</pre>
