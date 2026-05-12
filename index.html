@@ -2134,7 +2134,7 @@ async function runFullRetentionTest(btnEl) {
     if (!res.ok) throw new Error(data.detail || 'Test failed');
 
     const f = data.features || {};
-    const grants = f.grant_deadlines || [];
+    const grants = Array.isArray(f.grant_deadlines) ? f.grant_deadlines : [];
     const milestones = f.competitor_milestones || [];
     const delta = f.signal_delta || {};
     const staleness = f.staleness || {};
