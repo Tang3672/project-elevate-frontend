@@ -1514,7 +1514,7 @@ function storeAuth(d) {
   closeAuth();
 }
 
-async async function handleGoogleCredential(response) {
+async function handleGoogleCredential(response) {
   const btn = document.querySelector('.g_id_signin');
   try {
     const res = await fetch(`${API}/auth/google`, {
