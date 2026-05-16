@@ -473,6 +473,7 @@
     .trial-upgrade-btn{background:#fff;color:var(--blue);border:none;padding:6px 14px;font-family:var(--display);font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0}
   </style>
   <script src="/_config.js"></script>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
 
@@ -556,10 +557,15 @@
       <div id="register-form" style="display:none">
         <div class="field"><label class="field-lbl">Name (optional)</label><input type="text" id="reg-name" placeholder="Dr. Jane Smith" /></div>
         <div class="field"><label class="field-lbl">Email</label><input type="email" id="reg-email" placeholder="you@example.com" /></div>
-        <div class="field"><label class="field-lbl">Password</label><input type="password" id="reg-password" placeholder="At least 8 characters" onkeydown="if(event.key==='Enter')submitRegister()" />
-          <div style="font-family:var(--body);font-size:11px;color:var(--text-3);margin-top:5px;line-height:1.7">
-            Password must be at least <strong>8 characters</strong> and contain at least one <strong>letter</strong> and one <strong>number</strong>.
+        <div class="field"><label class="field-lbl">Password</label><input type="password" id="reg-password" placeholder="Create a password" onkeydown="if(event.key==='Enter')submitRegister()" oninput="checkPasswordStrength(this.value)" />
+          <div id="pw-requirements" style="font-family:var(--body);font-size:11px;color:var(--text-3);margin-top:8px;line-height:2">
+            <div id="req-length"  style="color:#e53e3e">✗ At least 8 characters</div>
+            <div id="req-upper"   style="color:#e53e3e">✗ At least one uppercase letter (A-Z)</div>
+            <div id="req-lower"   style="color:#e53e3e">✗ At least one lowercase letter (a-z)</div>
+            <div id="req-number"  style="color:#e53e3e">✗ At least one number (0-9)</div>
+            <div id="req-special" style="color:#e53e3e">✗ At least one special character (!@#$%^&*...)</div>
           </div></div>
+        <div class="field"><label class="field-lbl">Confirm Password</label><input type="password" id="reg-password-confirm" placeholder="Repeat your password" onkeydown="if(event.key==='Enter')submitRegister()" /></div>
         <button class="auth-submit" id="reg-btn" onclick="submitRegister()">Create Account</button>
       </div>
     </div>
@@ -1444,14 +1450,41 @@ async function submitLogin() {
   finally { btn.disabled = false; btn.textContent = 'Sign In'; }
 }
 
+function checkPasswordStrength(pw) {
+  const reqs = {
+    'req-length':  pw.length >= 8,
+    'req-upper':   /[A-Z]/.test(pw),
+    'req-lower':   /[a-z]/.test(pw),
+    'req-number':  /[0-9]/.test(pw),
+    'req-special': /[!@#$%^&*()_+=\[\]{};:|,.<>/?`~-]/.test(pw),
+  };
+  const labels = {
+    'req-length':  'At least 8 characters',
+    'req-upper':   'At least one uppercase letter (A-Z)',
+    'req-lower':   'At least one lowercase letter (a-z)',
+    'req-number':  'At least one number (0-9)',
+    'req-special': 'At least one special character (!@#$%^&*...)',
+  };
+  for (const [id, ok] of Object.entries(reqs)) {
+    const el = document.getElementById(id);
+    if (el) { el.style.color = ok ? '#38a169' : '#e53e3e'; el.textContent = (ok ? '✓ ' : '✗ ') + labels[id]; }
+  }
+}
+
 async function submitRegister() {
-  const name  = document.getElementById('reg-name').value.trim();
-  const email = document.getElementById('reg-email').value.trim();
-  const pass  = document.getElementById('reg-password').value;
+  const name    = document.getElementById('reg-name').value.trim();
+  const email   = document.getElementById('reg-email').value.trim();
+  const pass    = document.getElementById('reg-password').value;
+  const confirm = document.getElementById('reg-password-confirm') ? document.getElementById('reg-password-confirm').value : pass;
   if (!email || !pass) return showAuthErr('Please enter your email and password.');
-  if (pass.length < 8) return showAuthErr('Password must be at least 8 characters.');
-  if (!/[0-9]/.test(pass)) return showAuthErr('Password must contain at least one number.');
-  if (!/[a-zA-Z]/.test(pass)) return showAuthErr('Password must contain at least one letter.');
+  if (pass !== confirm) return showAuthErr('Passwords do not match. Please try again.');
+  const errors = [];
+  if (pass.length < 8)                                        errors.push('at least 8 characters');
+  if (!/[A-Z]/.test(pass))                                   errors.push('an uppercase letter (A-Z)');
+  if (!/[a-z]/.test(pass))                                   errors.push('a lowercase letter (a-z)');
+  if (!/[0-9]/.test(pass))                                   errors.push('a number (0-9)');
+  if (!/[!@#$%^&*()_+=\[\]{};:|,.<>/?`~-]/.test(pass))   errors.push('a special character (!@#$%^&*...)');
+  if (errors.length) return showAuthErr('Password must contain: ' + errors.join(', ') + '.');
   const btn = document.getElementById('reg-btn');
   btn.disabled = true; btn.textContent = 'Creating account…';
   try {
@@ -1481,7 +1514,27 @@ function storeAuth(d) {
   closeAuth();
 }
 
-async function googleSignIn() {
+async async function handleGoogleCredential(response) {
+  const btn = document.querySelector('.g_id_signin');
+  try {
+    const res = await fetch(`${API}/auth/google`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({token: response.credential}),
+    });
+    const data = await res.json();
+    if (!res.ok) return showAuthErr(data.detail || 'Google sign-in failed.');
+    localStorage.setItem('pe_token', data.access_token);
+    localStorage.setItem('pe_user', JSON.stringify({email: data.email, name: data.name}));
+    closeAuth();
+    await loadBillingStatus();
+    showToast('Signed in with Google ✓');
+  } catch(e) {
+    showAuthErr('Google sign-in failed. Please try again.');
+  }
+}
+
+function googleSignIn() {
   // Uses Google Identity Services (GIS) if loaded, otherwise shows message
   if (typeof google === 'undefined' || !google.accounts) {
     showAuthErr('');
