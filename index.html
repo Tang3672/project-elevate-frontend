@@ -50,6 +50,15 @@
     /* MAIN */
     .main{padding:24px 28px;max-width:1500px;margin:0 auto}
 
+
+    .narrative-block{font-family:var(--body);font-size:13px;color:var(--text-2);line-height:1.8;margin-bottom:16px;padding:0}
+    .callout-box{padding:14px 16px;margin-bottom:16px;border-left:4px solid}
+    .callout-blue{background:var(--blue-pale);border-color:var(--blue)}
+    .callout-green{background:#f0fdf4;border-color:#16a34a}
+    .callout-red{background:#fff5f5;border-color:#e53e3e}
+    .callout-label{font-family:var(--display);font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;margin-bottom:6px;color:var(--text-3)}
+    .callout-text{font-family:var(--body);font-size:13px;color:var(--text-2);line-height:1.7}
+
     /* PAGE HEADER */
     .ph{margin-bottom:24px}
     .ph-title{font-family:var(--display);font-size:22px;font-weight:700;color:var(--text);letter-spacing:-.02em}
@@ -1155,75 +1164,148 @@ function renderPIReport(r) {
 
   let html = '<div class="sg">';
 
-  // Executive Summary
-  html += `<div class="exec-box"><div class="exec-lbl">Executive Summary</div><div class="exec-txt">${r.executive_summary}</div></div>`;
+  // ── REPORT HEADER ──────────────────────────────────────────────────────────
+  html += `
+    <div style="border-left:4px solid var(--blue);padding:16px 20px;background:var(--bg-2);margin-bottom:28px">
+      <div style="font-family:var(--display);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--blue);margin-bottom:6px">Go-to-Market Intelligence Report</div>
+      <div style="font-family:var(--display);font-size:20px;font-weight:700;color:var(--text);margin-bottom:8px">${r.disease_intelligence ? r.disease_intelligence.condition : 'Analysis'}</div>
+      <div style="font-family:var(--body);font-size:13px;color:var(--text-2);line-height:1.7">${r.executive_summary}</div>
+    </div>`;
 
-  // Disease Intelligence
+  // ── CHAPTER 1: THE OPPORTUNITY ─────────────────────────────────────────────
   if (r.disease_intelligence) {
     const di = r.disease_intelligence;
-    html += `<div class="sdiv"><span class="sdiv-lbl">Disease Intelligence: ${di.condition}</span><div class="sdiv-line"></div></div>`;
+    html += chapterHeader('1', 'The Opportunity', 'Understanding the disease landscape, unmet need, and why this market exists');
+
+    // Narrative intro
+    html += `<div class="narrative-block">
+      The competitive and clinical landscape for <strong>${di.condition}</strong> defines both your opportunity and your obstacles. Here is what the data shows, and what it means for your product strategy.
+    </div>`;
+
+    // Data points grid
     if (di.data_points && di.data_points.length) {
       html += '<div class="di-grid">';
       di.data_points.forEach(dp => {
         const srcHtml = dp.source_url
           ? `<a href="${dp.source_url}" target="_blank">${dp.source} (${dp.year})</a>`
-          : `${dp.source} (${dp.year})`;
-        html += `<div class="di-point"><div class="di-metric">${dp.metric}</div><div class="di-value">${dp.value}</div><div class="di-source">Source: ${srcHtml}</div></div>`;
+          : `<span style="color:var(--text-4)">${dp.source} (${dp.year})</span>`;
+        html += `<div class="di-point">
+          <div class="di-metric">${dp.metric}</div>
+          <div class="di-value">${dp.value}</div>
+          <div class="di-source">Source: ${srcHtml}</div>
+        </div>`;
       });
       html += '</div>';
     }
-    if (di.resistance_profile) html += `<div style="margin-bottom:8px;font-family:var(--body);font-size:13px;color:var(--text-2);line-height:1.6"><strong>Resistance profile:</strong> ${di.resistance_profile}</div>`;
-    if (di.pipeline_status) html += `<div style="margin-bottom:8px;font-family:var(--body);font-size:13px;color:var(--text-2);line-height:1.6"><strong>Pipeline:</strong> ${di.pipeline_status}</div>`;
-    html += `<div style="background:var(--blue-pale);border:1px solid #d0d9f5;padding:10px 12px;font-family:var(--body);font-size:12px;color:var(--text-2);margin-bottom:4px"><strong>Unmet need:</strong> ${di.unmet_need_summary}</div>`;
+
+    if (di.resistance_profile) {
+      html += `<div class="narrative-block"><strong>Resistance & mechanism landscape:</strong> ${di.resistance_profile}</div>`;
+    }
+    if (di.pipeline_status) {
+      html += `<div class="narrative-block"><strong>Current competitive pipeline:</strong> ${di.pipeline_status}</div>`;
+    }
+
+    // Unmet need callout
+    html += `<div class="callout-box callout-blue">
+      <div class="callout-label">📍 The Core Unmet Need</div>
+      <div class="callout-text">${di.unmet_need_summary}</div>
+    </div>`;
   }
 
-  // Market Sizing
+  // ── CHAPTER 2: THE MARKET ──────────────────────────────────────────────────
   if (r.market_sizing) {
     const ms = r.market_sizing;
-    html += `<div class="sdiv"><span class="sdiv-lbl">Bottom-Up Market Sizing</span><div class="sdiv-line"></div></div>`;
+    html += chapterHeader('2', 'The Market', 'How large is the opportunity, who will pay, and what can you realistically capture');
 
-    // TAM/SAM totals
-    const tamB = ms.total_addressable_market_usd >= 1e9;
-    const tamVal = tamB ? `$${(ms.total_addressable_market_usd/1e9).toFixed(1)}B` : `$${(ms.total_addressable_market_usd/1e6).toFixed(0)}M`;
-    const samVal = ms.serviceable_market_usd >= 1e9 ? `$${(ms.serviceable_market_usd/1e9).toFixed(1)}B` : `$${(ms.serviceable_market_usd/1e6).toFixed(0)}M`;
-    html += `<div class="ms-totals"><div class="ms-total-cell"><div class="ms-total-lbl">Total Addressable Market (TAM)</div><div class="ms-total-val">${tamVal}</div><div class="ms-total-sub">Full market if 100% penetration</div></div><div class="ms-total-cell"><div class="ms-total-lbl">Serviceable Market (SAM)</div><div class="ms-total-val" style="color:var(--green)">${samVal}</div><div class="ms-total-sub">Realistic capture scenario</div></div></div>`;
+    const tamVal = ms.total_addressable_market_usd >= 1e9
+      ? `$${(ms.total_addressable_market_usd/1e9).toFixed(1)}B`
+      : `$${(ms.total_addressable_market_usd/1e6).toFixed(0)}M`;
+    const samVal = ms.serviceable_market_usd >= 1e9
+      ? `$${(ms.serviceable_market_usd/1e9).toFixed(1)}B`
+      : `$${(ms.serviceable_market_usd/1e6).toFixed(0)}M`;
 
-    // Formula
+    html += `<div class="narrative-block">
+      The total addressable market is <strong>${tamVal}</strong> if you capture 100% of treatable patients — a theoretical ceiling. The realistic serviceable market, accounting for formulary access, competitive share, and geographic reach, is <strong>${samVal}</strong>. Here is how that number is built from the ground up.
+    </div>`;
+
+    html += `<div class="ms-totals">
+      <div class="ms-total-cell">
+        <div class="ms-total-lbl">Total Addressable Market (TAM)</div>
+        <div class="ms-total-val">${tamVal}</div>
+        <div class="ms-total-sub">Full market if 100% penetration</div>
+      </div>
+      <div class="ms-total-cell">
+        <div class="ms-total-lbl">Serviceable Market (SAM)</div>
+        <div class="ms-total-val" style="color:var(--green)">${samVal}</div>
+        <div class="ms-total-sub">Realistic capture scenario</div>
+      </div>
+    </div>`;
+
     html += `<div class="ms-formula"><strong>Formula:</strong> ${ms.formula}</div>`;
 
-    // Steps table
     html += '<div class="ms-steps">';
     ms.steps.forEach(s => {
       const srcHtml = s.source_url
         ? `<a href="${s.source_url}" target="_blank">${s.source}</a>`
-        : s.source;
+        : `<span style="color:var(--text-4)">${s.source || 'No source'}</span>`;
       html += `<div class="ms-step">
-        <div><div class="ms-step-label">${s.label}</div>${s.notes ? `<div class="ms-step-source">${s.notes}</div>` : ''}<div class="ms-step-source">Source: ${srcHtml}</div></div>
+        <div>
+          <div class="ms-step-label">${s.label}</div>
+          ${s.notes ? `<div class="ms-step-source">${s.notes}</div>` : ''}
+          <div class="ms-step-source">Source: ${srcHtml}</div>
+        </div>
         <div class="ms-step-value">${fmt(s.value)}</div>
         <div class="ms-step-unit">${s.unit}</div>
       </div>`;
     });
     html += '</div>';
     html += `<div class="ms-note">Methodology: ${ms.methodology_note}</div>`;
+
+    // Market geography inline
+    if (r.market_geography) {
+      const g = r.market_geography;
+      html += `<div class="narrative-block">${g.description}</div>`;
+      if (g.top_states && g.top_states.length) {
+        html += '<div class="geo-row">' + g.top_states.map(s => `<span class="geo-tag">${s}</span>`).join('') + '</div>';
+      }
+    }
   }
 
-  // Regulatory Pathway (antibiotic-specific)
+  // ── CHAPTER 3: YOUR PATH TO APPROVAL ──────────────────────────────────────
   if (r.regulatory_pathway) {
     const rp = r.regulatory_pathway;
-    html += `<div class="sdiv"><span class="sdiv-lbl">FDA Regulatory Pathway</span><div class="sdiv-line"></div></div>`;
-    html += `<div class="reg-pathway-box"><div class="reg-pathway-lbl">Recommended Pathway</div><div class="reg-pathway-val">${rp.recommended_pathway}</div><div class="reg-pathway-rat">${rp.pathway_rationale}</div></div>`;
+    html += chapterHeader('3', 'Your Path to Approval', 'The FDA regulatory strategy, designations to pursue, and clinical trial roadmap');
 
-    // Timeline & cost
-    html += `<div style="display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);margin-bottom:16px">
-      <div style="background:var(--bg-2);padding:12px 14px"><div class="ms-total-lbl">Total Timeline</div><div style="font-family:var(--display);font-size:14px;font-weight:700;color:var(--text)">${rp.total_timeline_estimate}</div></div>
-      <div style="background:var(--bg-2);padding:12px 14px"><div class="ms-total-lbl">Total Cost Estimate</div><div style="font-family:var(--display);font-size:14px;font-weight:700;color:var(--text)">${rp.total_cost_estimate}</div></div>
+    html += `<div class="narrative-block">
+      Getting your product approved requires navigating a specific FDA pathway. Based on your product type and indication, here is the recommended strategy — including which designations to apply for, in what order, and why each matters to your timeline and exclusivity.
+    </div>`;
+
+    // Recommended pathway callout
+    html += `<div class="callout-box callout-green">
+      <div class="callout-label">✓ Recommended Pathway</div>
+      <div class="callout-text"><strong>${rp.recommended_pathway}</strong></div>
+      <div class="callout-text" style="margin-top:6px">${rp.pathway_rationale}</div>
+    </div>`;
+
+    html += `<div style="display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);margin-bottom:20px">
+      <div style="background:var(--bg-2);padding:12px 14px">
+        <div class="ms-total-lbl">Total Timeline</div>
+        <div style="font-family:var(--display);font-size:14px;font-weight:700;color:var(--text)">${rp.total_timeline_estimate}</div>
+      </div>
+      <div style="background:var(--bg-2);padding:12px 14px">
+        <div class="ms-total-lbl">Total Cost Estimate</div>
+        <div style="font-family:var(--display);font-size:14px;font-weight:700;color:var(--text)">${rp.total_cost_estimate}</div>
+      </div>
     </div>`;
 
     // Designations
     if (rp.designations && rp.designations.length) {
+      html += `<div class="narrative-block">These are the FDA designations you should pursue, ranked by priority. Each one changes your timeline, exclusivity, or trial burden in a specific way.</div>`;
       html += `<div style="font-family:var(--display);font-size:11px;font-weight:700;color:var(--text-3);letter-spacing:.05em;text-transform:uppercase;margin-bottom:8px">FDA Designations & Pathways</div>`;
-      rp.designations.forEach((d, i) => {
-        const srcHtml = d.source_url ? `<a href="${d.source_url}" target="_blank">${d.source}</a>` : d.source;
+      rp.designations.forEach(d => {
+        const srcHtml = d.source_url
+          ? `<a href="${d.source_url}" target="_blank">${d.source}</a>`
+          : `<span style="color:var(--text-4)">${d.source || 'No source'}</span>`;
         html += `<div class="desig-card">
           <div class="desig-header" onclick="toggleDesig(this)">
             <span class="desig-name">${d.name}</span>
@@ -1241,11 +1323,16 @@ function renderPIReport(r) {
       });
     }
 
-    // Clinical trial requirements
+    // Clinical trials as a story
     if (rp.clinical_trial_requirements && rp.clinical_trial_requirements.length) {
-      html += `<div style="font-family:var(--display);font-size:11px;font-weight:700;color:var(--text-3);letter-spacing:.05em;text-transform:uppercase;margin:16px 0 8px">Clinical Trial Requirements</div>`;
+      html += `<div class="narrative-block" style="margin-top:20px">
+        Your clinical development program will run in three phases. Here is what each phase requires, what it costs, and what FDA expects you to prove before advancing.
+      </div>`;
+      html += `<div style="font-family:var(--display);font-size:11px;font-weight:700;color:var(--text-3);letter-spacing:.05em;text-transform:uppercase;margin-bottom:8px">Clinical Trial Requirements</div>`;
       rp.clinical_trial_requirements.forEach(t => {
-        const srcHtml = t.source_url ? `<a href="${t.source_url}" target="_blank" style="color:var(--blue);font-size:10px">${t.fda_guidance_document}</a>` : `<span style="font-size:10px;color:var(--text-4)">${t.fda_guidance_document}</span>`;
+        const srcHtml = t.source_url
+          ? `<a href="${t.source_url}" target="_blank" style="color:var(--blue);font-size:10px">${t.fda_guidance_document}</a>`
+          : `<span style="font-size:10px;color:var(--text-4)">${t.fda_guidance_document}</span>`;
         const epHtml = (t.key_endpoints || []).map(ep => `<span class="ep-tag">${ep}</span>`).join('');
         html += `<div class="trial-card">
           <div class="trial-phase-header">
@@ -1264,33 +1351,43 @@ function renderPIReport(r) {
       });
     }
 
-    // Friction points
+    // Friction points as warnings
     if (rp.key_friction_points && rp.key_friction_points.length) {
-      html += `<div class="sdiv" style="margin-top:16px"><span class="sdiv-lbl">Key Friction Points</span><div class="sdiv-line"></div></div>`;
-      html += '<ul class="friction-list">' + rp.key_friction_points.map(f => `<li>${f}</li>`).join('') + '</ul>';
+      html += `<div class="callout-box callout-red" style="margin-top:16px">
+        <div class="callout-label">⚠ Key Obstacles to Anticipate</div>
+        <ul style="margin:8px 0 0 16px;padding:0">
+          ${rp.key_friction_points.map(f => `<li style="font-family:var(--body);font-size:13px;color:var(--text-2);line-height:1.7;margin-bottom:4px">${f}</li>`).join('')}
+        </ul>
+      </div>`;
     }
 
-    // Loopholes
+    // Strategies as opportunities
     if (rp.loopholes_and_strategies && rp.loopholes_and_strategies.length) {
-      html += `<div class="sdiv" style="margin-top:16px"><span class="sdiv-lbl">Expedient Strategies & Loopholes</span><div class="sdiv-line"></div></div>`;
-      html += '<ul class="strategy-list">' + rp.loopholes_and_strategies.map(s => `<li>${s}</li>`).join('') + '</ul>';
-    }
-
-    // Funding
-    if (rp.funding_programs && rp.funding_programs.length) {
-      html += `<div class="sdiv" style="margin-top:16px"><span class="sdiv-lbl">Non-Dilutive Funding Programs</span><div class="sdiv-line"></div></div>`;
-      html += '<ul class="funding-list">' + rp.funding_programs.map(f => `<li>${f}</li>`).join('') + '</ul>';
+      html += `<div class="callout-box callout-green" style="margin-top:12px">
+        <div class="callout-label">💡 Strategies to Accelerate Development</div>
+        <ul style="margin:8px 0 0 16px;padding:0">
+          ${rp.loopholes_and_strategies.map(s => `<li style="font-family:var(--body);font-size:13px;color:var(--text-2);line-height:1.7;margin-bottom:4px">${s}</li>`).join('')}
+        </ul>
+      </div>`;
     }
   }
 
-  // Market Access
+  // ── CHAPTER 4: GETTING TO MARKET ───────────────────────────────────────────
   if (r.market_access) {
     const ma = r.market_access;
-    html += `<div class="sdiv"><span class="sdiv-lbl">Market Access Strategy</span><div class="sdiv-line"></div></div>`;
-    html += `<div style="background:var(--blue-pale);border:1px solid #d0d9f5;padding:12px 14px;margin-bottom:14px;font-family:var(--body);font-size:13px;color:var(--text-2)"><strong>Primary channel:</strong> ${ma.primary_channel}</div>`;
+    html += chapterHeader('4', 'Getting to Market', 'Who buys your product, how reimbursement works, and how to win formulary access');
+
+    html += `<div class="narrative-block">
+      FDA approval is not the finish line — it is the starting gun for commercial launch. Here is who makes the purchasing decisions, what drives formulary access, and how reimbursement flows.
+    </div>`;
+
+    html += `<div class="callout-box callout-blue">
+      <div class="callout-label">Primary Commercial Channel</div>
+      <div class="callout-text">${ma.primary_channel}</div>
+    </div>`;
 
     if (ma.buyer_segments && ma.buyer_segments.length) {
-      html += `<div style="font-family:var(--display);font-size:11px;font-weight:700;color:var(--text-3);letter-spacing:.05em;text-transform:uppercase;margin-bottom:8px">Buyer Segments</div>`;
+      html += `<div style="font-family:var(--display);font-size:11px;font-weight:700;color:var(--text-3);letter-spacing:.05em;text-transform:uppercase;margin:16px 0 8px">Buyer Segments</div>`;
       ma.buyer_segments.forEach(b => {
         html += `<div class="buyer-card">
           <div class="buyer-name">${b.segment_name} <span style="font-family:var(--body);font-size:12px;font-weight:400;color:var(--text-3)">${b.buyer_count}</span></div>
@@ -1306,20 +1403,46 @@ function renderPIReport(r) {
       });
     }
 
-    if (ma.reimbursement_pathway) html += `<div style="margin-bottom:12px;padding:12px 14px;background:var(--green-bg);border:1px solid #a7f3d0;font-family:var(--body);font-size:13px;color:var(--text-2);line-height:1.6"><strong>Reimbursement:</strong> ${ma.reimbursement_pathway}</div>`;
+    if (ma.reimbursement_pathway) {
+      html += `<div class="callout-box callout-green">
+        <div class="callout-label">💰 Reimbursement Pathway</div>
+        <div class="callout-text">${ma.reimbursement_pathway}</div>
+      </div>`;
+    }
 
     if (ma.key_opinion_leaders && ma.key_opinion_leaders.length) {
-      html += `<div style="margin-bottom:12px"><div style="font-family:var(--display);font-size:11px;font-weight:700;color:var(--text-3);letter-spacing:.05em;text-transform:uppercase;margin-bottom:6px">Key Opinion Leaders</div>`;
+      html += `<div style="margin:16px 0 8px"><div style="font-family:var(--display);font-size:11px;font-weight:700;color:var(--text-3);letter-spacing:.05em;text-transform:uppercase;margin-bottom:6px">Key Opinion Leaders to Engage</div>`;
       html += '<ul class="strategy-list">' + ma.key_opinion_leaders.map(k => `<li>${k}</li>`).join('') + '</ul></div>';
     }
 
     if (ma.international_opportunities && ma.international_opportunities.length) {
-      html += `<div class="sdiv"><span class="sdiv-lbl">International Opportunities</span><div class="sdiv-line"></div></div>`;
+      html += `<div class="narrative-block" style="margin-top:8px"><strong>International expansion:</strong></div>`;
       html += '<ul class="strategy-list">' + ma.international_opportunities.map(o => `<li>${o}</li>`).join('') + '</ul>';
     }
   }
 
-  // Supporting evidence from demand signals
+  // ── CHAPTER 5: YOUR ACTION PLAN ────────────────────────────────────────────
+  html += chapterHeader('5', 'Your Action Plan', 'Prioritized next steps, funding sources, and the critical path forward');
+
+  // Funding
+  if (r.regulatory_pathway && r.regulatory_pathway.funding_programs && r.regulatory_pathway.funding_programs.length) {
+    html += `<div class="narrative-block">
+      Before you spend equity capital, exhaust the non-dilutive funding available for your indication. Here are the programs you should apply to, in sequence.
+    </div>`;
+    html += `<div class="callout-box callout-green">
+      <div class="callout-label">💵 Non-Dilutive Funding Sources</div>
+      <ul style="margin:8px 0 0 16px;padding:0">
+        ${r.regulatory_pathway.funding_programs.map(f => `<li style="font-family:var(--body);font-size:13px;color:var(--text-2);line-height:1.7;margin-bottom:4px">${f}</li>`).join('')}
+      </ul>
+    </div>`;
+  }
+
+  if (r.recommended_next_steps && r.recommended_next_steps.length) {
+    html += `<div class="narrative-block">These are your next concrete actions, ordered by priority.</div>`;
+    html += '<ol class="steps">' + r.recommended_next_steps.map(s => `<li>${s}</li>`).join('') + '</ol>';
+  }
+
+  // ── SUPPORTING EVIDENCE ────────────────────────────────────────────────────
   if (r.supporting_evidence && r.supporting_evidence.length) {
     html += `<div class="sdiv"><span class="sdiv-lbl">Demand Signal Evidence (${r.supporting_evidence.length})</span><div class="sdiv-line"></div></div>`;
     r.supporting_evidence.slice(0,8).forEach(e => {
@@ -1332,48 +1455,12 @@ function renderPIReport(r) {
     });
   }
 
-  // Hospital need matches
-  if (r.hospital_need_matches && r.hospital_need_matches.length) {
-    html += `<div class="sdiv"><span class="sdiv-lbl">Clinical Need Matches (${r.hospital_need_matches.length})</span><div class="sdiv-line"></div></div>`;
-    r.hospital_need_matches.forEach(n => {
-      const pc = n.urgency_score>=5?'cr':n.urgency_score>=4?'hi':n.urgency_score>=3?'mi':'lo';
-      const pips = [1,2,3,4,5].map(i=>`<div class="pip ${i<=n.urgency_score?pc:''}"></div>`).join('');
-      const platformBadge = n.source_platform === 'reddit'
-        ? `<span class="nreddit">r/${n.subreddit||'reddit'}</span>`
-        : '';
-      html += `<div class="need-card fade-up">
-        <div class="need-meta">
-          <span class="ntag">${n.department}</span><span class="ncat">${n.category}</span>${platformBadge}
-          <div class="upips" title="Urgency ${n.urgency_score}/5">${pips}</div>
-        </div>
-        <div class="need-txt">${n.raw_text.slice(0,300)}${n.raw_text.length>300?'…':''}</div>
-      </div>`;
-    });
-  }
-
-  // Geography
-  if (r.market_geography) {
-    const g = r.market_geography;
-    html += `<div class="sdiv"><span class="sdiv-lbl">Market Geography</span><div class="sdiv-line"></div></div>`;
-    html += `<div style="font-family:var(--body);font-size:13px;color:var(--text-2);line-height:1.7;margin-bottom:8px">${g.description}</div>`;
-    if (g.top_states && g.top_states.length) {
-      html += '<div class="geo-row">' + g.top_states.map(s=>`<span class="geo-tag">${s}</span>`).join('') + '</div>';
-    }
-  }
-
-  // Next steps
-  if (r.recommended_next_steps && r.recommended_next_steps.length) {
-    html += `<div class="sdiv"><span class="sdiv-lbl">Recommended Next Steps</span><div class="sdiv-line"></div></div>`;
-    html += '<ol class="steps">' + r.recommended_next_steps.map(s=>`<li>${s}</li>`).join('') + '</ol>';
-  }
-
-  // Limitations
+  // ── LIMITATIONS ────────────────────────────────────────────────────────────
   if (r.limitations) {
     html += `<div class="lim"><div class="lim-lbl">Data Limitations & Caveats</div><div class="lim-txt">${r.limitations}</div></div>`;
   }
 
-
-  // Sources section
+  // ── SOURCES ────────────────────────────────────────────────────────────────
   if (r.sources && r.sources.length) {
     html += `<div class="sdiv"><span class="sdiv-lbl">Sources & Citations (${r.sources.length})</span><div class="sdiv-line"></div></div>`;
     html += '<div style="background:var(--bg-3);border:1px solid var(--border);padding:14px 16px;margin-bottom:16px">';
@@ -1393,7 +1480,6 @@ function renderPIReport(r) {
     html += '</div>';
   }
 
-  // Meta
   html += `<div class="rmeta">Generated ${new Date(r.generated_at).toLocaleString()} · ${fmt(r.signals_searched)} signals searched · Model v${r.model_version}</div>`;
   html += '</div>';
 
@@ -1404,6 +1490,17 @@ function renderPIReport(r) {
     showAlertBar(r);
   }
 }
+
+function chapterHeader(num, title, subtitle) {
+  return `<div style="display:flex;align-items:flex-start;gap:16px;margin:32px 0 16px;padding-bottom:12px;border-bottom:2px solid var(--blue)">
+    <div style="background:var(--blue);color:#fff;font-family:var(--display);font-size:14px;font-weight:700;width:32px;height:32px;display:flex;align-items:center;justify-content:center;flex-shrink:0">${num}</div>
+    <div>
+      <div style="font-family:var(--display);font-size:17px;font-weight:700;color:var(--text)">${title}</div>
+      <div style="font-family:var(--body);font-size:12px;color:var(--text-3);margin-top:2px">${subtitle}</div>
+    </div>
+  </div>`;
+}
+
 
 function toggleDesig(header) {
   const body = header.nextElementSibling;
