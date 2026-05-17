@@ -1085,7 +1085,7 @@ function tab(name) {
     if (el) el.style.display = t === name ? '' : 'none';
   });
   document.querySelectorAll('.ntab').forEach((el,i) => {
-    el.classList.toggle('on', ['pi','index','needs','pricing','reports','profile','watchlists','trials','portfolio','grant'][i] === name);
+    el.classList.toggle('on', ['pi','index','needs','pricing','reports','watchlists','trials','portfolio','grant'][i] === name);
   });
 
   // Lazy-load tab content
