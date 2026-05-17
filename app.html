@@ -1,0 +1,2793 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Project Elevate — Biomedical Research Intelligence Platform</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet" />
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --bg:#f4f6f9; --bg-2:#fff; --bg-3:#eef1f6; --bg-4:#e4e9f2;
+      --border:#dde2ec; --border-2:#c8d0e0;
+      --blue:#1a4fd6; --blue-mid:#2d62e8; --blue-lite:#eef2fd; --blue-pale:#f5f7fe;
+      --slate:#334767; --slate-mid:#4a6080; --slate-lt:#7a92b0;
+      --text:#0f1929; --text-2:#334767; --text-3:#7a92b0; --text-4:#a8bcd4;
+      --green:#0d7a4e; --green-bg:#f0faf5;
+      --amber:#b45309; --amber-bg:#fffbeb;
+      --red:#b91c1c; --red-bg:#fef2f2;
+      --purple:#6d28d9; --purple-bg:#f5f3ff;
+      --display:'Plus Jakarta Sans',sans-serif;
+      --body:'DM Sans',sans-serif;
+      --sh-sm:0 1px 3px rgba(15,25,41,.06),0 1px 2px rgba(15,25,41,.04);
+      --sh:0 4px 12px rgba(15,25,41,.08),0 2px 4px rgba(15,25,41,.04);
+    }
+    html{font-size:14px;scroll-behavior:smooth}
+    body{background:var(--bg);color:var(--text);font-family:var(--body);-webkit-font-smoothing:antialiased;min-height:100vh}
+
+    /* HEADER */
+    .hdr{background:var(--bg-2);border-bottom:1px solid var(--border);padding:0 32px;display:flex;align-items:center;justify-content:space-between;height:56px;position:sticky;top:0;z-index:100;box-shadow:var(--sh-sm)}
+    .logo{display:flex;align-items:center;gap:10px}
+    .logo-mark{width:28px;height:28px;background:var(--blue);display:flex;align-items:center;justify-content:center;font-family:var(--display);font-size:12px;font-weight:700;color:#fff;flex-shrink:0}
+    .logo-name{font-family:var(--display);font-size:15px;font-weight:600;color:var(--text);letter-spacing:-.01em}
+    .logo-sep{width:1px;height:16px;background:var(--border);margin:0 2px}
+    .logo-sub{font-family:var(--body);font-size:12px;color:var(--text-3)}
+    .hdr-right{display:flex;align-items:center;gap:20px}
+    .sig-badge{display:flex;align-items:center;gap:6px;background:var(--blue-pale);border:1px solid #d0d9f5;padding:5px 12px}
+    .sig-dot{width:6px;height:6px;border-radius:50%;background:var(--blue);animation:pulse 2.5s ease-in-out infinite}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+    .sig-txt{font-family:var(--body);font-size:12px;font-weight:500;color:var(--blue)}
+    .clock{font-family:var(--body);font-size:11px;color:var(--text-4);font-variant-numeric:tabular-nums}
+
+    /* NAV */
+    .nav{background:var(--bg-2);border-bottom:1px solid var(--border);padding:0 32px;display:flex}
+    .ntab{font-family:var(--body);font-size:13px;font-weight:500;color:var(--text-3);padding:12px 18px;cursor:pointer;border:none;background:none;border-bottom:2px solid transparent;transition:color .15s,border-color .15s;margin-bottom:-1px}
+    .ntab:hover{color:var(--text-2)}
+    .ntab.on{color:var(--blue);border-bottom-color:var(--blue)}
+
+    /* MAIN */
+    .main{padding:24px 28px;max-width:1500px;margin:0 auto}
+
+
+    .narrative-block{font-family:var(--body);font-size:13px;color:var(--text-2);line-height:1.8;margin-bottom:16px;padding:0}
+    .callout-box{padding:14px 16px;margin-bottom:16px;border-left:4px solid}
+    .callout-blue{background:var(--blue-pale);border-color:var(--blue)}
+    .callout-green{background:#f0fdf4;border-color:#16a34a}
+    .callout-red{background:#fff5f5;border-color:#e53e3e}
+    .callout-label{font-family:var(--display);font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;margin-bottom:6px;color:var(--text-3)}
+    .callout-text{font-family:var(--body);font-size:13px;color:var(--text-2);line-height:1.7}
+
+    /* PAGE HEADER */
+    .ph{margin-bottom:24px}
+    .ph-title{font-family:var(--display);font-size:22px;font-weight:700;color:var(--text);letter-spacing:-.02em}
+    .ph-desc{font-family:var(--body);font-size:13px;color:var(--text-3);margin-top:3px}
+    .ph-row{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:24px}
+
+    /* CARD */
+    .card{background:var(--bg-2);border:1px solid var(--border);box-shadow:var(--sh-sm)}
+    .ch{padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+    .ct{font-family:var(--display);font-size:11px;font-weight:700;color:var(--text-2);letter-spacing:.04em;text-transform:uppercase}
+    .cb-badge{font-family:var(--body);font-size:11px;color:var(--text-3);background:var(--bg-3);border:1px solid var(--border);padding:2px 8px}
+    .cb{padding:18px 20px}
+
+    /* PRODUCT TYPE SELECTOR */
+    .type-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:16px;overflow:hidden}
+    .type-btn{padding:8px 4px;border:1.5px solid var(--border);background:var(--bg-3);cursor:pointer;text-align:center;transition:all .12s;font-family:var(--body);min-width:0;overflow:hidden}
+    .type-btn:hover{border-color:var(--blue);background:var(--blue-lite)}
+    .type-btn.active{border-color:var(--blue);background:var(--blue-lite);box-shadow:0 0 0 3px rgba(26,79,214,.1)}
+    .type-icon{font-size:16px;display:block;margin-bottom:3px}
+    .type-name{font-family:var(--display);font-size:10px;font-weight:700;color:var(--text-2);text-transform:uppercase;letter-spacing:.02em;white-space:nowrap}
+    .type-desc{font-family:var(--body);font-size:9px;color:var(--text-3);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+    /* FORM */
+    .lbl{display:block;font-family:var(--body);font-size:12px;font-weight:500;color:var(--text-2);margin-bottom:6px}
+    textarea,input[type=text]{width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:var(--body);font-size:13px;line-height:1.6;padding:10px 12px;outline:none;transition:border-color .15s,box-shadow .15s;-webkit-appearance:none}
+    textarea{resize:vertical;min-height:110px}
+    textarea:focus,input:focus{border-color:var(--blue-mid);box-shadow:0 0 0 3px rgba(26,79,214,.08)}
+    textarea::placeholder,input::placeholder{color:var(--text-4)}
+
+    /* CHIPS */
+    .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+    .chip-lbl{font-family:var(--body);font-size:11px;color:var(--text-3);margin-bottom:6px;display:block}
+    .chip{font-family:var(--body);font-size:11px;font-weight:500;color:var(--slate-mid);border:1px solid var(--border-2);background:var(--bg-3);padding:4px 10px;cursor:pointer;transition:all .12s}
+    .chip:hover{color:var(--blue);border-color:#a8bdf0;background:var(--blue-lite)}
+
+    /* BUTTONS */
+    .btn-primary{width:100%;padding:12px 20px;background:var(--blue);color:#fff;font-family:var(--display);font-size:13px;font-weight:700;letter-spacing:.02em;border:none;cursor:pointer;transition:background .15s,box-shadow .15s;box-shadow:0 2px 8px rgba(26,79,214,.2);margin-top:14px}
+    .btn-primary:hover{background:var(--blue-mid);box-shadow:0 4px 12px rgba(26,79,214,.28)}
+    .btn-primary:disabled{background:var(--bg-4);color:var(--text-3);cursor:not-allowed;box-shadow:none}
+    .btn-sm{padding:8px 16px;background:var(--bg-3);border:1px solid var(--border);color:var(--text-2);font-family:var(--body);font-size:12px;font-weight:500;cursor:pointer;transition:all .12s}
+    .btn-sm:hover{background:var(--bg-4)}
+
+    /* TWO COL */
+    .two-col{display:grid;grid-template-columns:440px 1fr;gap:24px;align-items:start}
+
+    /* LOADING */
+    .loading{padding:52px 24px;text-align:center}
+    .prog-track{width:100%;height:2px;background:var(--bg-4);overflow:hidden;margin-bottom:20px}
+    .prog-bar{height:100%;background:var(--blue);animation:slide 1.6s ease-in-out infinite}
+    @keyframes slide{0%{width:0;margin-left:0}50%{width:55%;margin-left:22%}100%{width:0;margin-left:100%}}
+    .loading-t{font-family:var(--display);font-size:14px;font-weight:700;color:var(--text-2);margin-bottom:4px}
+    .loading-s{font-family:var(--body);font-size:12px;color:var(--text-3)}
+
+    /* EMPTY */
+    .empty{padding:52px 24px;text-align:center}
+    .empty-icon{width:44px;height:44px;background:var(--bg-3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:18px;color:var(--text-4)}
+    .empty-t{font-family:var(--display);font-size:14px;font-weight:700;color:var(--text-2);margin-bottom:4px}
+    .empty-s{font-family:var(--body);font-size:12px;color:var(--text-3)}
+
+    /* SECTION DIVIDER */
+    .sdiv{display:flex;align-items:center;gap:12px;margin:20px 0 14px}
+    .sdiv-lbl{font-family:var(--display);font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--text-3);white-space:nowrap}
+    .sdiv-line{flex:1;height:1px;background:var(--border)}
+
+    /* EXECUTIVE SUMMARY */
+    .exec-box{background:var(--slate);padding:18px 20px;margin-bottom:20px}
+    .exec-lbl{font-family:var(--display);font-size:10px;font-weight:700;color:rgba(255,255,255,.5);letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px}
+    .exec-txt{font-family:var(--body);font-size:14px;color:#fff;line-height:1.7}
+
+    /* DISEASE INTELLIGENCE */
+    .di-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:12px}
+    .di-point{background:var(--bg-3);border:1px solid var(--border);padding:12px 14px}
+    .di-metric{font-family:var(--display);font-size:10px;font-weight:700;color:var(--text-3);letter-spacing:.05em;text-transform:uppercase;margin-bottom:4px}
+    .di-value{font-family:var(--display);font-size:18px;font-weight:700;color:var(--text);line-height:1.2}
+    .di-source{font-family:var(--body);font-size:10px;color:var(--text-4);margin-top:4px}
+    .di-source a{color:var(--blue);text-decoration:none}
+    .di-source a:hover{text-decoration:underline}
+
+    /* MARKET SIZING */
+    .ms-steps{margin-bottom:12px}
+    .ms-step{display:grid;grid-template-columns:1fr auto auto;gap:12px;align-items:start;padding:11px 0;border-bottom:1px solid var(--border)}
+    .ms-step:last-child{border-bottom:none}
+    .ms-step-label{font-family:var(--body);font-size:13px;color:var(--text-2);font-weight:500}
+    .ms-step-source{font-family:var(--body);font-size:10px;color:var(--text-4);margin-top:3px}
+    .ms-step-source a{color:var(--blue);text-decoration:none}
+    .ms-step-value{font-family:var(--display);font-size:14px;font-weight:700;color:var(--slate);white-space:nowrap;text-align:right}
+    .ms-step-unit{font-family:var(--body);font-size:10px;color:var(--text-3);white-space:nowrap;text-align:right;margin-top:2px}
+    .ms-formula{background:var(--blue-pale);border:1px solid #d0d9f5;padding:12px 14px;margin-bottom:12px;font-family:var(--body);font-size:12px;color:var(--text-2);line-height:1.6}
+    .ms-formula strong{font-family:var(--display);color:var(--blue)}
+    .ms-totals{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);margin-bottom:8px}
+    .ms-total-cell{background:var(--bg-2);padding:14px}
+    .ms-total-lbl{font-family:var(--body);font-size:10px;font-weight:500;color:var(--text-3);letter-spacing:.05em;text-transform:uppercase;margin-bottom:6px}
+    .ms-total-val{font-family:var(--display);font-size:28px;font-weight:700;color:var(--blue);line-height:1;letter-spacing:-.02em}
+    .ms-total-sub{font-family:var(--body);font-size:11px;color:var(--text-3);margin-top:4px}
+    .ms-note{font-family:var(--body);font-size:11px;color:var(--text-3);background:var(--bg-3);border:1px solid var(--border);padding:8px 12px}
+
+    /* REGULATORY */
+    .reg-pathway-box{background:var(--slate);padding:14px 16px;margin-bottom:16px}
+    .reg-pathway-lbl{font-family:var(--display);font-size:10px;font-weight:700;color:rgba(255,255,255,.5);letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px}
+    .reg-pathway-val{font-family:var(--display);font-size:16px;font-weight:700;color:#fff}
+    .reg-pathway-rat{font-family:var(--body);font-size:12px;color:rgba(255,255,255,.7);margin-top:4px}
+
+    .desig-card{border:1px solid var(--border);margin-bottom:10px;background:var(--bg-2)}
+    .desig-header{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid var(--border);cursor:pointer;background:var(--bg-3)}
+    .desig-name{font-family:var(--display);font-size:12px;font-weight:700;color:var(--text)}
+    .desig-priority{font-family:var(--body);font-size:10px;font-weight:600;padding:2px 8px;border:1px solid}
+    .desig-priority.recommended{color:var(--green);border-color:#a7f3d0;background:var(--green-bg)}
+    .desig-priority.consider{color:var(--amber);border-color:#fed7aa;background:var(--amber-bg)}
+    .desig-priority.optional{color:var(--text-3);border-color:var(--border)}
+    .desig-body{padding:14px;display:none}
+    .desig-body.open{display:block}
+    .desig-row{display:grid;grid-template-columns:100px 1fr;gap:8px;margin-bottom:8px;font-size:12px}
+    .desig-row-lbl{font-family:var(--display);font-weight:600;color:var(--text-3);font-size:10px;letter-spacing:.04em;text-transform:uppercase;padding-top:1px}
+    .desig-row-val{font-family:var(--body);color:var(--text-2);line-height:1.6}
+    .desig-source{font-family:var(--body);font-size:10px;color:var(--text-4)}
+    .desig-source a{color:var(--blue);text-decoration:none}
+
+    .trial-card{border:1px solid var(--border);padding:14px;margin-bottom:8px;background:var(--bg-2)}
+    .trial-phase-header{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+    .trial-phase-badge{font-family:var(--display);font-size:11px;font-weight:700;background:var(--blue);color:#fff;padding:3px 10px}
+    .trial-cost{font-family:var(--display);font-size:16px;font-weight:700;color:var(--text);margin-left:auto}
+    .trial-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:10px}
+    .trial-cell{background:var(--bg-3);padding:8px 10px}
+    .trial-cell-lbl{font-family:var(--body);font-size:10px;color:var(--text-3);text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px}
+    .trial-cell-val{font-family:var(--display);font-size:12px;font-weight:600;color:var(--text-2)}
+    .trial-endpoints{margin-top:8px}
+    .trial-ep-lbl{font-family:var(--display);font-size:10px;font-weight:700;color:var(--text-3);letter-spacing:.05em;text-transform:uppercase;margin-bottom:5px}
+    .ep-tag{display:inline-block;font-family:var(--body);font-size:11px;background:var(--bg-4);border:1px solid var(--border);padding:2px 8px;margin:2px 3px 2px 0;color:var(--text-2)}
+
+    /* FRICTION & STRATEGIES */
+    .friction-list li,.strategy-list li{font-family:var(--body);font-size:12px;color:var(--text-2);line-height:1.65;padding:8px 0;border-bottom:1px solid var(--border)}
+    .friction-list li:last-child,.strategy-list li:last-child{border-bottom:none}
+    .friction-list{list-style:none;padding:0}
+    .strategy-list{list-style:none;padding:0}
+    .friction-list li::before{content:"⚠ ";color:var(--amber);font-size:11px}
+    .strategy-list li::before{content:"→ ";color:var(--green);font-weight:700}
+
+    .funding-list{list-style:none;padding:0}
+    .funding-list li{font-family:var(--body);font-size:12px;color:var(--text-2);line-height:1.65;padding:8px 0;border-bottom:1px solid var(--border)}
+    .funding-list li:last-child{border-bottom:none}
+    .funding-list li::before{content:"💰 ";font-size:11px}
+
+    /* MARKET ACCESS */
+    .buyer-card{border:1px solid var(--border);padding:14px;margin-bottom:8px;background:var(--bg-2)}
+    .buyer-name{font-family:var(--display);font-size:13px;font-weight:700;color:var(--text);margin-bottom:8px}
+    .buyer-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:8px}
+    .buyer-cell{background:var(--bg-3);padding:8px 10px}
+    .buyer-cell-lbl{font-family:var(--body);font-size:10px;color:var(--text-3);text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px}
+    .buyer-cell-val{font-family:var(--display);font-size:12px;font-weight:600;color:var(--text-2)}
+    .buyer-access{font-family:var(--body);font-size:12px;color:var(--text-2);line-height:1.55}
+    .buyer-source{font-family:var(--body);font-size:10px;color:var(--text-4);margin-top:4px}
+
+    /* EVIDENCE */
+    .ev-row{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:start;padding:11px 0;border-bottom:1px solid var(--border)}
+    .ev-row:last-child{border-bottom:none}
+    .src-tag{font-family:var(--body);font-size:10px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;padding:3px 7px;border:1px solid;white-space:nowrap;margin-top:1px}
+    .s-cdc_places{color:#0369a1;border-color:#bae6fd;background:#f0f9ff}
+    .s-fda_adverse_events,.s-fda_device_events{color:#b91c1c;border-color:#fecaca;background:#fef2f2}
+    .s-fda_recalls{color:#92400e;border-color:#fed7aa;background:#fffbeb}
+    .s-clinical_trials{color:#6d28d9;border-color:#ddd6fe;background:#f5f3ff}
+    .s-census_sahie{color:#0d7a4e;border-color:#a7f3d0;background:#f0faf5}
+    .s-cms_hospital_quality{color:#0369a1;border-color:#bae6fd;background:#f0f9ff}
+    .s-hrsa_shortage{color:#92400e;border-color:#fed7aa;background:#fffbeb}
+    .s-cdc_fluview{color:#be185d;border-color:#fbcfe8;background:#fdf2f8}
+    .ev-title{font-family:var(--body);font-size:13px;font-weight:500;color:var(--text);margin-bottom:2px;line-height:1.4}
+    .ev-note{font-family:var(--body);font-size:11px;color:var(--text-3);line-height:1.5}
+    .ev-sim{font-family:var(--display);font-size:13px;font-weight:700;color:var(--slate-mid);white-space:nowrap}
+
+    /* HOSPITAL NEEDS */
+    .need-card{background:var(--bg-2);border:1px solid var(--border);padding:14px 16px;margin-bottom:8px}
+    .need-meta{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+    .ntag{font-family:var(--body);font-size:10px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;padding:2px 7px;border:1px solid var(--border);color:var(--text-3);background:var(--bg-3)}
+    .ncat{font-family:var(--body);font-size:10px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;padding:2px 7px;border:1px solid #bae6fd;color:var(--blue);background:var(--blue-pale)}
+    .nreddit{font-family:var(--body);font-size:10px;font-weight:600;padding:2px 7px;border:1px solid #fecaca;color:#b91c1c;background:#fef2f2}
+    .upips{display:flex;gap:3px;margin-left:auto}
+    .pip{width:8px;height:8px;background:var(--bg-4);border:1px solid var(--border)}
+    .pip.lo{background:#86efac;border-color:#4ade80}
+    .pip.mi{background:#fcd34d;border-color:#f59e0b}
+    .pip.hi{background:#fca5a5;border-color:#f87171}
+    .pip.cr{background:#f87171;border-color:#ef4444}
+    .need-txt{font-family:var(--body);font-size:13px;color:var(--text);line-height:1.65}
+    .need-kw{font-family:var(--body);font-size:11px;color:var(--text-4);margin-top:8px}
+
+    /* STEPS */
+    .steps{list-style:none;counter-reset:s}
+    .steps li{counter-increment:s;display:grid;grid-template-columns:22px 1fr;gap:12px;padding:11px 0;border-bottom:1px solid var(--border);font-family:var(--body);font-size:13px;color:var(--text-2);line-height:1.65;align-items:start}
+    .steps li:last-child{border-bottom:none}
+    .steps li::before{content:counter(s);font-family:var(--display);font-size:10px;font-weight:700;color:#fff;background:var(--blue);width:20px;height:20px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+
+    /* GEO */
+    .geo-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+    .geo-tag{font-family:var(--display);font-size:11px;font-weight:700;color:var(--slate);background:var(--bg-3);border:1px solid var(--border);padding:4px 10px}
+
+    /* LIMITATIONS */
+    .lim{background:var(--amber-bg,#fffbeb);border:1px solid #fed7aa;padding:12px 16px;margin-top:12px}
+    .lim-lbl{font-family:var(--display);font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--amber);margin-bottom:5px}
+    .lim-txt{font-family:var(--body);font-size:12px;color:#92400e;line-height:1.6}
+
+    /* ERROR */
+    .err{background:var(--red-bg);border:1px solid #fecaca;padding:12px 16px;font-family:var(--body);font-size:12px;color:var(--red);margin-bottom:12px}
+
+    /* SIGNAL INDEX */
+    .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+    .stat-card{background:var(--bg-2);border:1px solid var(--border);padding:18px 20px;box-shadow:var(--sh-sm)}
+    .stat-lbl{font-family:var(--body);font-size:11px;font-weight:500;color:var(--text-3);letter-spacing:.04em;text-transform:uppercase;margin-bottom:8px}
+    .stat-num{font-family:var(--display);font-size:28px;font-weight:700;color:var(--text);line-height:1;letter-spacing:-.02em}
+    .stat-sub{font-family:var(--body);font-size:11px;color:var(--text-4);margin-top:3px}
+    .src-tbl{border:1px solid var(--border);background:var(--bg-2);box-shadow:var(--sh-sm)}
+    .src-row{display:grid;grid-template-columns:1fr auto auto;gap:20px;align-items:center;padding:14px 20px;border-bottom:1px solid var(--border);transition:background .1s}
+    .src-row:last-child{border-bottom:none}
+    .src-row:not(.src-head):hover{background:var(--bg-3)}
+    .src-head{background:var(--bg-3);border-bottom:2px solid var(--border)}
+    .src-head span{font-family:var(--body);font-size:11px;font-weight:600;color:var(--text-3);letter-spacing:.05em;text-transform:uppercase}
+    .src-name{font-family:var(--body);font-size:13px;font-weight:500;color:var(--text)}
+    .src-type{font-family:var(--body);font-size:11px;color:var(--text-3)}
+    .src-when{font-family:var(--body);font-size:11px;color:var(--text-4);text-align:right}
+    .src-cnt{font-family:var(--display);font-size:16px;font-weight:700;color:var(--blue);text-align:right;min-width:60px}
+
+    /* REPORT META */
+    .rmeta{margin-top:16px;padding-top:14px;border-top:1px solid var(--border);font-family:var(--body);font-size:11px;color:var(--text-4)}
+
+    /* ANIMATIONS */
+    .fade-up{animation:fadeUp .35s ease-out forwards}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+    .sg>*{opacity:0;animation:fadeUp .35s ease-out forwards}
+    .sg>*:nth-child(1){animation-delay:.04s}.sg>*:nth-child(2){animation-delay:.08s}
+    .sg>*:nth-child(3){animation-delay:.12s}.sg>*:nth-child(4){animation-delay:.16s}
+    .sg>*:nth-child(5){animation-delay:.20s}.sg>*:nth-child(6){animation-delay:.24s}
+    .sg>*:nth-child(7){animation-delay:.28s}.sg>*:nth-child(8){animation-delay:.32s}
+
+    /* OK BOX */
+    .ok-box{display:none;margin-top:10px;padding:10px 14px;background:var(--green-bg);border:1px solid #a7f3d0;font-family:var(--body);font-size:12px;color:var(--green)}
+
+
+
+
+    /* TRIAL SITES */
+    .site-card{background:var(--bg-2);border:1px solid var(--border);padding:14px 16px;margin-bottom:8px;display:grid;grid-template-columns:40px 1fr auto;gap:12px;align-items:start}
+    .site-rank{font-family:var(--display);font-size:18px;font-weight:700;color:var(--blue);text-align:center;padding-top:2px}
+    .site-name{font-family:var(--display);font-size:13px;font-weight:700;color:var(--text);margin-bottom:3px}
+    .site-loc{font-family:var(--body);font-size:11px;color:var(--text-3);margin-bottom:6px}
+    .site-badges{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px}
+    .site-badge{font-family:var(--body);font-size:10px;padding:2px 8px;border:1px solid var(--border);background:var(--bg-3);color:var(--text-2)}
+    .site-rationale{font-family:var(--body);font-size:11px;color:var(--text-2);line-height:1.55}
+    .site-score{font-family:var(--display);font-size:22px;font-weight:700;color:var(--blue);text-align:right;white-space:nowrap}
+    .site-score-lbl{font-family:var(--body);font-size:9px;color:var(--text-4);text-align:right}
+    .site-map{width:100%;height:320px;background:var(--bg-3);border:1px solid var(--border);margin-bottom:16px;display:flex;align-items:center;justify-content:center;font-family:var(--body);font-size:12px;color:var(--text-3)}
+
+    /* PORTFOLIO */
+    .quadrant-grid{display:grid;grid-template-columns:1fr 1fr;gap:2px;background:var(--border);margin-bottom:20px;border:1px solid var(--border)}
+    .quadrant-cell{background:var(--bg-2);padding:16px;min-height:120px}
+    .quadrant-cell.pursue{background:#f0faf5}
+    .quadrant-cell.validate{background:#fffbeb}
+    .quadrant-cell.reframe{background:#eef2fd}
+    .quadrant-cell.shelve{background:var(--bg-3)}
+    .quadrant-label{font-family:var(--display);font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px}
+    .quadrant-label.pursue{color:var(--green)}
+    .quadrant-label.validate{color:var(--amber)}
+    .quadrant-label.reframe{color:var(--blue)}
+    .quadrant-label.shelve{color:var(--text-3)}
+    .quadrant-axis{font-family:var(--body);font-size:9px;color:var(--text-4);margin-bottom:6px}
+    .idea-chip{display:inline-block;font-family:var(--body);font-size:11px;padding:3px 10px;margin:2px;border:1px solid var(--border);background:var(--bg-2);color:var(--text-2);cursor:default}
+    .idea-chip.pursue{border-color:#a7f3d0;background:var(--green-bg);color:var(--green)}
+    .idea-chip.validate{border-color:#fed7aa;background:#fffbeb;color:var(--amber)}
+    .idea-chip.reframe{border-color:#d0d9f5;background:var(--blue-lite);color:var(--blue)}
+    .portfolio-idea-card{background:var(--bg-2);border:1px solid var(--border);padding:14px;margin-bottom:8px}
+    .portfolio-score-bar{height:6px;background:var(--bg-4);margin:4px 0 2px;overflow:hidden}
+    .portfolio-score-fill{height:100%;background:var(--blue);transition:width .5s ease}
+    .portfolio-score-fill.green{background:var(--green)}
+    .portfolio-score-fill.amber{background:#f59e0b}
+    .portfolio-score-fill.red{background:var(--red)}
+    .portfolio-idea-input{background:var(--bg-2);border:1px solid var(--border);padding:16px;margin-bottom:8px}
+    .portfolio-add-btn{font-family:var(--body);font-size:12px;color:var(--blue);background:none;border:1px dashed var(--border);padding:8px 16px;cursor:pointer;width:100%;text-align:center;margin-bottom:12px}
+    .portfolio-add-btn:hover{background:var(--bg-3)}
+
+    /* GRANT CO-PILOT */
+    .grant-section{background:var(--bg-2);border:1px solid var(--border);margin-bottom:12px}
+    .grant-section-hdr{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--bg-3);border-bottom:1px solid var(--border);cursor:pointer}
+    .grant-section-name{font-family:var(--display);font-size:12px;font-weight:700;color:var(--text);text-transform:uppercase;letter-spacing:.04em}
+    .grant-section-meta{font-family:var(--body);font-size:10px;color:var(--text-3)}
+    .grant-section-body{padding:16px;display:none}
+    .grant-section-body.open{display:block}
+    .grant-text{font-family:var(--body);font-size:13px;color:var(--text);line-height:1.8;white-space:pre-wrap;background:var(--bg);padding:14px;border:1px solid var(--border)}
+    .copy-btn{font-family:var(--body);font-size:11px;color:var(--blue);background:none;border:1px solid var(--border);padding:5px 12px;cursor:pointer;margin-top:8px;transition:all .12s}
+    .copy-btn:hover{background:var(--blue-lite)}
+    .bullet-list{list-style:none;padding:0}
+    .bullet-list li{font-family:var(--body);font-size:13px;color:var(--text);line-height:1.7;padding:8px 0;border-bottom:1px solid var(--border)}
+    .bullet-list li::before{content:"• ";color:var(--blue);font-weight:700}
+    .grant-type-tabs{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}
+    .grant-type-tab{font-family:var(--display);font-size:11px;font-weight:700;padding:7px 14px;border:1.5px solid var(--border);background:var(--bg-3);color:var(--text-2);cursor:pointer;letter-spacing:.03em;transition:all .12s}
+    .grant-type-tab.active{border-color:var(--blue);background:var(--blue-lite);color:var(--blue)}
+
+    /* NOTIFICATION BELL */
+    .bell-wrap{position:relative;display:none}
+    .bell-btn{background:none;border:none;cursor:pointer;padding:6px 8px;color:var(--text-3);font-size:18px;position:relative;transition:color .15s}
+    .bell-btn:hover{color:var(--text)}
+    .bell-badge{position:absolute;top:2px;right:2px;min-width:16px;height:16px;background:var(--red);border-radius:8px;font-family:var(--display);font-size:9px;font-weight:700;color:#fff;display:flex;align-items:center;justify-content:center;padding:0 3px;pointer-events:none}
+    .notif-panel{position:absolute;top:calc(100% + 8px);right:0;width:380px;background:var(--bg-2);border:1px solid var(--border);box-shadow:var(--sh);z-index:100;display:none;max-height:480px;overflow-y:auto}
+    .notif-panel.open{display:block}
+    .notif-hdr{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--border);background:var(--bg-3)}
+    .notif-hdr-title{font-family:var(--display);font-size:12px;font-weight:700;color:var(--text);letter-spacing:.04em;text-transform:uppercase}
+    .notif-item{padding:12px 16px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s}
+    .notif-item:hover{background:var(--bg-3)}
+    .notif-item.unread{background:var(--blue-pale);border-left:3px solid var(--blue)}
+    .notif-sev{display:inline-block;font-family:var(--display);font-size:9px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:2px 6px;margin-bottom:4px;border:1px solid}
+    .notif-sev.high{color:var(--red);border-color:#fecaca;background:#fef2f2}
+    .notif-sev.medium{color:var(--amber);border-color:#fed7aa;background:#fffbeb}
+    .notif-sev.low{color:var(--text-3);border-color:var(--border);background:var(--bg-3)}
+    .notif-title{font-family:var(--body);font-size:12px;font-weight:500;color:var(--text);line-height:1.4;margin-bottom:3px}
+    .notif-meta{font-family:var(--body);font-size:10px;color:var(--text-4)}
+    .notif-empty{padding:32px 16px;text-align:center;font-family:var(--body);font-size:12px;color:var(--text-3)}
+    .mark-all-btn{font-family:var(--body);font-size:11px;color:var(--blue);background:none;border:none;cursor:pointer;padding:0}
+    .mark-all-btn:hover{text-decoration:underline}
+
+    /* WATCHLIST TAB */
+    .wl-card{background:var(--bg-2);border:1px solid var(--border);padding:16px;margin-bottom:10px;box-shadow:var(--sh-sm)}
+    .wl-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+    .wl-name{font-family:var(--display);font-size:14px;font-weight:700;color:var(--text)}
+    .wl-domain{font-family:var(--body);font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;padding:2px 8px;background:var(--blue-pale);border:1px solid #d0d9f5;color:var(--blue)}
+    .wl-desc{font-family:var(--body);font-size:12px;color:var(--text-3);margin-bottom:10px;line-height:1.6}
+    .wl-stats{display:flex;gap:16px}
+    .wl-stat{font-family:var(--body);font-size:11px;color:var(--text-3)}
+    .wl-stat strong{color:var(--text);font-family:var(--display)}
+    .wl-del{background:none;border:none;color:var(--text-4);cursor:pointer;font-size:15px;padding:4px}
+    .wl-del:hover{color:var(--red)}
+    .create-wl-form{background:var(--bg-2);border:1px solid var(--border);padding:20px;margin-bottom:20px}
+    .create-wl-title{font-family:var(--display);font-size:13px;font-weight:700;color:var(--text);margin-bottom:14px}
+    .set-alert-bar{display:none;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--purple-bg,#f5f3ff);border:1px solid #ddd6fe;margin-bottom:14px}
+    .set-alert-bar.show{display:flex}
+    .set-alert-txt{font-family:var(--body);font-size:12px;color:var(--purple,#6d28d9)}
+    .set-alert-btn{background:var(--purple,#6d28d9);color:#fff;border:none;padding:6px 14px;font-family:var(--display);font-size:11px;font-weight:700;letter-spacing:.03em;cursor:pointer}
+    .set-alert-btn:hover{background:#5b21b6}
+
+    /* AUTH MODAL */
+    .overlay{position:fixed;inset:0;background:rgba(15,25,41,.55);z-index:200;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(2px)}
+    .overlay.hidden{display:none}
+    .modal{background:var(--bg-2);border:1px solid var(--border);width:100%;max-width:420px;box-shadow:0 20px 60px rgba(15,25,41,.18)}
+    .modal-hdr{padding:20px 24px 0;display:flex;align-items:center;justify-content:space-between}
+    .modal-title{font-family:var(--display);font-size:17px;font-weight:700;color:var(--text)}
+    .modal-close{background:none;border:none;font-size:18px;color:var(--text-3);cursor:pointer;padding:4px 8px;line-height:1}
+    .modal-close:hover{color:var(--text)}
+    .modal-body{padding:20px 24px 24px}
+    .modal-tabs{display:flex;gap:0;margin-bottom:20px;border-bottom:1px solid var(--border)}
+    .modal-tab{flex:1;padding:10px;font-family:var(--display);font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--text-3);background:none;border:none;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s}
+    .modal-tab.on{color:var(--blue);border-bottom-color:var(--blue)}
+    .modal-err{background:var(--red-bg);border:1px solid #fecaca;padding:8px 12px;font-family:var(--body);font-size:12px;color:var(--red);margin-bottom:12px;display:none}
+    .modal-err.show{display:block}
+    .google-btn{width:100%;padding:11px;border:1.5px solid var(--border);background:var(--bg-2);color:var(--text);font-family:var(--body);font-size:13px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:all .15s;margin-bottom:14px}
+    .google-btn:hover{background:var(--bg-3);border-color:var(--border-2)}
+    .google-icon{width:18px;height:18px;flex-shrink:0}
+    .divider{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+    .divider-line{flex:1;height:1px;background:var(--border)}
+    .divider-txt{font-family:var(--body);font-size:11px;color:var(--text-4)}
+    .field{margin-bottom:12px}
+    .field-lbl{display:block;font-family:var(--body);font-size:12px;font-weight:500;color:var(--text-2);margin-bottom:5px}
+    .auth-submit{width:100%;padding:11px;background:var(--blue);color:#fff;font-family:var(--display);font-size:13px;font-weight:700;letter-spacing:.02em;border:none;cursor:pointer;margin-top:4px;transition:background .15s}
+    .auth-submit:hover{background:var(--blue-mid)}
+    .auth-submit:disabled{background:var(--bg-4);color:var(--text-3);cursor:not-allowed}
+    /* USER MENU */
+    .user-btn{display:flex;align-items:center;gap:8px;background:var(--bg-3);border:1px solid var(--border);padding:5px 12px;cursor:pointer;font-family:var(--body);font-size:12px;color:var(--text-2);position:relative;transition:all .12s}
+    .user-btn:hover{background:var(--bg-4)}
+    .user-avatar{width:24px;height:24px;background:var(--blue);display:flex;align-items:center;justify-content:center;font-family:var(--display);font-size:10px;font-weight:700;color:#fff;flex-shrink:0}
+    .user-menu{position:absolute;top:calc(100% + 6px);right:0;background:var(--bg-2);border:1px solid var(--border);min-width:180px;box-shadow:var(--sh);z-index:50;display:none}
+    .user-menu.open{display:block}
+    .user-menu-item{display:block;width:100%;padding:10px 14px;font-family:var(--body);font-size:12px;color:var(--text-2);background:none;border:none;text-align:left;cursor:pointer;transition:background .1s;border-bottom:1px solid var(--border)}
+    .user-menu-item:last-child{border-bottom:none}
+    .user-menu-item:hover{background:var(--bg-3)}
+    .user-menu-item.danger{color:var(--red)}
+    .sign-in-btn{background:var(--blue);color:#fff;border:none;padding:7px 16px;font-family:var(--display);font-size:12px;font-weight:700;letter-spacing:.03em;cursor:pointer;transition:background .15s}
+    .sign-in-btn:hover{background:var(--blue-mid)}
+    /* SAVE REPORT */
+    .save-bar{display:none;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--green-bg);border:1px solid #a7f3d0;margin-bottom:16px}
+    .save-bar.show{display:flex}
+    .save-bar-txt{font-family:var(--body);font-size:12px;color:var(--green)}
+    .save-bar input{font-family:var(--body);font-size:12px;padding:5px 10px;border:1px solid #a7f3d0;background:#fff;color:var(--text);width:220px;outline:none}
+    .save-bar-btn{background:var(--green);color:#fff;border:none;padding:6px 14px;font-family:var(--display);font-size:11px;font-weight:700;letter-spacing:.03em;cursor:pointer;white-space:nowrap;margin-left:8px}
+    .save-bar-btn:hover{background:#0a6040}
+    /* REPORTS TAB */
+    .report-card{background:var(--bg-2);border:1px solid var(--border);padding:14px 16px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;gap:12px;cursor:pointer;transition:background .1s}
+    .report-card:hover{background:var(--bg-3)}
+    .report-name{font-family:var(--display);font-size:13px;font-weight:700;color:var(--text);margin-bottom:3px}
+    .report-meta{font-family:var(--body);font-size:11px;color:var(--text-3)}
+    .report-type{font-family:var(--body);font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;padding:2px 7px;border:1px solid var(--border);color:var(--text-3);background:var(--bg-3);margin-right:6px}
+    .report-del{background:none;border:none;color:var(--text-4);cursor:pointer;font-size:16px;padding:4px 6px;flex-shrink:0}
+    .report-del:hover{color:var(--red)}
+
+    @media(max-width:960px){
+      .two-col{grid-template-columns:1fr}
+      .stats-row{grid-template-columns:repeat(2,1fr)}
+      .main,.hdr,.nav{padding-left:16px;padding-right:16px}
+      .di-grid{grid-template-columns:1fr}
+      .trial-grid{grid-template-columns:1fr}
+    }
+
+    /* PRICING MODAL */
+    .paywall-overlay{position:fixed;inset:0;background:rgba(10,22,40,.85);z-index:1000;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+    .paywall-modal{background:var(--bg-2);border:1px solid var(--border);width:100%;max-width:520px;box-shadow:0 24px 80px rgba(0,0,0,.4);animation:slideUp .2s ease}
+    @keyframes slideUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+    .paywall-header{background:var(--slate);padding:28px 32px 24px}
+    .paywall-badge{display:inline-block;font-family:var(--display);font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--blue-lite);background:rgba(26,79,214,.3);padding:3px 10px;margin-bottom:12px}
+    .paywall-title{font-family:var(--display);font-size:22px;font-weight:700;color:#fff;margin-bottom:6px}
+    .paywall-sub{font-family:var(--body);font-size:13px;color:rgba(255,255,255,.6);line-height:1.6}
+    .paywall-body{padding:28px 32px}
+    .pricing-card{border:2px solid var(--blue);padding:20px;margin-bottom:16px;position:relative}
+    .pricing-badge{position:absolute;top:-10px;left:16px;background:var(--blue);color:#fff;font-family:var(--display);font-size:9px;font-weight:700;letter-spacing:.08em;padding:2px 10px}
+    .pricing-name{font-family:var(--display);font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px}
+    .pricing-price{font-family:var(--display);font-size:32px;font-weight:700;color:var(--blue);margin-bottom:2px}
+    .pricing-price span{font-size:14px;font-weight:400;color:var(--text-3)}
+    .pricing-trial{font-family:var(--body);font-size:11px;color:var(--green);font-weight:600;margin-bottom:12px}
+    .pricing-features{list-style:none;padding:0;margin:0}
+    .pricing-features li{font-family:var(--body);font-size:12px;color:var(--text-2);padding:4px 0;display:flex;align-items:center;gap:8px}
+    .pricing-features li::before{content:"✓";color:var(--green);font-weight:700;flex-shrink:0}
+    .paywall-cta{width:100%;background:var(--blue);color:#fff;border:none;padding:14px;font-family:var(--display);font-size:13px;font-weight:700;letter-spacing:.04em;cursor:pointer;margin-top:16px;transition:background .12s}
+    .paywall-cta:hover{background:#1541b8}
+    .paywall-dismiss{width:100%;background:none;border:none;color:var(--text-3);font-family:var(--body);font-size:12px;cursor:pointer;padding:10px;margin-top:6px}
+    .paywall-dismiss:hover{color:var(--text)}
+    .trial-banner{background:linear-gradient(135deg,#1A4FD6,#6D28D9);color:#fff;padding:10px 16px;display:none;align-items:center;justify-content:space-between;gap:12px}
+    .trial-banner.show{display:flex}
+    .trial-banner-text{font-family:var(--body);font-size:12px}
+    .trial-banner-text strong{font-family:var(--display);font-weight:700}
+    .trial-upgrade-btn{background:#fff;color:var(--blue);border:none;padding:6px 14px;font-family:var(--display);font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0}
+  </style>
+  <script src="/_config.js"></script>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body>
+
+<header class="hdr">
+  <div class="logo">
+    <div class="logo-mark">PE</div>
+    <span class="logo-name">Project Elevate</span>
+    <div class="logo-sep"></div>
+    <span class="logo-sub">Biomedical Research Intelligence Platform</span>
+  </div>
+  <div class="hdr-right" id="hdr-right">
+    <div class="sig-badge"><div class="sig-dot"></div><span class="sig-txt" id="sig-hdr">Loading…</span></div>
+    <span class="clock" id="clock"></span>
+    <div class="bell-wrap" id="bell-wrap">
+      <button class="bell-btn" id="bell-btn" onclick="toggleNotifPanel()" title="Alerts">
+        🔔
+        <span class="bell-badge" id="bell-badge" style="display:none">0</span>
+      </button>
+      <div class="notif-panel" id="notif-panel">
+        <div class="notif-hdr">
+          <span class="notif-hdr-title">Alerts</span>
+          <button class="mark-all-btn" onclick="markAllSeen()">Mark all read</button>
+        </div>
+        <div id="notif-list"><div class="notif-empty">No alerts yet</div></div>
+      </div>
+    </div>
+    <button class="sign-in-btn" id="sign-in-btn" onclick="openAuth('login')">Sign In</button>
+    <div style="position:relative;display:none" id="user-menu-wrap">
+      <button class="user-btn" onclick="toggleUserMenu()">
+        <div class="user-avatar" id="user-avatar">?</div>
+        <span id="user-email-display">user</span>
+        <span style="font-size:10px;color:var(--text-4)">▾</span>
+      </button>
+      <div class="user-menu" id="user-menu">
+        <button class="user-menu-item" onclick="tab('reports')">My Reports</button>
+        <button class="user-menu-item" onclick="tab('profile')">My Profile</button>
+        <button class="user-menu-item danger" onclick="logout()">Sign Out</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<nav class="nav">
+  <button class="ntab on" onclick="tab('pi')">Analysis</button>
+  <button class="ntab" onclick="tab('index')">Signal Index</button>
+  <button class="ntab" onclick="tab('needs')">Clinical Needs</button>
+  <button class="ntab" onclick="tab('pricing')">Pricing</button>
+  <button class="ntab" id="reports-tab" onclick="tab('reports')" style="display:none">My Reports</button>
+  <button class="ntab" id="watchlists-tab" onclick="tab('watchlists')" style="display:none">Watchlists</button>
+  <button class="ntab" id="trial-tab" onclick="tab('trials')" style="display:none">Trial Sites</button>
+  <button class="ntab" id="portfolio-tab" onclick="tab('portfolio')" style="display:none">Lab Portfolio</button>
+  <button class="ntab" id="grant-tab" onclick="tab('grant')" style="display:none">Grant Co-Pilot</button>
+</nav>
+
+
+<!-- AUTH MODAL -->
+<div class="overlay hidden" id="auth-overlay" onclick="closeAuthIfOutside(event)">
+  <div class="modal" id="auth-modal">
+    <div class="modal-hdr">
+      <span class="modal-title" id="modal-title">Sign In</span>
+      <button class="modal-close" onclick="closeAuth()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-tabs">
+        <button class="modal-tab on" id="tab-login" onclick="switchAuthTab('login')">Sign In</button>
+        <button class="modal-tab" id="tab-register" onclick="switchAuthTab('register')">Create Account</button>
+      </div>
+      <div class="modal-err" id="auth-err"></div>
+
+      <div id="g_id_onload"
+        data-client_id="836765887732-ush28vug12o5epd827eir5e87popddqe.apps.googleusercontent.com"
+        data-callback="handleGoogleCredential"
+        data-auto_prompt="false">
+      </div>
+      <div class="g_id_signin"
+        data-type="standard"
+        data-size="large"
+        data-theme="outline"
+        data-text="continue_with"
+        data-shape="rectangular"
+        data-logo_alignment="left"
+        data-width="340">
+      </div>
+
+      <div class="divider"><div class="divider-line"></div><span class="divider-txt">or</span><div class="divider-line"></div></div>
+
+      <div id="login-form">
+        <div class="field"><label class="field-lbl">Email</label><input type="email" id="login-email" placeholder="you@example.com" /></div>
+        <div class="field"><label class="field-lbl">Password</label><input type="password" id="login-password" placeholder="••••••••" onkeydown="if(event.key==='Enter')submitLogin()" /></div>
+        <button class="auth-submit" id="login-btn" onclick="submitLogin()">Sign In</button>
+      </div>
+
+      <div id="register-form" style="display:none">
+        <div class="field"><label class="field-lbl">Name (optional)</label><input type="text" id="reg-name" placeholder="Dr. Jane Smith" /></div>
+        <div class="field"><label class="field-lbl">Email</label><input type="email" id="reg-email" placeholder="you@example.com" /></div>
+        <div class="field"><label class="field-lbl">Password</label><input type="password" id="reg-password" placeholder="Create a password" onkeydown="if(event.key==='Enter')submitRegister()" oninput="checkPasswordStrength(this.value)" />
+          <div id="pw-requirements" style="font-family:var(--body);font-size:11px;color:var(--text-3);margin-top:8px;line-height:2">
+            <div id="req-length"  style="color:#e53e3e">✗ At least 8 characters</div>
+            <div id="req-upper"   style="color:#e53e3e">✗ At least one uppercase letter (A-Z)</div>
+            <div id="req-lower"   style="color:#e53e3e">✗ At least one lowercase letter (a-z)</div>
+            <div id="req-number"  style="color:#e53e3e">✗ At least one number (0-9)</div>
+            <div id="req-special" style="color:#e53e3e">✗ At least one special character (!@#$%^&*...)</div>
+          </div></div>
+        <div class="field"><label class="field-lbl">Confirm Password</label><input type="password" id="reg-password-confirm" placeholder="Repeat your password" onkeydown="if(event.key==='Enter')submitRegister()" /></div>
+        <button class="auth-submit" id="reg-btn" onclick="submitRegister()">Create Account</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- PRICING TAB -->
+<div id="t-pricing" style="display:none;padding:24px 28px">
+  <div class="ph"><div class="ph-title">Pricing</div><div class="ph-desc">Choose the plan that fits your research needs</div></div>
+  <div style="max-width:900px;margin:0 auto">
+
+    <!-- Header -->
+    <div style="text-align:center;margin-bottom:40px">
+      <div style="font-family:var(--display);font-size:28px;font-weight:700;color:var(--text);margin-bottom:8px">Simple, transparent pricing</div>
+      <div style="font-family:var(--body);font-size:14px;color:var(--text-3)">Replace the $50,000 consultant call. Cancel anytime.</div>
+    </div>
+
+    <!-- Pricing cards -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:40px">
+
+      <!-- Basic Plan -->
+      <div style="border:2px solid var(--border);padding:32px;background:var(--bg-2);position:relative">
+        <div style="font-family:var(--display);font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-3);margin-bottom:8px">Basic</div>
+        <div style="font-family:var(--display);font-size:42px;font-weight:700;color:var(--text);margin-bottom:4px">$20<span style="font-size:16px;font-weight:400;color:var(--text-3)">/month</span></div>
+        <div style="font-family:var(--body);font-size:13px;color:var(--text-3);margin-bottom:24px">For researchers exploring their first idea</div>
+        <ul style="list-style:none;margin-bottom:28px;display:flex;flex-direction:column;gap:10px">
+          <li style="font-family:var(--body);font-size:13px;color:var(--text-2);display:flex;gap:8px"><span style="color:#059669;font-weight:700">✓</span> 3 intelligence reports/month</li>
+          <li style="font-family:var(--body);font-size:13px;color:var(--text-2);display:flex;gap:8px"><span style="color:#059669;font-weight:700">✓</span> 32 sub-expert profiles</li>
+          <li style="font-family:var(--body);font-size:13px;color:var(--text-2);display:flex;gap:8px"><span style="color:#059669;font-weight:700">✓</span> Live web search — 2026 data</li>
+          <li style="font-family:var(--body);font-size:13px;color:var(--text-2);display:flex;gap:8px"><span style="color:#059669;font-weight:700">✓</span> Source citations with real URLs</li>
+          <li style="font-family:var(--body);font-size:13px;color:var(--text-2);display:flex;gap:8px"><span style="color:#059669;font-weight:700">✓</span> FDA regulatory pathway</li>
+          <li style="font-family:var(--body);font-size:13px;color:var(--text-2);display:flex;gap:8px"><span style="color:#059669;font-weight:700">✓</span> Market sizing (TAM)</li>
+          <li style="font-family:var(--body);font-size:13px;color:var(--text-4);display:flex;gap:8px"><span>✗</span> Watchlists & alerts</li>
+          <li style="font-family:var(--body);font-size:13px;color:var(--text-4);display:flex;gap:8px"><span>✗</span> Trial site optimizer</li>
+          <li style="font-family:var(--body);font-size:13px;color:var(--text-4);display:flex;gap:8px"><span>✗</span> Grant co-pilot</li>
+          <li style="font-family:var(--body);font-size:13px;color:var(--text-4);display:flex;gap:8px"><span>✗</span> Lab portfolio discovery</li>
+        </ul>
+        <button onclick="pricingCheckout('basic')" style="width:100%;padding:14px;background:var(--slate);border:2px solid var(--slate);color:#fff;font-family:var(--display);font-size:13px;font-weight:700;letter-spacing:.04em;cursor:pointer;transition:all .15s">Get Started — $20/month</button>
+      </div>
+
+      <!-- Starter Plan -->
+      <div style="border:2px solid var(--blue);padding:32px;background:var(--bg-2);position:relative">
+        <div style="position:absolute;top:-12px;left:24px;background:var(--blue);color:#fff;font-family:var(--display);font-size:10px;font-weight:700;letter-spacing:.08em;padding:3px 12px">MOST POPULAR</div>
+        <div style="font-family:var(--display);font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--blue);margin-bottom:8px">Starter</div>
+        <div style="font-family:var(--display);font-size:42px;font-weight:700;color:var(--text);margin-bottom:4px">$79<span style="font-size:16px;font-weight:400;color:var(--text-3)">/month</span></div>
+        <div style="font-family:var(--body);font-size:13px;color:var(--text-3);margin-bottom:24px">For active PIs and early-stage founders</div>
+        <ul style="list-style:none;margin-bottom:28px;display:flex;flex-direction:column;gap:10px">
+          <li style="font-family:var(--body);font-size:13px;color:var(--text-2);display:flex;gap:8px"><span style="color:#059669;font-weight:700">✓</span> <strong>15 reports/month</strong></li>
+          <li style="font-family:var(--body);font-size:13px;color:var(--text-2);display:flex;gap:8px"><span style="color:#059669;font-weight:700">✓</span> 32 sub-expert profiles across all domains</li>
+          <li style="font-family:var(--body);font-size:13px;color:var(--text-2);display:flex;gap:8px"><span style="color:#059669;font-weight:700">✓</span> Live web search — 2026 data in every report</li>
+          <li style="font-family:var(--body);font-size:13px;color:var(--text-2);display:flex;gap:8px"><span style="color:#059669;font-weight:700">✓</span> 19+ source citations per report with real URLs</li>
+          <li style="font-family:var(--body);font-size:13px;color:var(--text-2);display:flex;gap:8px"><span style="color:#059669;font-weight:700">✓</span> FDA regulatory pathway + designations</li>
+          <li style="font-family:var(--body);font-size:13px;color:var(--text-2);display:flex;gap:8px"><span style="color:#059669;font-weight:700">✓</span> Market sizing (TAM) with methodology</li>
+          <li style="font-family:var(--body);font-size:13px;color:var(--text-2);display:flex;gap:8px"><span style="color:#059669;font-weight:700">✓</span> Watchlists & weekly intelligence alerts</li>
+          <li style="font-family:var(--body);font-size:13px;color:var(--text-2);display:flex;gap:8px"><span style="color:#059669;font-weight:700">✓</span> Trial site optimizer — top 15 hospitals</li>
+          <li style="font-family:var(--body);font-size:13px;color:var(--text-2);display:flex;gap:8px"><span style="color:#059669;font-weight:700">✓</span> Grant co-pilot — NIH R01, SBIR, NSF</li>
+          <li style="font-family:var(--body);font-size:13px;color:var(--text-2);display:flex;gap:8px"><span style="color:#059669;font-weight:700">✓</span> Lab portfolio discovery — 2×2 heatmap</li>
+        </ul>
+        <button onclick="pricingCheckout('starter')" style="width:100%;padding:14px;background:var(--blue);border:none;color:#fff;font-family:var(--display);font-size:13px;font-weight:700;letter-spacing:.04em;cursor:pointer;transition:background .15s">Get Started — $79/month</button>
+      </div>
+    </div>
+
+    <!-- Professional Plan -->
+    <div style="border:2px solid #7c3aed;padding:32px;background:var(--bg-2);position:relative;margin-bottom:40px">
+      <div style="position:absolute;top:-12px;left:24px;background:#7c3aed;color:#fff;font-family:var(--display);font-size:10px;font-weight:700;letter-spacing:.08em;padding:3px 12px">FOR BIOTECH TEAMS</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:start">
+        <div>
+          <div style="font-family:var(--display);font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#7c3aed;margin-bottom:8px">Professional</div>
+          <div style="font-family:var(--display);font-size:42px;font-weight:700;color:var(--text);margin-bottom:4px">$299<span style="font-size:16px;font-weight:400;color:var(--text-3)">/month</span></div>
+          <div style="font-family:var(--body);font-size:13px;color:var(--text-3);margin-bottom:24px">For biotech founders, serial PIs, and CROs</div>
+          <button onclick="pricingCheckout('professional')" style="width:100%;padding:14px;background:#7c3aed;border:none;color:#fff;font-family:var(--display);font-size:13px;font-weight:700;letter-spacing:.04em;cursor:pointer">Get Started — $299/month</button>
+        </div>
+        <ul style="list-style:none;display:flex;flex-direction:column;gap:10px;margin-top:8px">
+          <li style="font-family:var(--body);font-size:13px;color:var(--text-2);display:flex;gap:8px"><span style="color:#7c3aed;font-weight:700">✓</span> <strong>Unlimited</strong> intelligence reports</li>
+          <li style="font-family:var(--body);font-size:13px;color:var(--text-2);display:flex;gap:8px"><span style="color:#7c3aed;font-weight:700">✓</span> Everything in Starter</li>
+          <li style="font-family:var(--body);font-size:13px;color:var(--text-2);display:flex;gap:8px"><span style="color:#7c3aed;font-weight:700">✓</span> PI institutional memory — reports improve over time</li>
+          <li style="font-family:var(--body);font-size:13px;color:var(--text-2);display:flex;gap:8px"><span style="color:#7c3aed;font-weight:700">✓</span> PubMed landmark publications in every report</li>
+          <li style="font-family:var(--body);font-size:13px;color:var(--text-2);display:flex;gap:8px"><span style="color:#7c3aed;font-weight:700">✓</span> Weekly competitive intelligence digest (email)</li>
+          <li style="font-family:var(--body);font-size:13px;color:var(--text-2);display:flex;gap:8px"><span style="color:#7c3aed;font-weight:700">✓</span> Priority support</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- FAQ -->
+    <div style="border:1px solid var(--border);padding:28px;background:var(--bg-2)">
+      <div style="font-family:var(--display);font-size:14px;font-weight:700;color:var(--text);margin-bottom:20px">Frequently asked questions</div>
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <div><div style="font-family:var(--display);font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px">How is this different from asking ChatGPT?</div><div style="font-family:var(--body);font-size:13px;color:var(--text-3);line-height:1.6">Project Elevate uses 32 domain-specific expert profiles, pulls live data from FDA.gov, ClinicalTrials.gov, CDC, and PubMed at report time, and validates every claim with an independent AI critic. ChatGPT gives generic answers with no citations and can't access current regulatory data.</div></div>
+        <div><div style="font-family:var(--display);font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px">Can I cancel anytime?</div><div style="font-family:var(--body);font-size:13px;color:var(--text-3);line-height:1.6">Yes. Cancel from your profile page and you keep access until the end of your billing period.</div></div>
+        <div><div style="font-family:var(--display);font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px">What counts as a "report" on the Basic plan?</div><div style="font-family:var(--body);font-size:13px;color:var(--text-3);line-height:1.6">Each time you run a PI analysis, that counts as one report. Saved reports don't count — only new runs.</div></div>
+        <div><div style="font-family:var(--display);font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px">Do I need a credit card to try it?</div><div style="font-family:var(--body);font-size:13px;color:var(--text-3);line-height:1.6">You can create a free account and run 1 report without a credit card. A subscription is required for additional reports.</div></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- PROFILE TAB -->
+<div id="t-profile" style="display:none;padding:24px 28px">
+  <div class="ph"><div class="ph-title">My Profile</div><div class="ph-desc">Account details, subscription status, and settings</div></div>
+  <div style="max-width:600px">
+    <div style="border:1px solid var(--border);padding:24px;margin-bottom:16px;background:var(--bg-2)">
+      <div style="font-family:var(--display);font-size:13px;font-weight:700;color:var(--text);margin-bottom:16px;text-transform:uppercase;letter-spacing:.05em">Account Information</div>
+      <div style="margin-bottom:12px"><div style="font-family:var(--body);font-size:11px;color:var(--text-3);margin-bottom:4px">NAME</div><div id="profile-name" style="font-family:var(--display);font-size:15px;font-weight:600;color:var(--text)">—</div></div>
+      <div style="margin-bottom:12px"><div style="font-family:var(--body);font-size:11px;color:var(--text-3);margin-bottom:4px">EMAIL</div><div id="profile-email" style="font-family:var(--display);font-size:15px;font-weight:600;color:var(--text)">—</div></div>
+      <div><div style="font-family:var(--body);font-size:11px;color:var(--text-3);margin-bottom:4px">MEMBER SINCE</div><div id="profile-since" style="font-family:var(--display);font-size:15px;font-weight:600;color:var(--text)">—</div></div>
+    </div>
+    <div style="border:1px solid var(--border);padding:24px;margin-bottom:16px;background:var(--bg-2)">
+      <div style="font-family:var(--display);font-size:13px;font-weight:700;color:var(--text);margin-bottom:16px;text-transform:uppercase;letter-spacing:.05em">Subscription</div>
+      <div style="margin-bottom:12px"><div style="font-family:var(--body);font-size:11px;color:var(--text-3);margin-bottom:4px">PLAN</div><div id="profile-plan" style="font-family:var(--display);font-size:15px;font-weight:600;color:var(--text)">—</div></div>
+      <div style="margin-bottom:16px"><div style="font-family:var(--body);font-size:11px;color:var(--text-3);margin-bottom:4px">STATUS</div><div id="profile-status" style="font-family:var(--display);font-size:15px;font-weight:600;color:var(--text)">—</div></div>
+      <div id="profile-subscribe-btn" style="display:none"><button class="btn-primary" onclick="showPaywall()" style="margin-top:0">Upgrade Plan →</button></div>
+      <div id="profile-cancel-btn" style="display:none"><button onclick="cancelSubscription()" style="background:none;border:1px solid #e53e3e;color:#e53e3e;padding:8px 16px;font-family:var(--display);font-size:12px;font-weight:700;cursor:pointer">Cancel Subscription</button></div>
+    </div>
+    <div style="border:1px solid var(--border);padding:24px;background:var(--bg-2)">
+      <div style="font-family:var(--display);font-size:13px;font-weight:700;color:var(--text);margin-bottom:16px;text-transform:uppercase;letter-spacing:.05em">Change Password</div>
+      <div class="field"><label class="field-lbl">Current Password</label><input type="password" id="pw-current" placeholder="••••••••" /></div>
+      <div class="field"><label class="field-lbl">New Password</label><input type="password" id="pw-new" placeholder="••••••••" /></div>
+      <div class="field"><label class="field-lbl">Confirm New Password</label><input type="password" id="pw-confirm" placeholder="••••••••" /></div>
+      <div id="pw-change-err" style="color:#e53e3e;font-size:12px;margin-bottom:8px;display:none"></div>
+      <button class="btn-primary" onclick="changePassword()" style="margin-top:8px">Update Password</button>
+    </div>
+  </div>
+</div>
+
+<!-- WATCHLISTS TAB -->
+<div id="t-watchlists" style="display:none;padding:24px 28px">
+  <div class="ph"><div class="ph-title">Watchlists</div><div class="ph-desc">Surveillance alerts — get notified when new signals match your research area</div></div>
+
+  <!-- Create form -->
+  <div class="create-wl-form">
+    <div class="create-wl-title">+ Create New Watchlist</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+      <div>
+        <label class="lbl">Watchlist name</label>
+        <input type="text" id="wl-name" placeholder="e.g. CRE Antibiotic Market" />
+      </div>
+      <div>
+        <label class="lbl">Disease domain</label>
+        <select id="wl-domain" style="width:100%;padding:10px 12px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-family:var(--body);font-size:13px;outline:none">
+          <option value="auto">Auto-detect</option>
+          <option value="antibiotic_amr">💊 Antibiotic / AMR</option>
+          <option value="oncology">🔬 Oncology</option>
+          <option value="cardiology">❤️ Cardiology</option>
+          <option value="neurology_cns">🧠 Neurology / CNS</option>
+          <option value="metabolic_diabetes">⚕️ Metabolic / Diabetes</option>
+          <option value="mental_health">🧩 Mental Health</option>
+        </select>
+      </div>
+    </div>
+    <div style="margin-bottom:12px">
+      <label class="lbl">What are you working on?</label>
+      <textarea id="wl-desc" placeholder="Describe your innovation — used for semantic matching against new signals" style="min-height:70px"></textarea>
+    </div>
+    <div style="margin-bottom:12px">
+      <label class="lbl">Keywords (comma-separated)</label>
+      <input type="text" id="wl-keywords" placeholder="e.g. CRE, carbapenem, QIDP, BARDA" />
+    </div>
+    <button class="btn-sm" onclick="fillWatchlistExample()" style="background:#f0f0f0;color:#333;border:1px solid #ccc;padding:10px 20px;font-family:var(--display);font-size:12px;font-weight:700;margin-right:8px">↙ Fill Example</button><button class="btn-sm" onclick="createWatchlist()" style="background:var(--blue);color:#fff;border:none;padding:10px 20px;font-family:var(--display);font-size:12px;font-weight:700">Create Watchlist</button>
+  </div>
+
+  <!-- Watchlist list -->
+      <div style="display:flex;gap:8px;margin-bottom:12px">
+        <button onclick="runTrackerNow()" style="font-family:var(--body);font-size:11px;color:#fff;background:var(--blue);border:none;padding:6px 16px;cursor:pointer">▶ Run Weekly Tracker</button>
+        <button onclick="runFullRetentionTest(this)" style="font-family:var(--body);font-size:11px;color:#fff;background:#059669;border:none;padding:6px 16px;cursor:pointer">🧪 Test All Features</button>
+      </div>
+  
+      <div id="grant-deadlines-section" style="display:none;margin-bottom:24px">
+        <div style="font-family:var(--display);font-size:13px;font-weight:700;color:var(--text);margin-bottom:12px">💰 Upcoming Grant Deadlines</div>
+        <div id="grant-deadlines-list"></div>
+      </div>
+<div id="wl-list">
+    <div class="empty"><div class="empty-icon">🔔</div><div class="empty-t">No watchlists yet</div><div class="empty-s">Create a watchlist to start monitoring your research area for new signals.</div></div>
+  </div>
+</div>
+
+<!-- MY REPORTS TAB -->
+<div id="t-reports" style="display:none;padding:24px 28px">
+  <div class="ph"><div class="ph-title">My Reports</div><div class="ph-desc">Saved analyses — click any report to reload it</div></div>
+  <div class="card">
+    <div class="ch"><span class="ct">Saved Reports</span><span class="cb-badge" id="reports-count">—</span></div>
+    <div id="reports-list" class="cb">
+      <div class="empty"><div class="empty-icon">📋</div><div class="empty-t">No saved reports yet</div><div class="empty-s">Run an analysis and click Save Report to save it here.</div></div>
+    </div>
+  </div>
+</div>
+
+<main class="main">
+
+  <!-- PI ANALYSIS TAB -->
+  <div id="t-pi">
+    <div class="ph">
+      <div class="ph-title">Go-to-Market Intelligence</div>
+      <div class="ph-desc">Full intelligence report: disease data, transparent market sizing, regulatory pathway, and market access strategy — all source-cited</div>
+    </div>
+    <div class="two-col">
+      <div>
+        <div class="card">
+          <div class="ch"><span class="ct">Product Submission</span><span class="cb-badge" id="pt-badge">Select type below</span></div>
+          <div class="cb">
+            <span class="lbl" style="margin-bottom:10px">Select product type</span>
+            <div class="type-grid">
+              <button class="type-btn active" onclick="selectType('drug_small_molecule',this)">
+                <span class="type-icon">💊</span>
+                <span class="type-name">Drug (Chemical)</span>
+                <span class="type-desc">Pills, oral, injectable small molecules</span>
+              </button>
+              <button class="type-btn" onclick="selectType('biologic',this)">
+                <span class="type-icon">🧫</span>
+                <span class="type-name">Biologic</span>
+                <span class="type-desc">Antibodies, ADCs, enzyme replacement</span>
+              </button>
+              <button class="type-btn" onclick="selectType('gene_cell_therapy',this)">
+                <span class="type-icon">🧬</span>
+                <span class="type-name">Gene &amp; Cell Therapy</span>
+                <span class="type-desc">AAV, CAR-T, ASO, siRNA, mRNA</span>
+              </button>
+              <button class="type-btn" onclick="selectType('medical_device',this)">
+                <span class="type-icon">🔬</span>
+                <span class="type-name">Medical Device</span>
+                <span class="type-desc">Hardware, implants, wearables</span>
+              </button>
+              <button class="type-btn" onclick="selectType('diagnostic',this)">
+                <span class="type-icon">🧪</span>
+                <span class="type-name">Diagnostic</span>
+                <span class="type-desc">PCR, NGS, companion diagnostics</span>
+              </button>
+              <button class="type-btn" onclick="selectType('digital_health',this)">
+                <span class="type-icon">💻</span>
+                <span class="type-name">Digital Health</span>
+                <span class="type-desc">SaMD, AI/ML, digital therapeutics</span>
+              </button>
+              <button class="type-btn" onclick="selectType('vaccine_immunotherapy',this)">
+                <span class="type-icon">💉</span>
+                <span class="type-name">Vaccine / Immunotherapy</span>
+                <span class="type-desc">Vaccines, cancer immunotherapy</span>
+              </button>
+              <button class="type-btn" onclick="selectType('other_platform',this)">
+                <span class="type-icon">⚗️</span>
+                <span class="type-name">Other / Platform</span>
+                <span class="type-desc">Microbiome, CRISPR, delivery platforms</span>
+              </button>
+            </div>
+
+            <div style="margin-top:14px">
+              <label class="lbl" for="idea">Describe your product</label>
+              <textarea id="idea" placeholder="Describe your product — what it does, who it targets, what problem it solves. For antibiotics, include the target pathogen and indication."></textarea>
+            </div>
+
+            <div id="pathogen-row" style="margin-top:12px">
+              <label class="lbl" for="pathogen">Target pathogen (antibiotics)</label>
+              <input type="text" id="pathogen" placeholder="e.g. MRSA, CRE, C. difficile, Acinetobacter baumannii" />
+            </div>
+
+            <div style="margin-top:14px">
+              <span class="chip-lbl">Quick examples</span>
+              <div class="chips">
+                <button class="chip" onclick="setEx(0)">CRE antibiotic</button>
+                <button class="chip" onclick="setEx(1)">MRSA oral antibiotic</button>
+                <button class="chip" onclick="setEx(2)">ALS orphan drug</button>
+                <button class="chip" onclick="setEx(3)">GBM immunotherapy</button>
+                <button class="chip" onclick="setEx(4)">SMA gene therapy</button>
+                <button class="chip" onclick="setEx(5)">Pancreatic ADC</button>
+                <button class="chip" onclick="setEx(6)">Rural CGM device</button>
+                <button class="chip" onclick="setEx(7)">Sepsis AI software</button>
+                <button class="chip" onclick="setEx(8)">Rapid AST diagnostic</button>
+              </div>
+            </div>
+
+            <div style="margin-bottom:6px">
+              <span id="free-report-badge" style="display:none;font-family:var(--body);font-size:11px;font-weight:600;color:#fff;padding:3px 10px;border-radius:2px"></span>
+            </div>
+            
+            <button class="btn-primary" id="run-btn" onclick="runAnalysis()">Run Analysis</button>
+          <div style="margin-top:8px;text-align:center">
+            <label style="font-family:var(--body);font-size:11px;color:var(--text-4);cursor:pointer">
+              <input type="checkbox" id="mock-toggle" onchange="window._mockMode=this.checked" style="margin-right:4px">
+              Dev mock mode (no API tokens)
+            </label>
+          </div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="card">
+          <div class="ch"><span class="ct">Analysis Output</span><span class="cb-badge" id="sig-badge">—</span></div>
+          <div id="alert-bar" class="set-alert-bar"><span class="set-alert-txt">🔔 Get weekly alerts when new signals match this topic</span><button class="set-alert-btn" onclick="createWatchlistFromReport()">Set Alert</button></div>
+          <div id="save-bar" class="save-bar"><span class="save-bar-txt">✓ Analysis complete</span><div style="display:flex;align-items:center;gap:0"><input type="text" id="save-name" placeholder="Name this report…" /><button class="save-bar-btn" onclick="saveReport()">Save Report</button></div></div>
+          <div id="results" class="cb">
+            <div class="empty">
+              <div class="empty-icon">⚕</div>
+              <div class="empty-t">No analysis yet</div>
+              <div class="empty-s">Select a product type and describe your innovation to generate a full intelligence report with market sizing, regulatory pathway, and source citations.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SIGNAL INDEX TAB -->
+  <div id="t-index" style="display:none">
+    <div class="ph-row">
+      <div><div class="ph-title">Signal Index</div><div class="ph-desc">Federal health demand signals powering the intelligence engine</div></div>
+      <button class="btn-sm" onclick="loadIndex()">Refresh</button>
+    </div>
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-lbl">Total Signals</div><div class="stat-num" id="st-tot">—</div><div class="stat-sub">across all sources</div></div>
+      <div class="stat-card"><div class="stat-lbl">Disease Burden</div><div class="stat-num" id="st-dis">—</div><div class="stat-sub">county-level</div></div>
+      <div class="stat-card"><div class="stat-lbl">Care Gaps</div><div class="stat-num" id="st-care">—</div><div class="stat-sub">access deficits</div></div>
+      <div class="stat-card"><div class="stat-lbl">Safety Failures</div><div class="stat-num" id="st-safe">—</div><div class="stat-sub">FDA events & recalls</div></div>
+    </div>
+    <div class="src-tbl" id="src-tbl">
+      <div class="src-row src-head"><span>Data Source</span><span>Last Updated</span><span style="text-align:right">Signals</span></div>
+    </div>
+  </div>
+
+  <!-- CLINICAL NEEDS TAB -->
+  <div id="t-needs" style="display:none">
+    <div class="ph"><div class="ph-title">Clinical Needs Database</div><div class="ph-desc">Pain points mined from healthcare communities and clinical staff — the demand signal behind the analysis</div></div>
+    <div class="card">
+      <div class="ch"><span class="ct">Submitted Needs</span><span class="cb-badge" id="n-badge">—</span></div>
+      <div id="nlist" class="cb">
+        <div class="empty"><div class="empty-icon">◈</div><div class="empty-t">Loading needs…</div></div>
+      </div>
+    </div>
+  </div>
+
+
+<!-- TRIAL SITES TAB -->
+<div id="t-trials" style="display:none">
+  <div class="ph"><div class="ph-title">Clinical Trial Site Optimizer</div><div class="ph-desc">Top Phase II/III recruitment sites ranked by patient volume, quality deficit, and research infrastructure — saving $200K+ in site selection costs</div></div>
+  <div class="card">
+    <div class="ch"><span class="ct">Find Trial Sites</span></div>
+    <div class="cb">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+        <div>
+          <label class="lbl">Indication</label>
+        <button onclick="fillTrialExample()" style="font-family:var(--body);font-size:11px;color:var(--blue);background:none;border:1px solid var(--border);padding:4px 12px;cursor:pointer;margin-bottom:10px">↙ Fill example</button>
+          <input type="text" id="trial-indication" placeholder="e.g. carbapenem-resistant infections in ICU patients" />
+        </div>
+        <div>
+          <label class="lbl">Disease domain</label>
+          <select id="trial-domain" style="width:100%;padding:10px 12px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-family:var(--body);font-size:13px;outline:none">
+            <option value="auto">Auto-detect</option>
+            <option value="antibiotic_amr">💊 Antibiotic / AMR</option>
+            <option value="oncology">🔬 Oncology</option>
+            <option value="cardiology">❤️ Cardiology</option>
+            <option value="neurology_cns">🧠 Neurology / CNS</option>
+            <option value="metabolic_diabetes">⚕️ Metabolic / Diabetes</option>
+            <option value="mental_health">🧩 Mental Health</option>
+          </select>
+        </div>
+      </div>
+      <div style="margin-bottom:12px">
+        <label class="lbl">Product description</label>
+        <textarea id="trial-idea" placeholder="Describe your product — used to match against hospital quality deficits" style="min-height:70px"></textarea>
+      </div>
+      <button onclick="fillTrialExample()" style="font-family:var(--body);font-size:11px;color:var(--blue);background:var(--blue-lite);border:1px solid #d0d9f5;padding:5px 14px;cursor:pointer;margin-bottom:8px;display:block">↙ Fill example: CRE antibiotic trial sites</button>
+      <button class="btn-primary" onclick="runTrialSites()" id="trial-btn" style="margin-top:0">Find Top Trial Sites</button>
+    </div>
+  </div>
+  <div id="trial-results" style="margin-top:20px"></div>
+</div>
+
+<!-- LAB PORTFOLIO TAB -->
+<div id="t-portfolio" style="display:none">
+  <div class="ph"><div class="ph-title">Lab Portfolio Discovery</div><div class="ph-desc">Innovation heatmap — submit up to 10 ideas to see which have the highest demand-to-funding ratio</div></div>
+  <div class="card">
+    <div class="ch"><span class="ct">Portfolio Ideas</span><span class="cb-badge" id="portfolio-count">0 / 10 ideas</span></div>
+    <div class="cb">
+      <div id="portfolio-ideas"></div>
+      <button class="portfolio-add-btn" id="portfolio-add-btn" onclick="addPortfolioIdea()">+ Add idea</button>
+      <button onclick="fillPortfolioExample()" style="font-family:var(--body);font-size:11px;color:var(--blue);background:none;border:1px solid var(--border);padding:4px 12px;cursor:pointer;margin-bottom:8px;width:100%">↙ Fill 3 example ideas</button>
+      <button onclick="fillPortfolioExample()" style="font-family:var(--body);font-size:11px;color:var(--blue);background:var(--blue-lite);border:1px solid #d0d9f5;padding:5px 14px;cursor:pointer;margin-bottom:8px;display:block">↙ Fill 5 example ideas</button>
+      <button class="btn-primary" onclick="runPortfolio()" id="portfolio-btn" style="margin-top:0" disabled>Analyze Portfolio</button>
+    </div>
+  </div>
+  <div id="portfolio-results" style="margin-top:20px"></div>
+</div>
+
+<!-- GRANT CO-PILOT TAB -->
+<div id="t-grant" style="display:none">
+  <div class="ph"><div class="ph-title">Grant Co-Pilot</div><div class="ph-desc">Generate ready-to-paste NIH/NSF grant sections backed by 2026 federal data — one click for annual renewals</div></div>
+  <div class="two-col">
+    <div class="card">
+      <div class="ch"><span class="ct">Grant Setup</span></div>
+      <div class="cb">
+        <div style="margin-bottom:14px">
+          <label class="lbl" style="margin-bottom:8px">Grant type</label>
+          <div class="grant-type-tabs">
+            <button class="grant-type-tab active" onclick="selectGrantType('nih_r01',this)">NIH R01</button>
+            <button class="grant-type-tab" onclick="selectGrantType('nih_sbir',this)">SBIR / STTR</button>
+            <button class="grant-type-tab" onclick="selectGrantType('nsf',this)">NSF</button>
+            <button class="grant-type-tab" onclick="selectGrantType('all',this)">All Sections</button>
+          </div>
+        </div>
+        <div style="margin-bottom:12px">
+          <label class="lbl">Research / product description</label>
+        <button onclick="fillGrantExample()" style="font-family:var(--body);font-size:11px;color:var(--blue);background:none;border:1px solid var(--border);padding:4px 12px;cursor:pointer;margin-bottom:10px">↙ Fill example</button>
+          <textarea id="grant-idea" placeholder="Describe your innovation — what it does, what problem it solves, target population" style="min-height:100px"></textarea>
+        </div>
+        <div style="margin-bottom:12px">
+          <label class="lbl">Specific aim (optional)</label>
+          <textarea id="grant-aim" placeholder="Paste your specific aim for more targeted output" style="min-height:70px"></textarea>
+        </div>
+        <button onclick="fillGrantExample()" style="font-family:var(--body);font-size:11px;color:var(--blue);background:var(--blue-lite);border:1px solid #d0d9f5;padding:5px 14px;cursor:pointer;margin-bottom:8px;display:block">↙ Fill example: CRE antibiotic NIH R01</button>
+        <button class="btn-primary" onclick="runGrant()" id="grant-btn" style="margin-top:0">Generate Grant Sections</button>
+      </div>
+    </div>
+    <div id="grant-results">
+      <div class="empty"><div class="empty-icon">📝</div><div class="empty-t">No grant sections yet</div><div class="empty-s">Fill in your research description and click Generate to produce ready-to-paste NIH/NSF grant sections with 2026 data.</div></div>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<script>
+// API URL — set window.ELEVATE_API_URL before this script for production
+// On Netlify, this gets injected via a _config.js file
+const API = (window.ELEVATE_API_URL || 'http://localhost:8000') + '/api/v1';
+let lastCount = 0;
+let selectedType = 'drug_small_molecule';
+
+const EXAMPLES = [
+  { type:'drug_small_molecule', idea:'A novel beta-lactam/beta-lactamase inhibitor combination targeting carbapenem-resistant Klebsiella pneumoniae and Acinetobacter baumannii in hospitalized patients with serious infections.', pathogen:'Carbapenem-resistant Enterobacterales (CRE)' },
+  { type:'drug_small_molecule', idea:'A first-in-class oral antibiotic with activity against MRSA for outpatient skin and soft tissue infections, addressing the resistance gap left by linezolid and daptomycin.', pathogen:'MRSA' },
+  { type:'drug_small_molecule', idea:'A small molecule SOD1 stabilizer for familial ALS patients carrying SOD1 mutations, targeting protein aggregation as the primary pathological mechanism in this rare fatal neurodegenerative disease affecting approximately 32,000 Americans.', pathogen:'' },
+  { type:'biologic', idea:'A tumor-infiltrating lymphocyte (TIL) therapy for recurrent glioblastoma multiforme, using autologous T-cells expanded ex vivo and engineered to overcome the immunosuppressive tumor microenvironment.', pathogen:'' },
+  { type:'gene_cell_therapy', idea:'An AAV9-delivered SMN1 gene replacement therapy for spinal muscular atrophy type 2 patients beyond the neonatal window, using a tissue-specific promoter to achieve motor neuron expression with reduced systemic toxicity.', pathogen:'' },
+  { type:'biologic', idea:'A KRAS G12D-targeted antibody-drug conjugate for pancreatic ductal adenocarcinoma, linking a novel anti-KRAS antibody to a topoisomerase I inhibitor payload with a cleavable linker.', pathogen:'' },
+  { type:'medical_device', idea:'A wearable continuous glucose monitor for rural diabetic patients with a 90-day sensor life and no smartphone requirement, targeting the 20% rural CGM adoption gap versus urban populations.', pathogen:'' },
+  { type:'digital_health', idea:'An AI clinical decision support system that flags early sepsis in the emergency department 6 hours before deterioration by continuously analyzing vitals, lab trends, and nursing notes.', pathogen:'' },
+  { type:'diagnostic', idea:'A rapid 30-minute PCR-based antibiotic susceptibility test that runs on existing hospital analyzers, eliminating the 48-72 hour culture wait time that drives empiric broad-spectrum antibiotic overuse.', pathogen:'' },
+  { type:'vaccine_immunotherapy', idea:'A personalized mRNA neoantigen vaccine for stage III melanoma patients, encoding patient-specific tumor mutations identified by whole exome sequencing, administered in combination with pembrolizumab.', pathogen:'' },
+  { type:'gene_cell_therapy', idea:'An exon-skipping antisense oligonucleotide for Duchenne muscular dystrophy patients with exon 51-amenable mutations, designed to restore partial dystrophin expression and slow disease progression.', pathogen:'' },
+  { type:'other_platform', idea:'An in vivo base editing therapy using adenine base editors delivered via LNP to permanently reduce PCSK9 expression in hepatocytes, providing lifelong LDL cholesterol reduction with a single dose.', pathogen:'' },
+];
+
+const SRC_NAMES = {
+  cdc_places:'CDC PLACES',census_sahie:'Census SAHIE',
+  fda_adverse_events:'FDA FAERS',fda_device_events:'FDA MAUDE',
+  fda_recalls:'FDA Recalls',cms_hospital_quality:'CMS Hospital Quality',
+  clinical_trials:'ClinicalTrials.gov',hrsa_shortage:'HRSA Shortages',
+  cdc_fluview:'CDC FluView',cdc_wastewater:'CDC Wastewater'
+};
+
+function fmt(n) { return n != null ? Number(n).toLocaleString() : '—'; }
+function fmtUSD(n) {
+  if (!n) return '—';
+  if (n >= 1e9) return `$${(n/1e9).toFixed(1)}B`;
+  if (n >= 1e6) return `$${(n/1e6).toFixed(0)}M`;
+  return `$${(n/1e3).toFixed(0)}K`;
+}
+
+function selectType(type, el) {
+  selectedType = type;
+  document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('pt-badge').textContent = el.querySelector('.type-name').textContent;
+  document.getElementById('pathogen-row').style.display = type === 'drug_small_molecule' ? '' : 'none';
+  const placeholders = {
+    drug_small_molecule: 'Describe your drug — target disease, mechanism, patient population. For antibiotics include target pathogen.',
+    biologic: 'Describe your biologic — antibody target, indication, format (mAb, ADC, bispecific, enzyme replacement).',
+    gene_cell_therapy: 'Describe your therapy — genetic defect, delivery vector (AAV, LNP, ex vivo), target tissue, disease.',
+    medical_device: 'Describe your device — what it does, condition it addresses, care setting.',
+    diagnostic: 'Describe your diagnostic — what it detects, technology platform, clinical gap.',
+    digital_health: 'Describe your software — clinical problem, data it uses, how clinicians use it.',
+    vaccine_immunotherapy: 'Describe your vaccine or immunotherapy — target antigen, platform (mRNA, protein subunit, viral vector).',
+    other_platform: 'Describe your platform — what it does, diseases it addresses, what makes it novel.'
+  };
+  document.getElementById('idea').placeholder = placeholders[type] || placeholders.other;
+}
+
+function setEx(i) {
+  const ex = EXAMPLES[i];
+  if (!ex) return;
+  document.getElementById('idea').value    = ex.idea;
+  document.getElementById('pathogen').value = ex.pathogen || '';
+  const typeOrder = ['drug_small_molecule','biologic','gene_cell_therapy','medical_device',
+                     'diagnostic','digital_health','vaccine_immunotherapy','other_platform'];
+  const btns = document.querySelectorAll('.type-btn');
+  const idx  = typeOrder.indexOf(ex.type);
+  btns.forEach(b => b.classList.remove('active'));
+  const btn = btns[idx >= 0 ? idx : 7];
+  if (btn) btn.classList.add('active');
+  selectedType = ex.type;
+  document.getElementById('pt-badge').textContent = btn?.querySelector('.type-name')?.textContent || ex.type;
+  document.getElementById('pathogen-row').style.display = ex.type === 'drug_small_molecule' ? '' : 'none';
+}
+
+const DEV_EMAILS = ['test@projectelevate.io', 'isaac@rebuttal.ai', 'admin@projectelevate.io', 'ijw91021@gmail.com'];
+
+const LOCKED_TABS = ['trials', 'portfolio', 'grant', 'watchlists'];
+
+function tab(name) {
+  // Lock tools for non-subscribers (dev emails always bypass)
+  const isDev = currentUser && DEV_EMAILS.includes(currentUser.email);
+  const isActive = billingStatus && billingStatus.is_active;
+  if (LOCKED_TABS.includes(name) && !isDev && !isActive) {
+    showPaywall();
+    return;
+  }
+
+  // Use original tab switching with t- prefix IDs
+  ['pi','index','needs','pricing','reports','profile','watchlists','trials','portfolio','grant'].forEach(t => {
+    const el = document.getElementById('t-'+t);
+    if (el) el.style.display = t === name ? '' : 'none';
+  });
+  document.querySelectorAll('.ntab').forEach((el,i) => {
+    el.classList.toggle('on', ['pi','index','needs','pricing','reports','watchlists','trials','portfolio','grant'][i] === name);
+  });
+
+  // Lazy-load tab content
+  if (name === 'index')      loadIndex();
+  if (name === 'needs')      loadNeeds();
+  if (name === 'reports')    loadReports();
+  if (name === 'profile')    loadProfile();
+  if (name === 'watchlists') { loadWatchlists(); loadGrantDeadlines(); }
+  if (name === 'portfolio')  initPortfolio();
+}
+
+
+
+function tick() {
+  document.getElementById('clock').textContent =
+    new Date().toISOString().replace('T',' ').slice(0,19) + ' UTC';
+}
+tick(); setInterval(tick, 1000);
+
+// ── PI Analysis ──────────────────────────────────────────────────────────────
+
+async function runAnalysis() {
+  const idea = document.getElementById('idea').value.trim();
+  if (!idea || idea.length < 30) { alert('Please describe your product in at least 30 characters.'); return; }
+
+  // Require login
+  if (!currentUser) { showPaywall(); return; }
+  // Check free report / subscription status
+  if (billingStatus) {
+    const isFreeAccount = !billingStatus.is_active;
+    const freeUsed = billingStatus.free_reports_used || 0;
+    if (isFreeAccount && freeUsed >= 1) { showPaywall(); return; }
+  }
+
+  const btn = document.getElementById('run-btn');
+  btn.disabled = true; btn.textContent = 'Analyzing…';
+
+  const typeLabels = {antibiotic:'antibiotic',medical_device:'device',software:'software',diagnostic:'diagnostic',other:'product'};
+  document.getElementById('results').innerHTML = `
+    <div class="loading">
+      <div class="prog-track"><div class="prog-bar"></div></div>
+      <div class="loading-t">Generating intelligence report…</div>
+      <div class="loading-s">Searching ${fmt(lastCount)} demand signals · Pulling regulatory data · Building market sizing<br>This takes 20-40 seconds for a full ${typeLabels[selectedType]} analysis</div>
+    </div>`;
+
+  try {
+    const payload = {
+      idea,
+      product_type: 'other',
+      tier1_category: selectedType,
+      target_pathogen: document.getElementById('pathogen').value.trim() || null
+    };
+    const endpoint = window._mockMode ? `${API}/alignment/pi-report/mock` : `${API}/alignment/pi-report`;
+    const fetchOpts = window._mockMode
+      ? {method:'GET', headers:{'Authorization':`Bearer ${localStorage.getItem('pe_token')}`}}
+      : {method:'POST', headers:{'Content-Type':'application/json','Authorization':`Bearer ${localStorage.getItem('pe_token')}`}, body: JSON.stringify(payload)};
+    const res = await fetch(endpoint, fetchOpts);
+    if (!res.ok) { const e = await res.json(); throw new Error(e.detail || `HTTP ${res.status}`); }
+    renderPIReport(await res.json());
+  } catch(e) {
+    document.getElementById('results').innerHTML = `<div class="err">Error: ${e.message}</div><div class="empty"><div class="empty-s">Make sure the server is running on localhost:8000</div></div>`;
+  } finally { btn.disabled = false; btn.textContent = 'Run Analysis'; }
+}
+
+function renderPIReport(r) {
+  document.getElementById('sig-badge').textContent = fmt(r.signals_searched) + ' signals searched';
+
+  let html = '<div class="sg">';
+
+  // ── REPORT HEADER ──────────────────────────────────────────────────────────
+  html += `
+    <div style="border-left:4px solid var(--blue);padding:16px 20px;background:var(--bg-2);margin-bottom:28px">
+      <div style="font-family:var(--display);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--blue);margin-bottom:6px">Go-to-Market Intelligence Report</div>
+      <div style="font-family:var(--display);font-size:20px;font-weight:700;color:var(--text);margin-bottom:8px">${r.disease_intelligence ? r.disease_intelligence.condition : 'Analysis'}</div>
+      <div style="font-family:var(--body);font-size:13px;color:var(--text-2);line-height:1.7">${r.executive_summary}</div>
+    </div>`;
+
+  // ── CHAPTER 1: THE OPPORTUNITY ─────────────────────────────────────────────
+  if (r.disease_intelligence) {
+    const di = r.disease_intelligence;
+    html += chapterHeader('1', 'The Opportunity', 'Understanding the disease landscape, unmet need, and why this market exists');
+
+    // Narrative intro
+    html += `<div class="narrative-block">
+      The competitive and clinical landscape for <strong>${di.condition}</strong> defines the opportunity size and development risk. The data below establishes the epidemiological basis for your market sizing and regulatory strategy.
+    </div>`;
+
+    // Data points grid
+    if (di.data_points && di.data_points.length) {
+      html += '<div class="di-grid">';
+      di.data_points.forEach(dp => {
+        const srcHtml = dp.source_url
+          ? `<a href="${dp.source_url}" target="_blank">${dp.source} (${dp.year})</a>`
+          : `<span style="color:var(--text-4)">${dp.source} (${dp.year})</span>`;
+        html += `<div class="di-point">
+          <div class="di-metric">${dp.metric}</div>
+          <div class="di-value">${dp.value}</div>
+          <div class="di-source">Source: ${srcHtml}</div>
+        </div>`;
+      });
+      html += '</div>';
+    }
+
+    if (di.resistance_profile) {
+      html += `<div class="narrative-block"><strong>Resistance & mechanism landscape:</strong> ${di.resistance_profile}</div>`;
+    }
+    if (di.pipeline_status) {
+      html += `<div class="narrative-block"><strong>Current competitive pipeline:</strong> ${di.pipeline_status}</div>`;
+    }
+
+    // Unmet need callout
+    html += `<div class="callout-box callout-blue">
+      <div class="callout-label">📍 The Core Unmet Need</div>
+      <div class="callout-text">${di.unmet_need_summary}</div>
+    </div>`;
+  }
+
+  // ── CHAPTER 2: THE MARKET ──────────────────────────────────────────────────
+  if (r.market_sizing) {
+    const ms = r.market_sizing;
+    html += chapterHeader('2', 'The Market', 'How large is the opportunity, who will pay, and what can you realistically capture');
+
+    const tamVal = ms.total_addressable_market_usd >= 1e9
+      ? `$${(ms.total_addressable_market_usd/1e9).toFixed(1)}B`
+      : `$${(ms.total_addressable_market_usd/1e6).toFixed(0)}M`;
+    const samVal = ms.serviceable_market_usd >= 1e9
+      ? `$${(ms.serviceable_market_usd/1e9).toFixed(1)}B`
+      : `$${(ms.serviceable_market_usd/1e6).toFixed(0)}M`;
+
+    html += `<div class="narrative-block">
+      The total addressable market is <strong>${tamVal}</strong> assuming 100% patient capture. The serviceable market, adjusted for formulary access, competitive share, and geographic concentration, is <strong>${samVal}</strong>. The calculation below builds this figure from primary epidemiological sources.
+    </div>`;
+
+    html += `<div class="ms-totals">
+      <div class="ms-total-cell">
+        <div class="ms-total-lbl">Total Addressable Market (TAM)</div>
+        <div class="ms-total-val">${tamVal}</div>
+        <div class="ms-total-sub">Full market if 100% penetration</div>
+      </div>
+      <div class="ms-total-cell">
+        <div class="ms-total-lbl">Serviceable Market (SAM)</div>
+        <div class="ms-total-val" style="color:var(--green)">${samVal}</div>
+        <div class="ms-total-sub">Realistic capture scenario</div>
+      </div>
+    </div>`;
+
+    html += `<div class="ms-formula"><strong>Formula:</strong> ${ms.formula}</div>`;
+
+    html += '<div class="ms-steps">';
+    ms.steps.forEach(s => {
+      const srcHtml = s.source_url
+        ? `<a href="${s.source_url}" target="_blank">${s.source}</a>`
+        : `<span style="color:var(--text-4)">${s.source || 'No source'}</span>`;
+      html += `<div class="ms-step">
+        <div>
+          <div class="ms-step-label">${s.label}</div>
+          ${s.notes ? `<div class="ms-step-source">${s.notes}</div>` : ''}
+          <div class="ms-step-source">Source: ${srcHtml}</div>
+        </div>
+        <div class="ms-step-value">${fmt(s.value)}</div>
+        <div class="ms-step-unit">${s.unit}</div>
+      </div>`;
+    });
+    html += '</div>';
+    html += `<div class="ms-note">Methodology: ${ms.methodology_note}</div>`;
+
+    // Market geography inline
+    if (r.market_geography) {
+      const g = r.market_geography;
+      html += `<div class="narrative-block">${g.description}</div>`;
+      if (g.top_states && g.top_states.length) {
+        html += '<div class="geo-row">' + g.top_states.map(s => `<span class="geo-tag">${s}</span>`).join('') + '</div>';
+      }
+    }
+  }
+
+  // ── CHAPTER 3: YOUR PATH TO APPROVAL ──────────────────────────────────────
+  if (r.regulatory_pathway) {
+    const rp = r.regulatory_pathway;
+    html += chapterHeader('3', 'Your Path to Approval', 'The FDA regulatory strategy, designations to pursue, and clinical trial roadmap');
+
+    html += `<div class="narrative-block">
+      The recommended FDA pathway below is based on your product type and indication. Each designation is ranked by priority, with specific application timing and impact on exclusivity and trial burden.
+    </div>`;
+
+    // Recommended pathway callout
+    html += `<div class="callout-box callout-green">
+      <div class="callout-label">✓ Recommended Pathway</div>
+      <div class="callout-text"><strong>${rp.recommended_pathway}</strong></div>
+      <div class="callout-text" style="margin-top:6px">${rp.pathway_rationale}</div>
+    </div>`;
+
+    html += `<div style="display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);margin-bottom:20px">
+      <div style="background:var(--bg-2);padding:12px 14px">
+        <div class="ms-total-lbl">Total Timeline</div>
+        <div style="font-family:var(--display);font-size:14px;font-weight:700;color:var(--text)">${rp.total_timeline_estimate}</div>
+      </div>
+      <div style="background:var(--bg-2);padding:12px 14px">
+        <div class="ms-total-lbl">Total Cost Estimate</div>
+        <div style="font-family:var(--display);font-size:14px;font-weight:700;color:var(--text)">${rp.total_cost_estimate}</div>
+      </div>
+    </div>`;
+
+    // Designations
+    if (rp.designations && rp.designations.length) {
+      html += `<div class="narrative-block">FDA designations below are ranked by development priority. Each designation has distinct eligibility requirements, application timing, and impact on exclusivity or trial design.</div>`;
+      html += `<div style="font-family:var(--display);font-size:11px;font-weight:700;color:var(--text-3);letter-spacing:.05em;text-transform:uppercase;margin-bottom:8px">FDA Designations & Pathways</div>`;
+      rp.designations.forEach(d => {
+        const srcHtml = d.source_url
+          ? `<a href="${d.source_url}" target="_blank">${d.source}</a>`
+          : `<span style="color:var(--text-4)">${d.source || 'No source'}</span>`;
+        html += `<div class="desig-card">
+          <div class="desig-header" onclick="toggleDesig(this)">
+            <span class="desig-name">${d.name}</span>
+            <span class="desig-priority ${d.priority}">${d.priority}</span>
+          </div>
+          <div class="desig-body">
+            <div class="desig-row"><span class="desig-row-lbl">Benefit</span><span class="desig-row-val">${d.benefit}</span></div>
+            <div class="desig-row"><span class="desig-row-lbl">What it is</span><span class="desig-row-val">${d.description}</span></div>
+            <div class="desig-row"><span class="desig-row-lbl">Eligibility</span><span class="desig-row-val">${d.eligibility}</span></div>
+            <div class="desig-row"><span class="desig-row-lbl">How to apply</span><span class="desig-row-val">${d.how_to_apply}</span></div>
+            <div class="desig-row"><span class="desig-row-lbl">Timeline</span><span class="desig-row-val">${d.timeline}</span></div>
+            <div class="desig-source">Source: ${srcHtml}</div>
+          </div>
+        </div>`;
+      });
+    }
+
+    // Clinical trials as a story
+    if (rp.clinical_trial_requirements && rp.clinical_trial_requirements.length) {
+      html += `<div class="narrative-block" style="margin-top:20px">
+        The clinical development program runs in three phases. Each phase below includes FDA-required patient counts, endpoints from the applicable guidance document, estimated cost, and historical success probability.
+      </div>`;
+      html += `<div style="font-family:var(--display);font-size:11px;font-weight:700;color:var(--text-3);letter-spacing:.05em;text-transform:uppercase;margin-bottom:8px">Clinical Trial Requirements</div>`;
+      rp.clinical_trial_requirements.forEach(t => {
+        const srcHtml = t.source_url
+          ? `<a href="${t.source_url}" target="_blank" style="color:var(--blue);font-size:10px">${t.fda_guidance_document}</a>`
+          : `<span style="font-size:10px;color:var(--text-4)">${t.fda_guidance_document}</span>`;
+        const epHtml = (t.key_endpoints || []).map(ep => `<span class="ep-tag">${ep}</span>`).join('');
+        html += `<div class="trial-card">
+          <div class="trial-phase-header">
+            <span class="trial-phase-badge">${t.phase}</span>
+            <span style="font-family:var(--body);font-size:12px;color:var(--text-3)">${t.success_probability}</span>
+            <span class="trial-cost">${t.estimated_cost}</span>
+          </div>
+          <div class="trial-grid">
+            <div class="trial-cell"><div class="trial-cell-lbl">Patients</div><div class="trial-cell-val">${t.patient_count}</div></div>
+            <div class="trial-cell"><div class="trial-cell-lbl">Duration</div><div class="trial-cell-val">${t.duration}</div></div>
+            <div class="trial-cell"><div class="trial-cell-lbl">Cost</div><div class="trial-cell-val">${t.estimated_cost}</div></div>
+          </div>
+          <div class="trial-endpoints"><div class="trial-ep-lbl">Key Endpoints</div>${epHtml}</div>
+          <div style="margin-top:8px">FDA Guidance: ${srcHtml}</div>
+        </div>`;
+      });
+    }
+
+    // Friction points as warnings
+    if (rp.key_friction_points && rp.key_friction_points.length) {
+      html += `<div class="callout-box callout-red" style="margin-top:16px">
+        <div class="callout-label">⚠ Key Obstacles to Anticipate</div>
+        <ul style="margin:8px 0 0 16px;padding:0">
+          ${rp.key_friction_points.map(f => `<li style="font-family:var(--body);font-size:13px;color:var(--text-2);line-height:1.7;margin-bottom:4px">${f}</li>`).join('')}
+        </ul>
+      </div>`;
+    }
+
+    // Strategies as opportunities
+    if (rp.loopholes_and_strategies && rp.loopholes_and_strategies.length) {
+      html += `<div class="callout-box callout-green" style="margin-top:12px">
+        <div class="callout-label">💡 Strategies to Accelerate Development</div>
+        <ul style="margin:8px 0 0 16px;padding:0">
+          ${rp.loopholes_and_strategies.map(s => `<li style="font-family:var(--body);font-size:13px;color:var(--text-2);line-height:1.7;margin-bottom:4px">${s}</li>`).join('')}
+        </ul>
+      </div>`;
+    }
+  }
+
+  // ── CHAPTER 4: GETTING TO MARKET ───────────────────────────────────────────
+  if (r.market_access) {
+    const ma = r.market_access;
+    html += chapterHeader('4', 'Getting to Market', 'Who buys your product, how reimbursement works, and how to win formulary access');
+
+    html += `<div class="narrative-block">
+      FDA approval opens the commercial pathway. This section covers who controls purchasing decisions, how reimbursement is structured, and what drives formulary access at target institutions.
+    </div>`;
+
+    html += `<div class="callout-box callout-blue">
+      <div class="callout-label">Primary Commercial Channel</div>
+      <div class="callout-text">${ma.primary_channel}</div>
+    </div>`;
+
+    if (ma.buyer_segments && ma.buyer_segments.length) {
+      html += `<div style="font-family:var(--display);font-size:11px;font-weight:700;color:var(--text-3);letter-spacing:.05em;text-transform:uppercase;margin:16px 0 8px">Buyer Segments</div>`;
+      ma.buyer_segments.forEach(b => {
+        html += `<div class="buyer-card">
+          <div class="buyer-name">${b.segment_name} <span style="font-family:var(--body);font-size:12px;font-weight:400;color:var(--text-3)">${b.buyer_count}</span></div>
+          <div class="buyer-grid">
+            <div class="buyer-cell"><div class="buyer-cell-lbl">Decision Maker</div><div class="buyer-cell-val">${b.decision_maker}</div></div>
+            <div class="buyer-cell"><div class="buyer-cell-lbl">Price Per Unit</div><div class="buyer-cell-val">${b.price_per_unit}</div></div>
+            <div class="buyer-cell"><div class="buyer-cell-lbl">Annual Spend / Facility</div><div class="buyer-cell-val">${b.annual_spend_per_facility}</div></div>
+            <div class="buyer-cell"><div class="buyer-cell-lbl">Access Timeline</div><div class="buyer-cell-val">${b.timeline_to_access}</div></div>
+          </div>
+          <div class="buyer-access"><strong>Access mechanism:</strong> ${b.access_mechanism}</div>
+          <div class="buyer-source">Source: ${b.source}</div>
+        </div>`;
+      });
+    }
+
+    if (ma.reimbursement_pathway) {
+      html += `<div class="callout-box callout-green">
+        <div class="callout-label">💰 Reimbursement Pathway</div>
+        <div class="callout-text">${ma.reimbursement_pathway}</div>
+      </div>`;
+    }
+
+    if (ma.key_opinion_leaders && ma.key_opinion_leaders.length) {
+      html += `<div style="margin:16px 0 8px"><div style="font-family:var(--display);font-size:11px;font-weight:700;color:var(--text-3);letter-spacing:.05em;text-transform:uppercase;margin-bottom:6px">Key Opinion Leaders to Engage</div>`;
+      html += '<ul class="strategy-list">' + ma.key_opinion_leaders.map(k => {
+        if (typeof k === 'object') return `<li><strong>${k.name}</strong> (${k.institution}) — ${k.expertise}</li>`;
+        return `<li>${k}</li>`;
+      }).join('') + '</ul></div>';
+    }
+
+    if (ma.international_opportunities && ma.international_opportunities.length) {
+      html += `<div class="narrative-block" style="margin-top:8px"><strong>International expansion:</strong></div>`;
+      html += '<ul class="strategy-list">' + ma.international_opportunities.map(o => `<li>${o}</li>`).join('') + '</ul>';
+    }
+  }
+
+  // ── CHAPTER 5: YOUR ACTION PLAN ────────────────────────────────────────────
+  html += chapterHeader('5', 'Your Action Plan', 'Prioritized next steps, funding sources, and the critical path forward');
+
+  // Funding
+  if (r.regulatory_pathway && r.regulatory_pathway.funding_programs && r.regulatory_pathway.funding_programs.length) {
+    html += `<div class="narrative-block">
+      Non-dilutive funding should be secured before deploying equity capital. The programs below are ordered by typical application timing relative to development stage.
+    </div>`;
+    html += `<div class="callout-box callout-green">
+      <div class="callout-label">💵 Non-Dilutive Funding Sources</div>
+      <ul style="margin:8px 0 0 16px;padding:0">
+        ${r.regulatory_pathway.funding_programs.map(f => `<li style="font-family:var(--body);font-size:13px;color:var(--text-2);line-height:1.7;margin-bottom:4px">${f}</li>`).join('')}
+      </ul>
+    </div>`;
+  }
+
+  if (r.recommended_next_steps && r.recommended_next_steps.length) {
+    html += `<div class="narrative-block">Prioritized action items based on the regulatory strategy and development timeline above.</div>`;
+    html += '<ol class="steps">' + r.recommended_next_steps.map(s => `<li>${s}</li>`).join('') + '</ol>';
+  }
+
+  // ── SUPPORTING EVIDENCE ────────────────────────────────────────────────────
+  if (r.supporting_evidence && r.supporting_evidence.length) {
+    html += `<div class="sdiv"><span class="sdiv-lbl">Demand Signal Evidence (${r.supporting_evidence.length})</span><div class="sdiv-line"></div></div>`;
+    r.supporting_evidence.slice(0,8).forEach(e => {
+      const srcLink = e.source_url ? `<a href="${e.source_url}" target="_blank" style="color:var(--blue)">↗</a>` : '';
+      html += `<div class="ev-row">
+        <span class="src-tag s-${e.source}">${(SRC_NAMES[e.source]||e.source).split(' ').slice(0,2).join('&nbsp;')}</span>
+        <div><div class="ev-title">${e.title} ${srcLink}</div><div class="ev-note">${e.relevance_explanation}</div></div>
+        <div class="ev-sim">${(e.similarity_score*100).toFixed(0)}%</div>
+      </div>`;
+    });
+  }
+
+  // ── LIMITATIONS ────────────────────────────────────────────────────────────
+  if (r.limitations) {
+    html += `<div class="lim"><div class="lim-lbl">Data Limitations & Caveats</div><div class="lim-txt">${r.limitations}</div></div>`;
+  }
+
+  // ── SOURCES ────────────────────────────────────────────────────────────────
+  if (r.sources && r.sources.length) {
+    html += `<div class="sdiv"><span class="sdiv-lbl">Sources & Citations (${r.sources.length})</span><div class="sdiv-line"></div></div>`;
+    html += '<div style="background:var(--bg-3);border:1px solid var(--border);padding:14px 16px;margin-bottom:16px">';
+    r.sources.forEach(s => {
+      const link = s.url
+        ? `<a href="${s.url}" target="_blank" style="color:var(--blue);text-decoration:none;font-size:11px">${s.url}</a>`
+        : `<span style="font-size:11px;color:var(--text-4)">No URL available</span>`;
+      html += `<div style="display:grid;grid-template-columns:28px 1fr;gap:8px;padding:7px 0;border-bottom:1px solid var(--border)">
+        <span style="font-family:var(--display);font-size:12px;font-weight:700;color:var(--blue);padding-top:1px">[${s.number}]</span>
+        <div>
+          <div style="font-family:var(--body);font-size:12px;font-weight:500;color:var(--text-2);margin-bottom:2px">${s.name}</div>
+          ${link}
+          ${s.accessed ? `<span style="font-family:var(--body);font-size:10px;color:var(--text-4);margin-left:8px">· Accessed ${s.accessed}</span>` : ''}
+        </div>
+      </div>`;
+    });
+    html += '</div>';
+  }
+
+  html += `<div class="rmeta">Generated ${new Date(r.generated_at).toLocaleString()} · ${fmt(r.signals_searched)} signals searched · Model v${r.model_version}</div>`;
+  html += '</div>';
+
+  document.getElementById('results').innerHTML = html;
+  lastReport = r;
+  if (currentUser) {
+    showSaveBar(document.getElementById('idea').value, document.getElementById('pathogen').value);
+    showAlertBar(r);
+  }
+}
+
+function chapterHeader(num, title, subtitle) {
+  return `<div style="display:flex;align-items:flex-start;gap:16px;margin:32px 0 16px;padding-bottom:12px;border-bottom:2px solid var(--blue)">
+    <div style="background:var(--blue);color:#fff;font-family:var(--display);font-size:14px;font-weight:700;width:32px;height:32px;display:flex;align-items:center;justify-content:center;flex-shrink:0">${num}</div>
+    <div>
+      <div style="font-family:var(--display);font-size:17px;font-weight:700;color:var(--text)">${title}</div>
+      <div style="font-family:var(--body);font-size:12px;color:var(--text-3);margin-top:2px">${subtitle}</div>
+    </div>
+  </div>`;
+}
+
+
+function chapterHeader(num, title, subtitle) {
+  return `<div style="display:flex;align-items:flex-start;gap:16px;margin:32px 0 16px;padding-bottom:12px;border-bottom:2px solid var(--blue)">
+    <div style="background:var(--blue);color:#fff;font-family:var(--display);font-size:14px;font-weight:700;width:32px;height:32px;display:flex;align-items:center;justify-content:center;flex-shrink:0">${num}</div>
+    <div>
+      <div style="font-family:var(--display);font-size:17px;font-weight:700;color:var(--text)">${title}</div>
+      <div style="font-family:var(--body);font-size:12px;color:var(--text-3);margin-top:2px">${subtitle}</div>
+    </div>
+  </div>`;
+}
+
+
+function toggleDesig(header) {
+  const body = header.nextElementSibling;
+  body.classList.toggle('open');
+}
+
+// ── Signal Index ──────────────────────────────────────────────────────────────
+
+async function loadIndex() {
+  try {
+    const res = await fetch(`${API}/admin/ingestion/status`);
+    const d   = await res.json();
+    lastCount = d.total_signals;
+    document.getElementById('sig-hdr').textContent = fmt(d.total_signals) + ' signals indexed';
+    document.getElementById('st-tot').textContent  = fmt(d.total_signals);
+    const ss = d.by_source || [];
+    document.getElementById('st-dis').textContent  = fmt(ss.filter(s=>s.signal_type==='disease_burden').reduce((a,s)=>a+s.count,0));
+    document.getElementById('st-care').textContent = fmt(ss.filter(s=>s.signal_type==='care_gap').reduce((a,s)=>a+s.count,0));
+    document.getElementById('st-safe').textContent = fmt(ss.filter(s=>s.signal_type==='safety_failure').reduce((a,s)=>a+s.count,0));
+    const map = {};
+    ss.forEach(s=>{
+      if(!map[s.source])map[s.source]={count:0,types:new Set(),last:s.last_fetched};
+      map[s.source].count+=s.count;map[s.source].types.add(s.signal_type);
+      if(s.last_fetched>map[s.source].last)map[s.source].last=s.last_fetched;
+    });
+    document.getElementById('src-tbl').innerHTML=`
+      <div class="src-row src-head"><span>Data Source</span><span>Last Updated</span><span style="text-align:right">Signals</span></div>
+      ${Object.entries(map).sort((a,b)=>b[1].count-a[1].count).map(([src,info])=>{
+        const dt=new Date(info.last);
+        const when=dt.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+        return`<div class="src-row">
+          <div><div class="src-name">${SRC_NAMES[src]||src}</div><div class="src-type">${[...info.types].join(', ')}</div></div>
+          <div class="src-when">${when}</div>
+          <div class="src-cnt">${fmt(info.count)}</div>
+        </div>`;
+      }).join('')}`;
+  } catch(e){console.error('Index failed',e);}
+}
+
+// ── Clinical Needs ────────────────────────────────────────────────────────────
+
+async function loadNeeds() {
+  try {
+    const res = await fetch(`${API}/needs?limit=100`);
+    const d   = await res.json();
+    const needs = d.items || [];
+    document.getElementById('n-badge').textContent = fmt(needs.length) + ' collected';
+    if (!needs.length) {
+      document.getElementById('nlist').innerHTML = `<div class="empty"><div class="empty-icon">◈</div><div class="empty-t">No needs yet</div><div class="empty-s">Run Reddit ingestion via the admin API to populate clinical pain points</div></div>`;
+      return;
+    }
+    document.getElementById('nlist').innerHTML = needs.map(n => {
+      const pc = n.urgency_score>=5?'cr':n.urgency_score>=4?'hi':n.urgency_score>=3?'mi':'lo';
+      const pips = [1,2,3,4,5].map(i=>`<div class="pip ${i<=n.urgency_score?pc:''}"></div>`).join('');
+      const isReddit = n.submitted_by && n.submitted_by.startsWith('r/');
+      const platformBadge = isReddit ? `<span class="nreddit">${n.submitted_by}</span>` : '';
+      return `<div class="need-card fade-up">
+        <div class="need-meta">
+          <span class="ntag">${n.department||'—'}</span>
+          <span class="ncat">${n.category||'—'}</span>
+          ${platformBadge}
+          ${n.submitted_by && !isReddit ? `<span style="font-family:var(--body);font-size:11px;color:var(--text-3)">${n.submitted_by}</span>` : ''}
+          <div class="upips" title="Urgency ${n.urgency_score}/5">${pips}</div>
+        </div>
+        <div class="need-txt">${n.raw_text}</div>
+        ${n.keywords?.length ? `<div class="need-kw">${n.keywords.slice(0,6).join(' · ')}</div>` : ''}
+      </div>`;
+    }).join('');
+  } catch(e) {
+    document.getElementById('nlist').innerHTML = `<div class="err">Failed to load: ${e.message}</div>`;
+  }
+}
+
+
+// ── AUTH STATE ───────────────────────────────────────────────────────────────
+let currentUser = null;
+let lastReport  = null;
+let lastIdea    = null;
+
+function loadAuthState() {
+  const token = localStorage.getItem('pe_token');
+  const user  = localStorage.getItem('pe_user');
+  if (token && user) {
+    currentUser = JSON.parse(user);
+    onLoggedIn();
+  }
+}
+
+function onLoggedIn() {
+  document.getElementById('sign-in-btn').style.display    = 'none';
+  document.getElementById('user-menu-wrap').style.display = '';
+  document.getElementById('user-avatar').textContent = (currentUser.name || currentUser.email)[0].toUpperCase();
+  document.getElementById('user-email-display').textContent = currentUser.name || currentUser.email.split('@')[0];
+  document.getElementById('reports-tab').style.display = '';
+  document.getElementById('watchlists-tab').style.display = '';
+  document.getElementById('bell-wrap').style.display = '';
+  loadUnreadCount();
+  document.getElementById('trial-tab').style.display = '';
+  document.getElementById('portfolio-tab').style.display = '';
+  document.getElementById('grant-tab').style.display = '';
+}
+
+function logout() {
+  localStorage.removeItem('pe_token');
+  localStorage.removeItem('pe_user');
+  currentUser = null;
+  document.getElementById('sign-in-btn').style.display    = '';
+  document.getElementById('user-menu-wrap').style.display = 'none';
+  document.getElementById('reports-tab').style.display    = 'none';
+  document.getElementById('watchlists-tab').style.display = 'none';
+  document.getElementById('bell-wrap').style.display       = 'none';
+  document.getElementById('trial-tab').style.display        = 'none';
+  document.getElementById('portfolio-tab').style.display    = 'none';
+  document.getElementById('grant-tab').style.display        = 'none';
+  document.getElementById('user-menu').classList.remove('open');
+  tab('pi');
+}
+
+function toggleUserMenu() {
+  document.getElementById('user-menu').classList.toggle('open');
+}
+document.addEventListener('click', e => {
+  if (!document.getElementById('user-menu-wrap')?.contains(e.target)) {
+    document.getElementById('user-menu')?.classList.remove('open');
+  }
+});
+
+// ── AUTH MODAL ────────────────────────────────────────────────────────────────
+function openAuth(mode = 'login') {
+  document.getElementById('auth-overlay').classList.remove('hidden');
+  switchAuthTab(mode);
+  setTimeout(() => {
+    const el = mode === 'login'
+      ? document.getElementById('login-email')
+      : document.getElementById('reg-email');
+    el?.focus();
+  }, 50);
+}
+function closeAuth() {
+  document.getElementById('auth-overlay').classList.add('hidden');
+  document.getElementById('auth-err').classList.remove('show');
+}
+function closeAuthIfOutside(e) {
+  if (e.target === document.getElementById('auth-overlay')) closeAuth();
+}
+function switchAuthTab(mode) {
+  document.getElementById('tab-login').classList.toggle('on', mode === 'login');
+  document.getElementById('tab-register').classList.toggle('on', mode === 'register');
+  document.getElementById('login-form').style.display    = mode === 'login' ? '' : 'none';
+  document.getElementById('register-form').style.display = mode === 'register' ? '' : 'none';
+  document.getElementById('auth-err').classList.remove('show');
+}
+
+function showAuthErr(msg) {
+  const el = document.getElementById('auth-err');
+  el.textContent = msg;
+  el.classList.add('show');
+}
+
+async function submitLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const pass  = document.getElementById('login-password').value;
+  if (!email || !pass) return showAuthErr('Please enter your email and password.');
+  const btn = document.getElementById('login-btn');
+  btn.disabled = true; btn.textContent = 'Signing in…';
+  try {
+    const res = await fetch(`${API}/auth/login`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({email, password: pass}),
+    });
+    const d = await res.json();
+    if (!res.ok) { showAuthErr(d.detail || 'Login failed.'); return; }
+    storeAuth(d);
+  } catch(e) { showAuthErr('Connection error. Is the server running?'); }
+  finally { btn.disabled = false; btn.textContent = 'Sign In'; }
+}
+
+function checkPasswordStrength(pw) {
+  const reqs = {
+    'req-length':  pw.length >= 8,
+    'req-upper':   /[A-Z]/.test(pw),
+    'req-lower':   /[a-z]/.test(pw),
+    'req-number':  /[0-9]/.test(pw),
+    'req-special': /[!@#$%^&*()_+=\[\]{};:|,.<>/?`~-]/.test(pw),
+  };
+  const labels = {
+    'req-length':  'At least 8 characters',
+    'req-upper':   'At least one uppercase letter (A-Z)',
+    'req-lower':   'At least one lowercase letter (a-z)',
+    'req-number':  'At least one number (0-9)',
+    'req-special': 'At least one special character (!@#$%^&*...)',
+  };
+  for (const [id, ok] of Object.entries(reqs)) {
+    const el = document.getElementById(id);
+    if (el) { el.style.color = ok ? '#38a169' : '#e53e3e'; el.textContent = (ok ? '✓ ' : '✗ ') + labels[id]; }
+  }
+}
+
+async function submitRegister() {
+  const name    = document.getElementById('reg-name').value.trim();
+  const email   = document.getElementById('reg-email').value.trim();
+  const pass    = document.getElementById('reg-password').value;
+  const confirm = document.getElementById('reg-password-confirm') ? document.getElementById('reg-password-confirm').value : pass;
+  if (!email || !pass) return showAuthErr('Please enter your email and password.');
+  if (pass !== confirm) return showAuthErr('Passwords do not match. Please try again.');
+  const errors = [];
+  if (pass.length < 8)                                        errors.push('at least 8 characters');
+  if (!/[A-Z]/.test(pass))                                   errors.push('an uppercase letter (A-Z)');
+  if (!/[a-z]/.test(pass))                                   errors.push('a lowercase letter (a-z)');
+  if (!/[0-9]/.test(pass))                                   errors.push('a number (0-9)');
+  if (!/[!@#$%^&*()_+=\[\]{};:|,.<>/?`~-]/.test(pass))   errors.push('a special character (!@#$%^&*...)');
+  if (errors.length) return showAuthErr('Password must contain: ' + errors.join(', ') + '.');
+  const btn = document.getElementById('reg-btn');
+  btn.disabled = true; btn.textContent = 'Creating account…';
+  try {
+    const res = await fetch(`${API}/auth/register`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({email, password: pass, name: name || null}),
+    });
+    const d = await res.json();
+    if (!res.ok) { showAuthErr(d.detail || 'Registration failed.'); return; }
+    // Show verification message instead of logging in immediately
+    document.getElementById('auth-modal').style.display = 'none';
+    const banner = document.createElement('div');
+    banner.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#1A4FD6;color:#fff;padding:16px 24px;font-family:var(--body);font-size:13px;z-index:9999;text-align:center;line-height:1.6';
+    banner.innerHTML = `<strong>Account created!</strong> We sent a verification email to <strong>${email}</strong>. Click the link in the email to activate your account before logging in.`;
+    document.body.prepend(banner);
+    setTimeout(() => banner.remove(), 12000);
+  } catch(e) { showAuthErr('Connection error.'); }
+  finally { btn.disabled = false; btn.textContent = 'Create Account'; }
+}
+
+function storeAuth(d) {
+  localStorage.setItem('pe_token', d.access_token);
+  currentUser = {user_id: d.user_id, email: d.email, name: d.name};
+  localStorage.setItem('pe_user', JSON.stringify(currentUser));
+  onLoggedIn();
+  closeAuth();
+}
+
+async function handleGoogleCredential(response) {
+  const btn = document.querySelector('.g_id_signin');
+  try {
+    const res = await fetch(`${API}/auth/google`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({token: response.credential}),
+    });
+    const data = await res.json();
+    if (!res.ok) return showAuthErr(data.detail || 'Google sign-in failed.');
+    storeAuth(data);
+    closeAuth();
+    await loadBillingStatus();
+    showToast('Signed in with Google ✓');
+  } catch(e) {
+    showAuthErr('Google sign-in failed. Please try again.');
+  }
+}
+
+function googleSignIn() {
+  // Uses Google Identity Services (GIS) if loaded, otherwise shows message
+  if (typeof google === 'undefined' || !google.accounts) {
+    showAuthErr('');
+    return;
+  }
+  google.accounts.id.prompt();
+}
+
+// ── SAVE REPORT ───────────────────────────────────────────────────────────────
+function showSaveBar(idea, pathogen) {
+  lastIdea = {idea, pathogen};
+  // Suggest a name from idea text
+  const suggest = idea.slice(0, 60).trim();
+  document.getElementById('save-name').value = suggest;
+  document.getElementById('save-bar').classList.add('show');
+}
+
+async function saveReport() {
+  if (!currentUser) { openAuth('login'); return; }
+  if (!lastReport)  { alert('No report to save.'); return; }
+  const name = document.getElementById('save-name').value.trim();
+  if (!name) { alert('Please enter a name for this report.'); return; }
+
+  const btn = document.querySelector('.save-bar-btn');
+  btn.textContent = 'Saving…'; btn.disabled = true;
+  try {
+    const token = localStorage.getItem('pe_token');
+    const res = await fetch(`${API}/auth/reports`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`},
+      body: JSON.stringify({
+        name,
+        product_type: lastReport.product_type || selectedType,
+        idea:         lastIdea?.idea || '',
+        pathogen:     lastIdea?.pathogen || null,
+        report_data:  lastReport,
+      }),
+    });
+    if (!res.ok) throw new Error((await res.json()).detail);
+    btn.textContent = '✓ Saved!';
+    setTimeout(() => { btn.textContent = 'Save Report'; btn.disabled = false; }, 2000);
+  } catch(e) {
+    alert('Save failed: ' + e.message);
+    btn.textContent = 'Save Report'; btn.disabled = false;
+  }
+}
+
+// ── MY REPORTS ────────────────────────────────────────────────────────────────
+async function loadReports() {
+  if (!currentUser) return;
+  const token = localStorage.getItem('pe_token');
+  try {
+    const res     = await fetch(`${API}/auth/reports`, {
+      headers: {'Authorization': `Bearer ${token}`}
+    });
+    const reports = await res.json();
+    document.getElementById('reports-count').textContent = reports.length + ' saved';
+    if (!reports.length) {
+      document.getElementById('reports-list').innerHTML = `<div class="empty"><div class="empty-icon">📋</div><div class="empty-t">No saved reports yet</div><div class="empty-s">Run an analysis and click Save Report.</div></div>`;
+      return;
+    }
+    const typeEmoji = {antibiotic:'💊',medical_device:'🔬',software:'💻',diagnostic:'🧪',other:'⚕️'};
+    document.getElementById('reports-list').innerHTML = reports.map(r => `
+      <div class="report-card" onclick="loadSavedReport(${r.report_id})">
+        <div style="flex:1;min-width:0">
+          <div class="report-name">${r.name}</div>
+          <div class="report-meta">
+            <span class="report-type">${typeEmoji[r.product_type]||'⚕️'} ${r.product_type.replace('_',' ')}</span>
+            ${new Date(r.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'2-digit',minute:'2-digit'})}
+          </div>
+        </div>
+        <button class="report-del" onclick="event.stopPropagation();deleteReport(${r.report_id},this)" title="Delete">🗑</button>
+      </div>`).join('');
+  } catch(e) {
+    document.getElementById('reports-list').innerHTML = `<div class="err">Failed to load reports: ${e.message}</div>`;
+  }
+}
+
+async function loadSavedReport(reportId) {
+  const token = localStorage.getItem('pe_token');
+  try {
+    const res    = await fetch(`${API}/auth/reports/${reportId}`, {
+      headers: {'Authorization': `Bearer ${token}`}
+    });
+    const saved  = await res.json();
+    // Restore form state
+    document.getElementById('idea').value = saved.idea || '';
+    if (saved.pathogen) document.getElementById('pathogen').value = saved.pathogen;
+    // Switch to PI tab and render report
+    tab('pi');
+    lastReport = saved.report_data;
+    renderPIReport(saved.report_data);
+    showSaveBar(saved.idea, saved.pathogen);
+  } catch(e) { alert('Failed to load report: ' + e.message); }
+}
+
+async function deleteReport(reportId, btn) {
+  if (!confirm('Delete this report?')) return;
+  const token = localStorage.getItem('pe_token');
+  try {
+    await fetch(`${API}/auth/reports/${reportId}`, {
+      method: 'DELETE',
+      headers: {'Authorization': `Bearer ${token}`}
+    });
+    loadReports();
+  } catch(e) { alert('Delete failed: ' + e.message); }
+}
+
+// Init auth on page load
+loadAuthState();
+
+
+
+// ── TRIAL SITES ───────────────────────────────────────────────────────────────
+async function runTrialSites() {
+  const indication = document.getElementById('trial-indication').value.trim();
+  const idea       = document.getElementById('trial-idea').value.trim();
+  if (!indication || idea.length < 20) { alert('Please fill in indication and product description.'); return; }
+  const btn = document.getElementById('trial-btn');
+  btn.disabled = true; btn.textContent = 'Finding sites…';
+  document.getElementById('trial-results').innerHTML = `<div class="loading"><div class="prog-track"><div class="prog-bar"></div></div><div class="loading-t">Analyzing hospital quality data…</div><div class="loading-s">Scoring patient volume, quality deficits, and research capacity</div></div>`;
+  try {
+    const res = await fetch(`${API}/trial-sites`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({idea, indication, disease_domain: document.getElementById('trial-domain').value, num_sites:15})
+    });
+    if (!res.ok) throw new Error((await res.json()).detail);
+    renderTrialSites(await res.json());
+  } catch(e) {
+    document.getElementById('trial-results').innerHTML = `<div class="err">Error: ${e.message}</div>`;
+  } finally { btn.disabled=false; btn.textContent='Find Top Trial Sites'; }
+}
+
+function renderTrialSites(data) {
+  const sites = data.sites || [];
+  if (!sites.length) { document.getElementById('trial-results').innerHTML = '<div class="empty"><div class="empty-t">No sites found</div></div>'; return; }
+
+  // Map placeholder
+  let html = `<div class="card" style="margin-bottom:20px"><div class="ch"><span class="ct">Site Map</span><span class="cb-badge">${sites.length} sites</span></div><div class="cb"><div class="site-map">🗺 Interactive map — ${sites.length} trial sites across ${[...new Set(sites.map(s=>s.state))].length} states<br><small style="color:var(--text-4)">Integrate Google Maps API for live pin map</small></div></div></div>`;
+
+  html += `<div class="card"><div class="ch"><span class="ct">Ranked Sites — ${data.indication}</span></div><div class="cb">`;
+  sites.forEach(s => {
+    const scoreColor = s.composite_score >= 80 ? 'var(--green)' : s.composite_score >= 60 ? 'var(--blue)' : 'var(--amber)';
+    html += `<div class="site-card">
+      <div class="site-rank">#${s.rank}</div>
+      <div>
+        <div class="site-name">${s.hospital_name}</div>
+        <div class="site-loc">${s.city}, ${s.state}</div>
+        <div class="site-badges">
+          <span class="site-badge">${s.research_capacity}</span>
+          <span class="site-badge">~${s.estimated_enrollment} enrollment</span>
+          <span class="site-badge">Vol: ${s.patient_volume_score.toFixed(0)}/100</span>
+          <span class="site-badge">Deficit: ${s.quality_deficit_score.toFixed(0)}/100</span>
+        </div>
+        <div class="site-rationale">${s.rationale}</div>
+      </div>
+      <div>
+        <div class="site-score" style="color:${scoreColor}">${s.composite_score.toFixed(0)}</div>
+        <div class="site-score-lbl">score</div>
+      </div>
+    </div>`;
+  });
+  html += '</div></div>';
+  document.getElementById('trial-results').innerHTML = html;
+}
+
+// ── LAB PORTFOLIO ─────────────────────────────────────────────────────────────
+let portfolioIdeas = [];
+
+function initPortfolio() {
+  if (portfolioIdeas.length === 0) {
+    portfolioIdeas = [{name:'', description:''}];
+    renderPortfolioInputs();
+  }
+}
+
+function renderPortfolioInputs() {
+  const container = document.getElementById('portfolio-ideas');
+  container.innerHTML = portfolioIdeas.map((idea, i) => `
+    <div class="portfolio-idea-input">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <span style="font-family:var(--display);font-size:11px;font-weight:700;color:var(--text-3)">IDEA ${i+1}</span>
+        ${portfolioIdeas.length > 1 ? `<button onclick="removeIdea(${i})" style="background:none;border:none;color:var(--text-4);cursor:pointer;font-size:13px">✕</button>` : ''}
+      </div>
+      <input type="text" placeholder="Idea name (e.g. CRE antibiotic)" value="${idea.name}" oninput="updateIdea(${i},'name',this.value)" style="margin-bottom:8px" />
+      <textarea placeholder="Describe this innovation — what it does, target indication, approach" oninput="updateIdea(${i},'description',this.value)" style="min-height:60px">${idea.description}</textarea>
+    </div>`).join('');
+
+  document.getElementById('portfolio-count').textContent = `${portfolioIdeas.length} / 10 ideas`;
+  document.getElementById('portfolio-add-btn').style.display = portfolioIdeas.length >= 10 ? 'none' : '';
+  document.getElementById('portfolio-btn').disabled = portfolioIdeas.filter(i => i.name && i.description.length >= 20).length < 2;
+}
+
+function updateIdea(i, field, val) {
+  portfolioIdeas[i][field] = val;
+  document.getElementById('portfolio-btn').disabled = portfolioIdeas.filter(i => i.name && i.description.length >= 20).length < 2;
+}
+
+function addPortfolioIdea() {
+  if (portfolioIdeas.length >= 10) return;
+  portfolioIdeas.push({name:'', description:''});
+  renderPortfolioInputs();
+}
+
+function removeIdea(i) {
+  portfolioIdeas.splice(i, 1);
+  renderPortfolioInputs();
+}
+
+async function runPortfolio() {
+  const valid = portfolioIdeas.filter(i => i.name && i.description.length >= 20);
+  if (valid.length < 2) { alert('Please add at least 2 complete ideas.'); return; }
+  const btn = document.getElementById('portfolio-btn');
+  btn.disabled = true; btn.textContent = 'Analyzing portfolio…';
+  document.getElementById('portfolio-results').innerHTML = `<div class="loading"><div class="prog-track"><div class="prog-bar"></div></div><div class="loading-t">Scoring ${valid.length} ideas…</div><div class="loading-s">Running each through expert router + demand signal matching + funding analysis</div></div>`;
+  try {
+    const res = await fetch(`${API}/portfolio/analyze`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ideas: valid})
+    });
+    if (!res.ok) throw new Error((await res.json()).detail);
+    renderPortfolio(await res.json());
+  } catch(e) {
+    document.getElementById('portfolio-results').innerHTML = `<div class="err">Error: ${e.message}</div>`;
+  } finally { btn.disabled=false; btn.textContent='Analyze Portfolio'; }
+}
+
+function renderPortfolio(data) {
+  const ideas = data.ideas || [];
+  const qColors = {PURSUE:'pursue', VALIDATE:'validate', REFRAME:'reframe', SHELVE:'shelve'};
+  const qLabels = {PURSUE:'🟢 Pursue', VALIDATE:'🟡 Validate', REFRAME:'🔵 Reframe', SHELVE:'⚫ Shelve'};
+
+  // Summary bar
+  let html = `<div class="card" style="margin-bottom:16px"><div class="ch"><span class="ct">Portfolio Summary</span></div><div class="cb">
+    <div style="font-family:var(--body);font-size:13px;color:var(--text);line-height:1.7;margin-bottom:14px">${data.portfolio_summary}</div>
+    <div style="display:flex;gap:16px;flex-wrap:wrap">
+      ${data.pursue_count ? `<span style="font-family:var(--display);font-size:12px;font-weight:700;color:var(--green)">🟢 ${data.pursue_count} Pursue</span>` : ''}
+      ${data.validate_count ? `<span style="font-family:var(--display);font-size:12px;font-weight:700;color:var(--amber)">🟡 ${data.validate_count} Validate</span>` : ''}
+      ${data.reframe_count ? `<span style="font-family:var(--display);font-size:12px;font-weight:700;color:var(--blue)">🔵 ${data.reframe_count} Reframe</span>` : ''}
+      ${data.shelve_count ? `<span style="font-family:var(--display);font-size:12px;font-weight:700;color:var(--text-3)">⚫ ${data.shelve_count} Shelve</span>` : ''}
+    </div>
+  </div></div>`;
+
+  // Heatmap 2x2
+  const byQ = {PURSUE:[], VALIDATE:[], REFRAME:[], SHELVE:[]};
+  ideas.forEach(i => byQ[i.quadrant]?.push(i));
+  html += `<div class="card" style="margin-bottom:16px"><div class="ch"><span class="ct">Innovation Heatmap</span><span class="cb-badge">Demand vs Funding</span></div><div class="cb">
+    <div style="display:grid;grid-template-columns:1fr;gap:4px;margin-bottom:8px">
+      <div style="font-family:var(--body);font-size:10px;color:var(--text-4);text-align:center">↑ High Funding</div>
+    </div>
+    <div class="quadrant-grid">
+      <div class="quadrant-cell reframe"><div class="quadrant-label reframe">🔵 REFRAME</div><div class="quadrant-axis">Low demand, high funding</div>${byQ.REFRAME.map(i=>`<span class="idea-chip reframe">${i.idea_name}</span>`).join('')||'<span style="font-size:10px;color:var(--text-4)">None</span>'}</div>
+      <div class="quadrant-cell pursue"><div class="quadrant-label pursue">🟢 PURSUE</div><div class="quadrant-axis">High demand, high funding</div>${byQ.PURSUE.map(i=>`<span class="idea-chip pursue">${i.idea_name}</span>`).join('')||'<span style="font-size:10px;color:var(--text-4)">None</span>'}</div>
+      <div class="quadrant-cell shelve"><div class="quadrant-label shelve">⚫ SHELVE</div><div class="quadrant-axis">Low demand, low funding</div>${byQ.SHELVE.map(i=>`<span class="idea-chip">${i.idea_name}</span>`).join('')||'<span style="font-size:10px;color:var(--text-4)">None</span>'}</div>
+      <div class="quadrant-cell validate"><div class="quadrant-label validate">🟡 VALIDATE</div><div class="quadrant-axis">High demand, low funding</div>${byQ.VALIDATE.map(i=>`<span class="idea-chip validate">${i.idea_name}</span>`).join('')||'<span style="font-size:10px;color:var(--text-4)">None</span>'}</div>
+    </div>
+    <div style="font-family:var(--body);font-size:10px;color:var(--text-4);text-align:center;margin-top:4px">Low Demand ←————————→ High Demand</div>
+  </div></div>`;
+
+  // Ranked list
+  html += `<div class="card"><div class="ch"><span class="ct">Ranked Ideas</span></div><div class="cb">`;
+  ideas.forEach((idea, i) => {
+    const qcls = qColors[idea.quadrant];
+    const barColor = idea.composite_score >= 70 ? 'green' : idea.composite_score >= 50 ? '' : 'amber';
+    html += `<div class="portfolio-idea-card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <div>
+          <span style="font-family:var(--display);font-size:13px;font-weight:700;color:var(--text)">${i+1}. ${idea.idea_name}</span>
+          <span style="margin-left:8px" class="idea-chip ${qcls}">${qLabels[idea.quadrant]}</span>
+          <span style="margin-left:6px;font-family:var(--body);font-size:10px;color:var(--text-3)">${idea.expert_icon} ${idea.expert_name}</span>
+        </div>
+        <span style="font-family:var(--display);font-size:20px;font-weight:700;color:var(--blue)">${idea.composite_score.toFixed(0)}</span>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px">
+        ${[['Demand',idea.demand_score],['Funding',idea.funding_score],['Competition Gap',idea.competition_gap],['Market Size',idea.market_size_score]].map(([lbl,val])=>`
+        <div><div style="font-family:var(--body);font-size:9px;color:var(--text-3);text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px">${lbl}</div>
+        <div class="portfolio-score-bar"><div class="portfolio-score-fill ${barColor}" style="width:${val}%"></div></div>
+        <div style="font-family:var(--display);font-size:11px;font-weight:700;color:var(--text)">${val.toFixed(0)}</div></div>`).join('')}
+      </div>
+      <div style="font-family:var(--body);font-size:12px;color:var(--text-2);line-height:1.6;margin-bottom:6px">${idea.recommendation}</div>
+      ${idea.estimated_tam ? `<div style="font-family:var(--body);font-size:11px;color:var(--text-3)">TAM: ${idea.estimated_tam} · Signals: ${idea.top_signals}</div>` : ''}
+      ${idea.key_funding?.length ? `<div style="font-family:var(--body);font-size:11px;color:var(--green);margin-top:4px">Funding: ${idea.key_funding.slice(0,2).join(' · ')}</div>` : ''}
+    </div>`;
+  });
+  html += '</div></div>';
+  document.getElementById('portfolio-results').innerHTML = html;
+}
+
+// ── GRANT CO-PILOT ────────────────────────────────────────────────────────────
+let selectedGrantType = 'nih_r01';
+
+function selectGrantType(type, el) {
+  selectedGrantType = type;
+  document.querySelectorAll('.grant-type-tab').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+}
+
+async function runGrant() {
+  const idea = document.getElementById('grant-idea').value.trim();
+  if (idea.length < 30) { alert('Please describe your research in at least 30 characters.'); return; }
+  const btn = document.getElementById('grant-btn');
+  btn.disabled = true; btn.textContent = 'Generating sections…';
+  document.getElementById('grant-results').innerHTML = `<div class="loading"><div class="prog-track"><div class="prog-bar"></div></div><div class="loading-t">Writing grant sections…</div><div class="loading-s">Searching demand signals · Applying expert knowledge · Formatting for ${selectedGrantType.replace('_',' ').toUpperCase()}</div></div>`;
+  try {
+    const res = await fetch(`${API}/grant/generate`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        idea, grant_type: selectedGrantType,
+        specific_aim: document.getElementById('grant-aim').value.trim() || null
+      })
+    });
+    if (!res.ok) throw new Error((await res.json()).detail);
+    renderGrant(await res.json());
+  } catch(e) {
+    document.getElementById('grant-results').innerHTML = `<div class="err">Error: ${e.message}</div>`;
+  } finally { btn.disabled=false; btn.textContent='Generate Grant Sections'; }
+}
+
+function renderGrant(data) {
+  const typeLabels = {nih_r01:'NIH R01', nih_sbir:'NIH SBIR/STTR', nsf:'NSF', all:'All Sections'};
+  let html = `<div style="background:var(--slate);padding:12px 16px;margin-bottom:16px">
+    <div style="font-family:var(--display);font-size:10px;font-weight:700;color:rgba(255,255,255,.5);letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px">${typeLabels[data.grant_type]||data.grant_type} · ${data.expert_name}</div>
+    <div style="font-family:var(--body);font-size:12px;color:#fff;line-height:1.6">${data.overall_summary}</div>
+  </div>`;
+
+  // Sections
+  (data.sections||[]).forEach(s => {
+    const bodyId = 'gs-' + s.section_name.replace(/\s+/g,'_');
+    html += `<div class="grant-section">
+      <div class="grant-section-hdr" onclick="toggleGrantSection('${bodyId}')">
+        <span class="grant-section-name">${s.section_name}</span>
+        <span class="grant-section-meta">${s.word_count} words ${s.key_citations?.length ? '· ' + s.key_citations.length + ' citations' : ''}</span>
+      </div>
+      <div class="grant-section-body" id="${bodyId}">
+        <div class="grant-text">${s.content}</div>
+        <button class="copy-btn" onclick="copyText('${bodyId}-text', this)">📋 Copy to clipboard</button>
+        <div id="${bodyId}-text" style="display:none">${s.content}</div>
+      </div>
+    </div>`;
+  });
+
+  // Biosketch bullets
+  if (data.biosketch_bullets?.length) {
+    html += `<div class="grant-section">
+      <div class="grant-section-hdr" onclick="toggleGrantSection('gs-biosketch')">
+        <span class="grant-section-name">Biosketch Data Points</span>
+        <span class="grant-section-meta">${data.biosketch_bullets.length} bullets</span>
+      </div>
+      <div class="grant-section-body" id="gs-biosketch">
+        <ul class="bullet-list">${data.biosketch_bullets.map(b=>`<li>${b}</li>`).join('')}</ul>
+        <button class="copy-btn" onclick="copyBullets(this)">📋 Copy all bullets</button>
+        <div id="gs-biosketch-bullets" style="display:none">${data.biosketch_bullets.map(b=>'• '+b).join('\n')}</div>
+      </div>
+    </div>`;
+  }
+
+  document.getElementById('grant-results').innerHTML = html;
+  // Open first section by default
+  if (data.sections?.length) {
+    const firstId = 'gs-' + data.sections[0].section_name.replace(/\s+/g,'_');
+    document.getElementById(firstId)?.classList.add('open');
+  }
+}
+
+function toggleGrantSection(id) {
+  document.getElementById(id)?.classList.toggle('open');
+}
+
+function copyText(hiddenId, btn) {
+  const text = document.getElementById(hiddenId)?.textContent || '';
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = '✓ Copied!';
+    setTimeout(() => btn.textContent = '📋 Copy to clipboard', 2000);
+  });
+}
+
+function copyBullets(btn) {
+  const text = document.getElementById('gs-biosketch-bullets')?.textContent || '';
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = '✓ Copied!';
+    setTimeout(() => btn.textContent = '📋 Copy all bullets', 2000);
+  });
+}
+
+// ── WATCHLISTS & ALERTS ───────────────────────────────────────────────────────
+let lastReportForAlert = null;
+
+function showAlertBar(report) {
+  lastReportForAlert = report;
+  document.getElementById('alert-bar').classList.add('show');
+}
+
+async function createWatchlistFromReport() {
+  if (!currentUser) { openAuth('login'); return; }
+  if (!lastReportForAlert) return;
+  const token  = localStorage.getItem('pe_token');
+  const name   = document.getElementById('save-name').value.trim() || 'My Watchlist';
+  const domain = lastReportForAlert.expert_domain || 'auto';
+  const desc   = lastReportForAlert.idea_submitted || '';
+  const kws    = (lastReportForAlert.disease_intelligence?.data_points || [])
+                  .map(dp => dp.metric).slice(0, 5);
+  try {
+    const res = await fetch(`${API}/watchlists/from-report`, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json','Authorization':`Bearer ${token}`},
+      body: JSON.stringify({
+        report_name: name, disease_domain: domain,
+        product_description: desc.slice(0, 500), keywords: kws
+      })
+    });
+    if (!res.ok) throw new Error((await res.json()).detail);
+    const wl = await res.json();
+    const btn = document.querySelector('.set-alert-btn');
+    btn.textContent = '✓ Alert Set!';
+    btn.style.background = 'var(--green)';
+    setTimeout(() => {
+      document.getElementById('alert-bar').classList.remove('show');
+      btn.textContent = 'Set Alert';
+      btn.style.background = '';
+    }, 2500);
+  } catch(e) { alert('Failed: ' + e.message); }
+}
+
+async function loadWatchlists() {
+  if (!currentUser) return;
+  const token = localStorage.getItem('pe_token');
+  try {
+    const res = await fetch(`${API}/watchlists`, {headers:{'Authorization':`Bearer ${token}`}});
+    const wls = await res.json();
+    if (!wls.length) {
+      document.getElementById('wl-list').innerHTML = `<div class="empty"><div class="empty-icon">🔔</div><div class="empty-t">No watchlists yet</div><div class="empty-s">Create one above or click "Set Alert" after running a PI analysis.</div></div>`;
+      return;
+    }
+    const domainLabels = {
+      antibiotic_amr:'💊 Antibiotic/AMR', oncology:'🔬 Oncology',
+      cardiology:'❤️ Cardiology', neurology_cns:'🧠 Neuro/CNS',
+      metabolic_diabetes:'⚕️ Metabolic', mental_health:'🧩 Mental Health', auto:'🔍 Auto'
+    };
+    document.getElementById('wl-list').innerHTML = wls.map(w => `
+      <div class="wl-card">
+        <div class="wl-header">
+          <div>
+            <div class="wl-name">${w.name}</div>
+            <span class="wl-domain">${domainLabels[w.disease_domain]||w.disease_domain}</span>
+          </div>
+          <button class="wl-del" onclick="deleteWatchlist(${w.watchlist_id},this)" title="Delete">🗑</button>
+        </div>
+        <div class="wl-desc">${w.product_description.slice(0,150)}${w.product_description.length>150?'…':''}</div>
+        <div class="wl-stats">
+          <span class="wl-stat"><strong>${w.alert_count}</strong> total alerts</span>
+          <span class="wl-stat"><strong style="color:var(--red)">${w.unread_count}</strong> unread</span>
+          ${w.keywords.length ? `<span class="wl-stat">${w.keywords.slice(0,4).join(', ')}</span>` : ''}
+        </div>
+      </div>`).join('');
+  } catch(e) { document.getElementById('wl-list').innerHTML = `<div class="err">Failed: ${e.message}</div>`; }
+}
+
+async function createWatchlist() {
+  if (!currentUser) { openAuth('login'); return; }
+  const name = document.getElementById('wl-name').value.trim();
+  const desc = document.getElementById('wl-desc').value.trim();
+  if (!name || !desc) { alert('Please fill in name and description.'); return; }
+  const token = localStorage.getItem('pe_token');
+  const kws   = document.getElementById('wl-keywords').value
+                  .split(',').map(k => k.trim()).filter(Boolean);
+  try {
+    const res = await fetch(`${API}/watchlists`, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json','Authorization':`Bearer ${token}`},
+      body: JSON.stringify({
+        name, disease_domain: document.getElementById('wl-domain').value,
+        product_description: desc, keywords: kws
+      })
+    });
+    if (!res.ok) throw new Error((await res.json()).detail);
+    document.getElementById('wl-name').value = '';
+    document.getElementById('wl-desc').value = '';
+    document.getElementById('wl-keywords').value = '';
+    loadWatchlists();
+  } catch(e) { alert('Failed: ' + e.message); }
+}
+
+async function deleteWatchlist(id, btn) {
+  if (!confirm('Delete this watchlist?')) return;
+  const token = localStorage.getItem('pe_token');
+  try {
+    await fetch(`${API}/watchlists/${id}`, {method:'DELETE', headers:{'Authorization':`Bearer ${token}`}});
+    loadWatchlists();
+    loadUnreadCount();
+  loadBillingStatus();
+  } catch(e) { alert('Failed: ' + e.message); }
+}
+
+// ── NOTIFICATION BELL ─────────────────────────────────────────────────────────
+
+async function loadUnreadCount() {
+  if (!currentUser) return;
+  const token = localStorage.getItem('pe_token');
+  try {
+    const res   = await fetch(`${API}/watchlists/alerts/unread-count`, {headers:{'Authorization':`Bearer ${token}`}});
+    const data  = await res.json();
+    const count = data.unread_count || 0;
+    const badge = document.getElementById('bell-badge');
+    if (count > 0) {
+      badge.textContent = count > 99 ? '99+' : count;
+      badge.style.display = 'flex';
+    } else {
+      badge.style.display = 'none';
+    }
+  } catch(e) { /* silent */ }
+}
+
+function toggleNotifPanel() {
+  const panel = document.getElementById('notif-panel');
+  panel.classList.toggle('open');
+  if (panel.classList.contains('open')) loadNotifPanel();
+}
+
+async function loadNotifPanel() {
+  if (!currentUser) return;
+  const token = localStorage.getItem('pe_token');
+  try {
+    const res    = await fetch(`${API}/watchlists/alerts?limit=10`, {headers:{'Authorization':`Bearer ${token}`}});
+    const alerts = await res.json();
+    const list   = document.getElementById('notif-list');
+    if (!alerts.length) {
+      list.innerHTML = '<div class="notif-empty">No alerts yet.<br>Create a watchlist to start monitoring.</div>';
+      return;
+    }
+    list.innerHTML = alerts.map(a => `
+      <div class="notif-item ${a.seen ? '' : 'unread'}" onclick="markSeen(${a.alert_id})">
+        <span class="notif-sev ${a.severity}">${a.severity}</span>
+        <div class="notif-title">${a.title.slice(0,100)}</div>
+        <div class="notif-meta">${new Date(a.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric'})} · ${a.source}</div>
+      </div>`).join('');
+  } catch(e) { /* silent */ }
+}
+
+async function markSeen(alertId) {
+  const token = localStorage.getItem('pe_token');
+  await fetch(`${API}/watchlists/alerts/mark-seen`, {
+    method: 'POST', headers: {'Content-Type':'application/json','Authorization':`Bearer ${token}`},
+    body: JSON.stringify({alert_ids: [alertId]})
+  });
+  loadUnreadCount();
+  loadNotifPanel();
+}
+
+async function markAllSeen() {
+  const token = localStorage.getItem('pe_token');
+  await fetch(`${API}/watchlists/alerts/mark-all-seen`, {
+    method: 'POST', headers: {'Authorization':`Bearer ${token}`}
+  });
+  loadUnreadCount();
+  loadNotifPanel();
+}
+
+// Close notif panel when clicking outside
+document.addEventListener('click', e => {
+  const wrap = document.getElementById('bell-wrap');
+  if (wrap && !wrap.contains(e.target)) {
+    document.getElementById('notif-panel')?.classList.remove('open');
+  }
+});
+
+// Refresh unread count every 2 minutes
+setInterval(() => { if (currentUser) loadUnreadCount(); }, 120000);
+
+
+// ── EXAMPLE FILL FUNCTIONS ────────────────────────────────────────────────────
+function fillTrialExample() {
+  document.getElementById('trial-indication').value = 'carbapenem-resistant infections in ICU patients';
+  document.getElementById('trial-idea').value = 'A novel beta-lactam/beta-lactamase inhibitor combination targeting carbapenem-resistant Klebsiella pneumoniae and Acinetobacter baumannii in hospitalized patients with serious infections.';
+  const sel = document.getElementById('trial-domain');
+  if (sel) sel.value = 'antibiotic_amr';
+}
+
+function fillGrantExample() {
+  document.getElementById('grant-idea').value = 'A novel beta-lactam/beta-lactamase inhibitor combination targeting carbapenem-resistant Enterobacterales (CRE), the most urgent antibiotic-resistant threat in U.S. hospitals affecting 13,100 patients annually with 40-50% mortality in bloodstream infections.';
+  document.getElementById('grant-aim').value = 'Aim 1: Characterize in vitro activity of the BLI against KPC and NDM carbapenemases. Aim 2: Evaluate pharmacokinetic/pharmacodynamic targets in murine infection models. Aim 3: Assess safety and efficacy in a Phase 1b/2a clinical trial in hospitalized patients with CRE infections.';
+  // Select NIH R01
+  document.querySelectorAll('.grant-type-tab').forEach(b => b.classList.remove('active'));
+  document.querySelector('.grant-type-tab')?.classList.add('active');
+  selectedGrantType = 'nih_r01';
+}
+
+function fillPortfolioExample() {
+  portfolioIdeas = [
+    { name: 'CRE Antibiotic', description: 'A novel beta-lactam/BLI combination targeting carbapenem-resistant Enterobacterales in hospitalized patients with serious infections and limited treatment options.' },
+    { name: 'Alzheimer AI Detection', description: 'An AI-powered speech pattern analysis tool for early detection of Alzheimer disease using cognitive biomarkers from routine clinical conversations.' },
+    { name: 'SMA Gene Therapy', description: 'An AAV9-delivered SMN1 gene replacement therapy for spinal muscular atrophy type 2 patients beyond the neonatal window using a tissue-specific promoter.' },
+    { name: 'Rural CGM Device', description: 'A 90-day wearable continuous glucose monitor for rural type 2 diabetes patients with no smartphone requirement, targeting the 20% rural CGM adoption gap.' },
+    { name: 'KRAS G12D ADC', description: 'A KRAS G12D-targeted antibody-drug conjugate for pancreatic ductal adenocarcinoma linking a novel anti-KRAS antibody to a topoisomerase I inhibitor payload.' },
+  ];
+  renderPortfolioInputs();
+}
+
+
+function fillTrialExample() {
+  document.getElementById('trial-indication').value = 'carbapenem-resistant infections in ICU patients';
+  document.getElementById('trial-idea').value = 'A novel beta-lactam/beta-lactamase inhibitor combination targeting carbapenem-resistant Klebsiella pneumoniae and Acinetobacter baumannii in hospitalized patients.';
+  const sel = document.getElementById('trial-domain');
+  if (sel) sel.value = 'antibiotic_amr';
+}
+
+function fillGrantExample() {
+  document.getElementById('grant-idea').value = 'A novel beta-lactam/BLI combination targeting carbapenem-resistant Enterobacterales (CRE) affecting 13,100 U.S. patients annually with 40-50% mortality in bloodstream infections. The innovation addresses a critical unmet need: no pan-CRE agent active against both KPC and NDM carbapenemases currently exists.';
+  document.getElementById('grant-aim').value = 'Aim 1: Characterize in vitro activity against KPC and NDM carbapenemases. Aim 2: Evaluate PK/PD targets in murine infection models. Aim 3: Assess safety and efficacy in a Phase 1b/2a clinical trial in hospitalized patients with CRE infections.';
+  document.querySelectorAll('.grant-type-tab').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.grant-type-tab')[0]?.classList.add('active');
+  selectedGrantType = 'nih_r01';
+}
+
+function fillPortfolioExample() {
+  portfolioIdeas = [
+    { name: 'CRE Antibiotic', description: 'A novel beta-lactam/BLI combination targeting carbapenem-resistant Enterobacterales in hospitalized patients with serious infections and limited treatment options.' },
+    { name: 'Alzheimer AI Detection', description: 'An AI-powered speech pattern analysis tool for early detection of Alzheimer disease using cognitive biomarkers from routine clinical conversations.' },
+    { name: 'SMA Gene Therapy', description: 'An AAV9-delivered SMN1 gene replacement therapy for spinal muscular atrophy type 2 patients beyond the neonatal window using a tissue-specific promoter.' },
+    { name: 'Rural CGM Device', description: 'A 90-day wearable continuous glucose monitor for rural type 2 diabetes patients with no smartphone requirement targeting the 20% rural CGM adoption gap.' },
+    { name: 'KRAS G12D ADC', description: 'A KRAS G12D-targeted antibody-drug conjugate for pancreatic ductal adenocarcinoma linking a novel anti-KRAS antibody to a topoisomerase I inhibitor payload.' },
+  ];
+  renderPortfolioInputs();
+}
+
+
+
+async function runFullRetentionTest(btnEl) {
+  if (!currentUser) { openAuth('login'); return; }
+  const token = localStorage.getItem('pe_token');
+  const btn = btnEl;
+  btn.disabled = true;
+  btn.textContent = '⏳ Running tests…';
+
+  // Show results panel
+  let panel = document.getElementById('retention-test-panel');
+  if (!panel) {
+    panel = document.createElement('div');
+    panel.id = 'retention-test-panel';
+    panel.style.cssText = 'margin-top:16px;border:1px solid var(--border);padding:16px;background:var(--bg-2)';
+    btn.parentElement.parentElement.appendChild(panel);
+  }
+  panel.innerHTML = '<div style="font-family:var(--body);font-size:12px;color:var(--text-3)">Running retention tests...</div>';
+
+  try {
+    const res  = await fetch(`${API}/tracker/test-full`, {
+      method: 'POST',
+      headers: {'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json'}
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || 'Test failed');
+
+    const f = data.features || {};
+    const grants = Array.isArray(f.grant_deadlines) ? f.grant_deadlines : [];
+    const milestones = f.competitor_milestones || [];
+    const delta = f.signal_delta || {};
+    const staleness = f.staleness || {};
+
+    panel.innerHTML = `
+      <div style="font-family:var(--display);font-size:13px;font-weight:700;color:var(--text);margin-bottom:12px">
+        🧪 Retention Test Results — ${data.watchlist || 'Test Watchlist'}
+      </div>
+
+      <div style="margin-bottom:12px">
+        <div style="font-family:var(--display);font-size:11px;font-weight:700;color:var(--text-2);margin-bottom:6px">📊 REPORT STALENESS</div>
+        <div style="font-family:var(--body);font-size:12px;color:var(--text)">
+          Score: ${staleness.staleness_score || 0}/10 &nbsp;|&nbsp;
+          Recalculate: <strong style="color:${staleness.recalculate ? '#DC2626' : '#059669'}">${staleness.recalculate ? 'YES' : 'No'}</strong>
+          ${staleness.recalculate_reason ? `<br><span style="color:#DC2626">${staleness.recalculate_reason}</span>` : ''}
+          ${staleness.note ? `<br><span style="color:var(--text-3)">${staleness.note}</span>` : ''}
+        </div>
+      </div>
+
+      <div style="margin-bottom:12px">
+        <div style="font-family:var(--display);font-size:11px;font-weight:700;color:var(--text-2);margin-bottom:6px">💰 GRANT DEADLINES (${grants.length} found)</div>
+        ${grants.slice(0,4).map(g => `
+          <div style="font-family:var(--body);font-size:11px;color:var(--text);padding:4px 0;border-bottom:1px solid var(--border)">
+            <strong>${g.name}</strong> — ${g.amount}
+            ${g.days_until != null ? `<span style="color:${g.days_until<=14?'#DC2626':'#D97706'};font-weight:700"> (${g.days_until} days)</span>` : ' (Rolling)'}
+            <br><span style="color:var(--text-3)">${g.notes || ''}</span>
+          </div>`).join('')}
+        ${!grants.length ? '<div style="font-family:var(--body);font-size:11px;color:var(--text-3)">No upcoming deadlines in next 90 days</div>' : ''}
+      </div>
+
+      <div style="margin-bottom:12px">
+        <div style="font-family:var(--display);font-size:11px;font-weight:700;color:var(--text-2);margin-bottom:6px">🎯 COMPETITOR MILESTONES (${milestones.length} found)</div>
+        ${milestones.slice(0,3).map(m => {
+          const emoji = {approval:'✅',phase3_success:'📈',phase3_failure:'❌',btd:'⭐',acquisition:'💼'}[m.event_type] || '•';
+          return `<div style="font-family:var(--body);font-size:11px;color:var(--text);padding:4px 0;border-bottom:1px solid var(--border)">
+            ${emoji} <strong>${m.company || ''}</strong> — ${m.description || ''}
+            ${m.impact_on_pi ? `<br><span style="color:var(--blue)">${m.impact_on_pi}</span>` : ''}
+          </div>`;
+        }).join('')}
+        ${!milestones.length ? '<div style="font-family:var(--body);font-size:11px;color:var(--text-3)">No major competitor milestones found this week</div>' : ''}
+      </div>
+
+      <div style="margin-bottom:12px">
+        <div style="font-family:var(--display);font-size:11px;font-weight:700;color:var(--text-2);margin-bottom:6px">📡 SIGNAL DELTA</div>
+        <div style="font-family:var(--body);font-size:12px;color:var(--text)">
+          ${delta.new_in_30_days || 0} new signals in last 30 days
+          ${delta.source_summary ? `<br><span style="color:var(--text-3)">${delta.source_summary}</span>` : ''}
+        </div>
+      </div>
+
+      <div style="margin-bottom:12px">
+        <div style="font-family:var(--display);font-size:11px;font-weight:700;color:var(--text-2);margin-bottom:6px">🔬 LIVE CLINICAL TRIALS PIPELINE (ClinicalTrials.gov)</div>
+        ${(() => {
+          const ct = f.clinical_trials || {};
+          if (ct.error) return `<div style="font-family:var(--body);font-size:11px;color:#DC2626">Error: ${ct.error}</div>`;
+          const threatColor = ct.threat_level === 'high' ? '#DC2626' : ct.threat_level === 'medium' ? '#D97706' : '#059669';
+          return `<div style="font-family:var(--body);font-size:12px;color:var(--text)">
+            <strong>${ct.total_trials || 0}</strong> total trials | 
+            <strong>${ct.recruiting || 0}</strong> recruiting |
+            Threat: <strong style="color:${threatColor}">${(ct.threat_level||'unknown').toUpperCase()}</strong>
+            ${ct.summary ? `<br><span style="color:var(--text-3);font-size:11px">${ct.summary}</span>` : ''}
+          </div>
+          ${(ct.top_trials||[]).map(t => `
+            <div style="border:1px solid var(--border);padding:6px 10px;margin-top:6px;font-family:var(--body);font-size:10px">
+              <span style="color:${t.competitive_threat==='high'?'#DC2626':t.competitive_threat==='medium'?'#D97706':'#059669'};font-weight:700">${t.competitive_threat?.toUpperCase()||'?'}</span>
+              | <strong>${t.sponsor||'Unknown'}</strong> | ${(t.phase||[]).join(',')} | ${t.status||''}
+              <br>${t.title||''}
+              ${t.drugs?.length ? `<br>Drugs: ${t.drugs.join(', ')}` : ''}
+              ${t.expected_completion ? `<br>Completion: ${t.expected_completion}` : ''}
+              <br><a href="${t.url||'#'}" target="_blank" style="color:var(--blue)">View on ClinicalTrials.gov →</a>
+            </div>`).join('')}`;
+        })()}
+      </div>
+
+      <div style="margin-top:12px;padding:12px;background:var(--bg-3);border-left:3px solid var(--blue)">
+        <div style="font-family:var(--display);font-size:10px;font-weight:700;color:var(--text-2);margin-bottom:6px">FORMATTED ALERT PREVIEW</div>
+        <pre style="font-family:var(--body);font-size:11px;color:var(--text-2);white-space:pre-wrap;margin:0">${(data.formatted_alert || '').slice(0,500)}</pre>
+      </div>
+    `;
+  } catch(e) {
+    panel.innerHTML = `<div style="font-family:var(--body);font-size:12px;color:#DC2626">Error: ${e.message}</div>`;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '🧪 Test All Features';
+  }
+}
+
+// ── WEEKLY TRACKER ────────────────────────────────────────────────────────────
+function fillWatchlistExample() {
+  document.getElementById('wl-name').value = 'CRE Antibiotic Market';
+  document.getElementById('wl-desc').value = 'A novel beta-lactam/beta-lactamase inhibitor combination targeting carbapenem-resistant Enterobacterales (CRE) in hospitalized patients with serious infections and limited treatment options.';
+  document.getElementById('wl-keywords').value = 'CRE, carbapenem, QIDP, beta-lactamase, KPC, NDM, antibiotic resistance';
+  const sel = document.getElementById('wl-domain');
+  if (sel) sel.value = 'antibiotic_amr';
+}
+
+async function runTrackerNow() {
+  if (!currentUser) { openAuth('login'); return; }
+  const token = localStorage.getItem('pe_token');
+  const btn = event.target;
+  btn.disabled = true;
+  btn.textContent = '⏳ Running tracker…';
+  try {
+    const res  = await fetch(`${API}/tracker/run`, {
+      method: 'POST',
+      headers: {'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json'}
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || 'Tracker failed');
+    const recalc = data.recalculations_needed || 0;
+    const scanned = data.watchlists_scanned || 0;
+    alert(`✅ Tracker complete!\n\nScanned: ${scanned} watchlist(s)\nRecalculations needed: ${recalc}\n\nCheck your notification bell for new alerts.`);
+    loadUnreadCount();
+    loadNotifPanel();
+  } catch(e) {
+    alert('Tracker error: ' + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '▶ Run Weekly Tracker Now (test)';
+  }
+}
+
+
+// ── GRANT DEADLINES ───────────────────────────────────────────────────────────
+async function loadGrantDeadlines() {
+  if (!currentUser || !billingStatus?.is_active) return;
+  const token = localStorage.getItem('pe_token');
+  try {
+    const res  = await fetch(`${API}/tracker/grants?domain=all`, {
+      headers: {'Authorization': `Bearer ${token}`}
+    });
+    const data = await res.json();
+    const grants = data.grants || [];
+    const section = document.getElementById('grant-deadlines-section');
+    const list    = document.getElementById('grant-deadlines-list');
+    if (!grants.length || !section || !list) return;
+    section.style.display = 'block';
+    list.innerHTML = grants.map(g => {
+      const urgency = g.days_until <= 14 ? '#DC2626' : g.days_until <= 30 ? '#D97706' : '#059669';
+      const daysStr = g.days_until != null ? `<span style="color:${urgency};font-weight:700">${g.days_until} days</span>` : '<span style="color:var(--text-3)">Rolling</span>';
+      return `<div style="border:1px solid var(--border);padding:12px 16px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div style="font-family:var(--display);font-size:12px;font-weight:700;color:var(--text)">${g.name}</div>
+          <div style="font-family:var(--body);font-size:11px;color:var(--text-3);margin-top:3px">${g.funder} · ${g.amount}</div>
+          <div style="font-family:var(--body);font-size:10px;color:var(--text-4);margin-top:2px">${g.notes || ''}</div>
+        </div>
+        <div style="text-align:right;flex-shrink:0;margin-left:16px">
+          ${daysStr}
+          <div><a href="${g.url}" target="_blank" style="font-family:var(--body);font-size:10px;color:var(--blue)">Apply →</a></div>
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e) { /* silent */ }
+}
+
+// Init
+loadIndex();
+// Hide pathogen field for non-antibiotic on load
+document.getElementById('pathogen-row').style.display = '';
+</script>
+
+<!-- PAYWALL MODAL -->
+<div id="paywall-overlay" class="paywall-overlay" style="display:none" onclick="if(event.target===this)closePaywall()">
+  <div class="paywall-modal">
+    <div class="paywall-header">
+      <div class="paywall-badge">Project Elevate</div>
+      <div class="paywall-title">Choose your plan</div>
+      <div class="paywall-sub">Subscribe to run reports and unlock all tools. Cancel anytime.</div>
+    </div>
+    <div class="paywall-body">
+      <div class="pricing-card" style="border-color:#6b7280;margin-bottom:12px">
+        <div class="pricing-name">Basic Plan</div>
+        <div class="pricing-price">$20<span>/month</span></div>
+        <div class="pricing-trial" style="color:var(--text-3)">3 reports per month</div>
+        <ul class="pricing-features">
+          <li>3 intelligence reports/month</li>
+          <li>32 sub-expert profiles</li>
+          <li>Live web search — current 2026 data</li>
+          <li>Source citations with real URLs</li>
+        </ul>
+        <button class="paywall-cta" style="background:#6b7280" onclick="startCheckout('basic')">Subscribe for $20/month →</button>
+      </div>
+      <div class="pricing-card">
+        <div class="pricing-badge">MOST POPULAR</div>
+        <div class="pricing-name">Starter Plan</div>
+        <div class="pricing-price">$79<span>/month</span></div>
+        <div class="pricing-trial">✓ Unlimited reports — cancel anytime</div>
+        <ul class="pricing-features">
+          <li>Unlimited intelligence reports</li>
+          <li>32 sub-expert profiles across all disease domains</li>
+          <li>Live web search — current 2026 data in every report</li>
+          <li>19+ source citations per report with real URLs</li>
+          <li>Trial site optimizer — top 15 recruitment hospitals</li>
+          <li>Lab portfolio discovery — 2×2 innovation heatmap</li>
+          <li>Grant co-pilot — NIH R01, SBIR, NSF sections</li>
+          <li>LangGraph validation — independent AI fact-checking</li>
+        </ul>
+        <button class="paywall-cta" onclick="startCheckout('starter')">Subscribe for $79/month →</button>
+        <button class="paywall-dismiss" onclick="closePaywall()">Maybe later</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TRIAL BANNER (shown when user is in trial) -->
+<div id="trial-banner" class="trial-banner">
+  <div class="trial-banner-text"><strong id="trial-days">7</strong> days left in your free trial</div>
+  <button class="trial-upgrade-btn" onclick="startCheckout()">Upgrade Now</button>
+</div>
+
+<script>
+// ── BILLING / PAYWALL ─────────────────────────────────────────────────────────
+
+// Handle Stripe redirect back (success or cancel)
+
+(function handleStripeRedirect() {
+
+  const params = new URLSearchParams(window.location.search);
+
+  if (params.get('stripe') === 'success') {
+
+    // Clean URL
+
+    window.history.replaceState({}, '', window.location.pathname);
+
+    // Show success message and reload billing status
+
+    setTimeout(async () => {
+
+      await loadBillingStatus();
+
+      closePaywall();
+
+      const banner = document.createElement('div');
+
+      banner.style.cssText = 'position:fixed;top:16px;left:50%;transform:translateX(-50%);background:#059669;color:#fff;padding:12px 24px;font-family:var(--display);font-size:13px;font-weight:700;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.3)';
+
+      banner.textContent = '🎉 Free trial activated! You have 7 days of full access.';
+
+      document.body.appendChild(banner);
+
+      setTimeout(() => banner.remove(), 5000);
+
+    }, 1500);
+
+  }
+
+  if (params.get('stripe') === 'cancel') {
+
+    window.history.replaceState({}, '', window.location.pathname);
+
+  }
+
+})();
+let billingStatus = null;
+
+async function loadBillingStatus() {
+  if (!currentUser) return;
+  // Developer bypass
+  if (DEV_EMAILS.includes(currentUser.email)) {
+    billingStatus = {subscription_status:'active', is_active:true, plan:'developer', free_reports_used:0, free_reports_remaining:999};
+    return;
+  }
+  const token = localStorage.getItem('pe_token');
+  try {
+    const res  = await fetch(`${API}/billing/status`, {headers:{'Authorization':`Bearer ${token}`}});
+    billingStatus = await res.json();
+    // Show free report counter badge
+    if (billingStatus && !billingStatus.is_active) {
+      const used = billingStatus.free_reports_used || 0;
+      const badge = document.getElementById('free-report-badge');
+      if (badge) {
+        badge.textContent = used >= 1 ? '0 free reports left — subscribe to continue' : '1 free report remaining';
+        badge.style.display = 'inline-block';
+        badge.style.background = used >= 1 ? '#DC2626' : '#059669';
+        badge.style.color = '#fff';
+        badge.style.padding = '3px 10px';
+        badge.style.fontSize = '11px';
+        badge.style.fontWeight = '600';
+      }
+    }
+    // Show trial banner if in trial
+    if (billingStatus.subscription_status === 'trialing' && billingStatus.trial_ends_at) {
+      const daysLeft = Math.ceil((new Date(billingStatus.trial_ends_at) - new Date()) / 86400000);
+      if (daysLeft > 0 && daysLeft <= 3) {
+        document.getElementById('trial-days').textContent = daysLeft;
+        document.getElementById('trial-banner').classList.add('show');
+      }
+    }
+  } catch(e) { /* silent */ }
+}
+
+function showPaywall() {
+  document.getElementById('paywall-overlay').style.display = 'flex';
+}
+
+function closePaywall() {
+  document.getElementById('paywall-overlay').style.display = 'none';
+}
+
+async function startCheckout(plan='starter') {
+  if (!currentUser) { openAuth('login'); return; }
+  const token = localStorage.getItem('pe_token');
+  try {
+    const stripeTab = window.open('', '_blank');
+    const res  = await fetch(`${API}/billing/create-checkout`, {
+      method:'POST', headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},
+      body: JSON.stringify({plan})
+    });
+    const data = await res.json();
+    if (data.checkout_url) {
+      stripeTab.location.href = data.checkout_url;
+      const stripeTabRef = stripeTab;
+      // Poll for return — close modal when billing status becomes active
+      const poll = setInterval(async () => {
+        await loadBillingStatus();
+        if (billingStatus && billingStatus.is_active) {
+          clearInterval(poll);
+          closePaywall();
+          const banner = document.createElement('div');
+          banner.style.cssText = 'position:fixed;top:16px;left:50%;transform:translateX(-50%);background:#059669;color:#fff;padding:12px 24px;font-family:var(--display);font-size:13px;font-weight:700;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.3);border-radius:2px';
+          banner.textContent = '🎉 Free trial activated! You have 7 days of full access.';
+          document.body.appendChild(banner);
+          setTimeout(() => banner.remove(), 5000);
+        }
+      }, 3000);
+      // Stop polling after 10 minutes
+      setTimeout(() => clearInterval(poll), 600000);
+    } else {
+      alert('Failed to start checkout: ' + (data.detail || 'Unknown error'));
+    }
+  } catch(e) { alert('Checkout failed: ' + e.message); }
+}
+
+// Intercept 402 errors from any API call and show paywall
+const _originalFetch = window.fetch;
+window.fetch = async function(...args) {
+  const response = await _originalFetch(...args);
+  if (response.status === 402) {
+    const clone = response.clone();
+    clone.json().then(data => {
+      if (data.detail?.error === 'subscription_required') showPaywall();
+    }).catch(() => showPaywall());
+  }
+  return response;
+};
+
+function pricingCheckout(plan) {
+  if (!currentUser) { openAuth('register'); return; }
+  startCheckout(plan);
+}
+</script>
+</body>
+</html>
+ 
