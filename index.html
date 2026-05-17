@@ -1534,8 +1534,7 @@ async function handleGoogleCredential(response) {
     });
     const data = await res.json();
     if (!res.ok) return showAuthErr(data.detail || 'Google sign-in failed.');
-    localStorage.setItem('pe_token', data.access_token);
-    localStorage.setItem('pe_user', JSON.stringify({email: data.email, name: data.name}));
+    storeAuth(data);
     closeAuth();
     await loadBillingStatus();
     showToast('Signed in with Google ✓');
