@@ -960,18 +960,19 @@ function tab(name) {
   }
 
   // Use original tab switching with t- prefix IDs
-  ['pi','index','needs','reports','watchlists','trials','portfolio','grant'].forEach(t => {
+  ['pi','index','needs','reports','profile','watchlists','trials','portfolio','grant'].forEach(t => {
     const el = document.getElementById('t-'+t);
     if (el) el.style.display = t === name ? '' : 'none';
   });
   document.querySelectorAll('.ntab').forEach((el,i) => {
-    el.classList.toggle('on', ['pi','index','needs','reports','watchlists','trials','portfolio','grant'][i] === name);
+    el.classList.toggle('on', ['pi','index','needs','reports','profile','watchlists','trials','portfolio','grant'][i] === name);
   });
 
   // Lazy-load tab content
   if (name === 'index')      loadIndex();
   if (name === 'needs')      loadNeeds();
   if (name === 'reports')    loadReports();
+  if (name === 'profile')    loadProfile();
   if (name === 'watchlists') { loadWatchlists(); loadGrantDeadlines(); }
   if (name === 'portfolio')  initPortfolio();
 }
