@@ -1179,7 +1179,7 @@ function renderPIReport(r) {
 
     // Narrative intro
     html += `<div class="narrative-block">
-      The competitive and clinical landscape for <strong>${di.condition}</strong> defines both your opportunity and your obstacles. Here is what the data shows, and what it means for your product strategy.
+      The competitive and clinical landscape for <strong>${di.condition}</strong> defines the opportunity size and development risk. The data below establishes the epidemiological basis for your market sizing and regulatory strategy.
     </div>`;
 
     // Data points grid
@@ -1225,7 +1225,7 @@ function renderPIReport(r) {
       : `$${(ms.serviceable_market_usd/1e6).toFixed(0)}M`;
 
     html += `<div class="narrative-block">
-      The total addressable market is <strong>${tamVal}</strong> if you capture 100% of treatable patients — a theoretical ceiling. The realistic serviceable market, accounting for formulary access, competitive share, and geographic reach, is <strong>${samVal}</strong>. Here is how that number is built from the ground up.
+      The total addressable market is <strong>${tamVal}</strong> assuming 100% patient capture. The serviceable market, adjusted for formulary access, competitive share, and geographic concentration, is <strong>${samVal}</strong>. The calculation below builds this figure from primary epidemiological sources.
     </div>`;
 
     html += `<div class="ms-totals">
@@ -1277,7 +1277,7 @@ function renderPIReport(r) {
     html += chapterHeader('3', 'Your Path to Approval', 'The FDA regulatory strategy, designations to pursue, and clinical trial roadmap');
 
     html += `<div class="narrative-block">
-      Getting your product approved requires navigating a specific FDA pathway. Based on your product type and indication, here is the recommended strategy — including which designations to apply for, in what order, and why each matters to your timeline and exclusivity.
+      The recommended FDA pathway below is based on your product type and indication. Each designation is ranked by priority, with specific application timing and impact on exclusivity and trial burden.
     </div>`;
 
     // Recommended pathway callout
@@ -1300,7 +1300,7 @@ function renderPIReport(r) {
 
     // Designations
     if (rp.designations && rp.designations.length) {
-      html += `<div class="narrative-block">These are the FDA designations you should pursue, ranked by priority. Each one changes your timeline, exclusivity, or trial burden in a specific way.</div>`;
+      html += `<div class="narrative-block">FDA designations below are ranked by development priority. Each designation has distinct eligibility requirements, application timing, and impact on exclusivity or trial design.</div>`;
       html += `<div style="font-family:var(--display);font-size:11px;font-weight:700;color:var(--text-3);letter-spacing:.05em;text-transform:uppercase;margin-bottom:8px">FDA Designations & Pathways</div>`;
       rp.designations.forEach(d => {
         const srcHtml = d.source_url
@@ -1326,7 +1326,7 @@ function renderPIReport(r) {
     // Clinical trials as a story
     if (rp.clinical_trial_requirements && rp.clinical_trial_requirements.length) {
       html += `<div class="narrative-block" style="margin-top:20px">
-        Your clinical development program will run in three phases. Here is what each phase requires, what it costs, and what FDA expects you to prove before advancing.
+        The clinical development program runs in three phases. Each phase below includes FDA-required patient counts, endpoints from the applicable guidance document, estimated cost, and historical success probability.
       </div>`;
       html += `<div style="font-family:var(--display);font-size:11px;font-weight:700;color:var(--text-3);letter-spacing:.05em;text-transform:uppercase;margin-bottom:8px">Clinical Trial Requirements</div>`;
       rp.clinical_trial_requirements.forEach(t => {
@@ -1378,7 +1378,7 @@ function renderPIReport(r) {
     html += chapterHeader('4', 'Getting to Market', 'Who buys your product, how reimbursement works, and how to win formulary access');
 
     html += `<div class="narrative-block">
-      FDA approval is not the finish line — it is the starting gun for commercial launch. Here is who makes the purchasing decisions, what drives formulary access, and how reimbursement flows.
+      FDA approval opens the commercial pathway. This section covers who controls purchasing decisions, how reimbursement is structured, and what drives formulary access at target institutions.
     </div>`;
 
     html += `<div class="callout-box callout-blue">
@@ -1427,7 +1427,7 @@ function renderPIReport(r) {
   // Funding
   if (r.regulatory_pathway && r.regulatory_pathway.funding_programs && r.regulatory_pathway.funding_programs.length) {
     html += `<div class="narrative-block">
-      Before you spend equity capital, exhaust the non-dilutive funding available for your indication. Here are the programs you should apply to, in sequence.
+      Non-dilutive funding should be secured before deploying equity capital. The programs below are ordered by typical application timing relative to development stage.
     </div>`;
     html += `<div class="callout-box callout-green">
       <div class="callout-label">💵 Non-Dilutive Funding Sources</div>
@@ -1438,7 +1438,7 @@ function renderPIReport(r) {
   }
 
   if (r.recommended_next_steps && r.recommended_next_steps.length) {
-    html += `<div class="narrative-block">These are your next concrete actions, ordered by priority.</div>`;
+    html += `<div class="narrative-block">Prioritized action items based on the regulatory strategy and development timeline above.</div>`;
     html += '<ol class="steps">' + r.recommended_next_steps.map(s => `<li>${s}</li>`).join('') + '</ol>';
   }
 
@@ -1490,6 +1490,17 @@ function renderPIReport(r) {
     showAlertBar(r);
   }
 }
+
+function chapterHeader(num, title, subtitle) {
+  return `<div style="display:flex;align-items:flex-start;gap:16px;margin:32px 0 16px;padding-bottom:12px;border-bottom:2px solid var(--blue)">
+    <div style="background:var(--blue);color:#fff;font-family:var(--display);font-size:14px;font-weight:700;width:32px;height:32px;display:flex;align-items:center;justify-content:center;flex-shrink:0">${num}</div>
+    <div>
+      <div style="font-family:var(--display);font-size:17px;font-weight:700;color:var(--text)">${title}</div>
+      <div style="font-family:var(--body);font-size:12px;color:var(--text-3);margin-top:2px">${subtitle}</div>
+    </div>
+  </div>`;
+}
+
 
 function chapterHeader(num, title, subtitle) {
   return `<div style="display:flex;align-items:flex-start;gap:16px;margin:32px 0 16px;padding-bottom:12px;border-bottom:2px solid var(--blue)">
