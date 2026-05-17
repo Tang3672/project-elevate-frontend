@@ -862,6 +862,12 @@
             </div>
             
             <button class="btn-primary" id="run-btn" onclick="runAnalysis()">Run Analysis</button>
+          <div style="margin-top:8px;text-align:center">
+            <label style="font-family:var(--body);font-size:11px;color:var(--text-4);cursor:pointer">
+              <input type="checkbox" id="mock-toggle" onchange="window._mockMode=this.checked" style="margin-right:4px">
+              Dev mock mode (no API tokens)
+            </label>
+          </div>
           </div>
         </div>
       </div>
@@ -1147,11 +1153,11 @@ async function runAnalysis() {
       tier1_category: selectedType,
       target_pathogen: document.getElementById('pathogen').value.trim() || null
     };
-    const res = await fetch(`${API}/alignment/pi-report`, {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify(payload)
-    });
+    const endpoint = window._mockMode ? `${API}/alignment/pi-report/mock` : `${API}/alignment/pi-report`;
+    const fetchOpts = window._mockMode
+      ? {method:'GET', headers:{'Authorization':`Bearer ${localStorage.getItem('pe_token')}`}}
+      : {method:'POST', headers:{'Content-Type':'application/json','Authorization':`Bearer ${localStorage.getItem('pe_token')}`}, body: JSON.stringify(payload)};
+    const res = await fetch(endpoint, fetchOpts);
     if (!res.ok) { const e = await res.json(); throw new Error(e.detail || `HTTP ${res.status}`); }
     renderPIReport(await res.json());
   } catch(e) {
