@@ -509,6 +509,7 @@
       </button>
       <div class="user-menu" id="user-menu">
         <button class="user-menu-item" onclick="tab('reports')">My Reports</button>
+        <button class="user-menu-item" onclick="tab('profile')">My Profile</button>
         <button class="user-menu-item danger" onclick="logout()">Sign Out</button>
       </div>
     </div>
@@ -2363,10 +2364,22 @@ document.getElementById('pathogen-row').style.display = '';
   <div class="paywall-modal">
     <div class="paywall-header">
       <div class="paywall-badge">Project Elevate</div>
-      <div class="paywall-title">Unlock full access</div>
-      <div class="paywall-sub">You've used your 1 free report. Subscribe to run unlimited reports and unlock all tools.</div>
+      <div class="paywall-title">Choose your plan</div>
+      <div class="paywall-sub">Subscribe to run reports and unlock all tools. Cancel anytime.</div>
     </div>
     <div class="paywall-body">
+      <div class="pricing-card" style="border-color:#6b7280;margin-bottom:12px">
+        <div class="pricing-name">Basic Plan</div>
+        <div class="pricing-price">$20<span>/month</span></div>
+        <div class="pricing-trial" style="color:var(--text-3)">3 reports per month</div>
+        <ul class="pricing-features">
+          <li>3 PI intelligence reports/month</li>
+          <li>32 sub-expert profiles</li>
+          <li>Live web search — current 2026 data</li>
+          <li>Source citations with real URLs</li>
+        </ul>
+        <button class="paywall-cta" style="background:#6b7280" onclick="startCheckout('basic')">Subscribe for $20/month →</button>
+      </div>
       <div class="pricing-card">
         <div class="pricing-badge">MOST POPULAR</div>
         <div class="pricing-name">Starter Plan</div>
@@ -2382,7 +2395,7 @@ document.getElementById('pathogen-row').style.display = '';
           <li>Grant co-pilot — NIH R01, SBIR, NSF sections</li>
           <li>LangGraph validation — independent AI fact-checking</li>
         </ul>
-        <button class="paywall-cta" onclick="startCheckout()">Subscribe for $79/month →</button>
+        <button class="paywall-cta" onclick="startCheckout('starter')">Subscribe for $79/month →</button>
         <button class="paywall-dismiss" onclick="closePaywall()">Maybe later</button>
       </div>
     </div>
@@ -2485,14 +2498,14 @@ function closePaywall() {
   document.getElementById('paywall-overlay').style.display = 'none';
 }
 
-async function startCheckout() {
+async function startCheckout(plan='starter') {
   if (!currentUser) { openAuth('login'); return; }
   const token = localStorage.getItem('pe_token');
   try {
-    // Open blank tab BEFORE await to avoid browser popup blocker
     const stripeTab = window.open('', '_blank');
     const res  = await fetch(`${API}/billing/create-checkout`, {
-      method:'POST', headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`}
+      method:'POST', headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},
+      body: JSON.stringify({plan})
     });
     const data = await res.json();
     if (data.checkout_url) {
