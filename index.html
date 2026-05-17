@@ -1412,7 +1412,10 @@ function renderPIReport(r) {
 
     if (ma.key_opinion_leaders && ma.key_opinion_leaders.length) {
       html += `<div style="margin:16px 0 8px"><div style="font-family:var(--display);font-size:11px;font-weight:700;color:var(--text-3);letter-spacing:.05em;text-transform:uppercase;margin-bottom:6px">Key Opinion Leaders to Engage</div>`;
-      html += '<ul class="strategy-list">' + ma.key_opinion_leaders.map(k => `<li>${k}</li>`).join('') + '</ul></div>';
+      html += '<ul class="strategy-list">' + ma.key_opinion_leaders.map(k => {
+        if (typeof k === 'object') return `<li><strong>${k.name}</strong> (${k.institution}) — ${k.expertise}</li>`;
+        return `<li>${k}</li>`;
+      }).join('') + '</ul></div>';
     }
 
     if (ma.international_opportunities && ma.international_opportunities.length) {
