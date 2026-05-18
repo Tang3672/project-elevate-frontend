@@ -1218,6 +1218,27 @@ function renderPIReport(r) {
     </div>`;
   }
 
+  // ── LITERATURE CITATIONS ─────────────────────────────────────────────────
+  if (r.literature_citations && r.literature_citations.length) {
+    html += '<div style="margin:20px 0;border:1px solid var(--border);padding:16px;background:var(--bg-2)">';
+    html += '<div style="font-family:var(--display);font-size:11px;font-weight:700;color:var(--text-3);letter-spacing:.05em;text-transform:uppercase;margin-bottom:4px">Peer-Reviewed Literature (' + r.literature_citations.length + ' papers)</div>';
+    html += '<div style="font-family:var(--body);font-size:11px;color:var(--text-3);margin-bottom:12px">Retrieved from PubMed. Cite these in grant applications and investor materials to support market sizing and unmet need claims.</div>';
+    r.literature_citations.forEach(function(p, i) {
+      var url = p.url || p.source_url || (p.pmid ? 'https://pubmed.ncbi.nlm.nih.gov/' + p.pmid + '/' : '');
+      var link = url ? '<a href="' + url + '" target="_blank" style="color:var(--blue);font-size:11px;font-weight:600">PubMed</a>' : '';
+      var pmidBadge = p.pmid ? '<span style="background:var(--blue-pale);color:var(--blue);font-family:var(--display);font-size:10px;font-weight:700;padding:1px 6px;margin-right:6px">PMID ' + p.pmid + '</span>' : '';
+      html += '<div style="padding:10px 0;border-bottom:1px solid var(--border)">';
+      html += pmidBadge + link;
+      html += '<div style="font-family:var(--body);font-size:12px;font-weight:600;color:var(--text);margin-top:4px">' + p.title + '</div>';
+      html += '<div style="font-family:var(--body);font-size:11px;color:var(--text-3);margin-top:2px">' + p.authors + ' &middot; <em>' + p.journal + '</em> &middot; ' + p.year + '</div>';
+      if (p.relevance) {
+        html += '<div style="font-family:var(--body);font-size:11px;color:var(--blue);margin-top:4px;padding:4px 8px;background:var(--blue-pale);border-left:3px solid var(--blue)">Grant relevance: ' + p.relevance + '</div>';
+      }
+      html += '</div>';
+    });
+    html += '</div>';
+  }
+
   // ── CHAPTER 2: THE MARKET ──────────────────────────────────────────────────
   if (r.market_sizing) {
     const ms = r.market_sizing;
