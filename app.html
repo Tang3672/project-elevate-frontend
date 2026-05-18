@@ -1524,7 +1524,7 @@ function renderPIReport(r) {
     html += '</div>';
   }
 
-  html += '<div class="rmeta">Generated ${new Date(r.generated_at).toLocaleString()} · ${fmt(r.signals_searched)} signals searched · Model v${r.model_version}</div>`;
+  html += '<div class="rmeta">Generated ' + new Date(r.generated_at).toLocaleString() + ' · ' + fmt(r.signals_searched) + ' signals searched · Model v' + r.model_version + '</div>';
   html += '</div>';
 
   document.getElementById('results').innerHTML = html;
