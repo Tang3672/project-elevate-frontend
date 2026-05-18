@@ -1400,10 +1400,11 @@ function renderPIReport(r) {
   }
 
   // STRATEGIC PLAYBOOK
-  if (r.strategic_playbook && r.strategic_playbook.length) {
+  if (true) { // always show strategic playbook
+  var playbook = r.strategic_playbook || [];
     html += chapterHeader('4', 'Strategic Playbook', 'Proven strategies from comparable companies - with named examples and sources');
     html += '<div style="font-family:var(--body);font-size:13px;color:var(--text-2);line-height:1.8;margin-bottom:16px">The following strategies have been used by companies in this space to accelerate development, reduce capital requirements, or expand market opportunity. Each is sourced from a real company and drug.</div>';
-    r.strategic_playbook.forEach(function(s, i) {
+    playbook.forEach(function(s, i) {
       var link = s.source_url ? '<a href="' + s.source_url + '" target="_blank" style="color:var(--blue);font-size:11px;font-weight:600">Source</a>' : '';
       html += '<div style="border:1px solid var(--border);padding:16px;margin-bottom:12px;background:var(--bg-2)">';
       html += '<div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">';
