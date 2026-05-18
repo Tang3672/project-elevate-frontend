@@ -1518,22 +1518,50 @@ function renderPIReport(r) {
     html += `<div class="lim"><div class="lim-lbl">Data Limitations & Caveats</div><div class="lim-txt">${r.limitations}</div></div>`;
   }
 
-  // SOURCES
-  // Merge literature citations into sources list
+  // SOURCES - merge ALL sources including literature, buyer segments, KOLs
   var allSources = (r.sources || []).slice();
+  var seenUrls = new Set(allSources.map(function(s) { return s.url; }));
+  var today = new Date().toISOString().slice(0,10);
+
+  function addToSources(name, url) {
+    if (!url || url === '' || seenUrls.has(url)) return;
+    // Skip generic CDC PLACES links that don't provide specific evidence
+    if (url === 'https://www.cdc.gov/places' || url === 'https://chronicdata.cdc.gov') return;
+    seenUrls.add(url);
+    var nextNum = allSources.length + 1;
+    allSources.push({ number: nextNum, name: name, url: url, accessed: today });
+  }
+
+  // Add literature citations
   if (r.literature_citations && r.literature_citations.length) {
-    var existingNums = allSources.map(function(s) { return s.number; });
-    var nextNum = allSources.length ? Math.max.apply(null, existingNums) + 1 : 1;
     r.literature_citations.forEach(function(p) {
       var url = p.url || p.source_url || (p.pmid ? 'https://pubmed.ncbi.nlm.nih.gov/' + p.pmid + '/' : '');
-      allSources.push({
-        number: nextNum++,
-        name: p.authors + ' (' + p.year + '). ' + p.title + '. ' + p.journal,
-        url: url,
-        accessed: '2026-05-17'
-      });
+      var name = p.authors + ' (' + p.year + '). ' + p.title + '. ' + p.journal;
+      addToSources(name, url);
     });
   }
+
+  // Add buyer segment sources
+  if (r.market_access && r.market_access.buyer_segments) {
+    r.market_access.buyer_segments.forEach(function(b) {
+      if (b.source_url) addToSources(b.source + ' - ' + b.segment_name, b.source_url);
+    });
+  }
+
+  // Add strategic playbook sources
+  var playbook = r.strategic_playbook || [];
+  playbook.forEach(function(s) {
+    if (s.source_url) addToSources(s.example + ' - ' + s.strategy, s.source_url);
+  });
+
+  // Add reimbursement source if available
+  if (r.market_access && r.market_access.reimbursement_source_url) {
+    addToSources('Reimbursement pathway', r.market_access.reimbursement_source_url);
+  }
+
+  // Renumber sequentially
+  allSources.forEach(function(s, i) { s.number = i + 1; });
+
   if (allSources.length) {
     html += '<div class="sdiv"><span class="sdiv-lbl">Sources & Citations (' + allSources.length + ')</span><div class="sdiv-line"></div></div>';
     html += '<div style="background:var(--bg-3);border:1px solid var(--border);padding:14px 16px;margin-bottom:16px">';
