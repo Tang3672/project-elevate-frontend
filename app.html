@@ -1491,26 +1491,40 @@ function renderPIReport(r) {
   }
 
   // ── SOURCES ────────────────────────────────────────────────────────────────
-  if (r.sources && r.sources.length) {
-    html += `<div class="sdiv"><span class="sdiv-lbl">Sources & Citations (${r.sources.length})</span><div class="sdiv-line"></div></div>`;
+  // Merge literature citations into sources list
+  var allSources = (r.sources || []).slice();
+  if (r.literature_citations && r.literature_citations.length) {
+    var existingNums = allSources.map(function(s) { return s.number; });
+    var nextNum = allSources.length ? Math.max.apply(null, existingNums) + 1 : 1;
+    r.literature_citations.forEach(function(p) {
+      var url = p.url || p.source_url || (p.pmid ? 'https://pubmed.ncbi.nlm.nih.gov/' + p.pmid + '/' : '');
+      allSources.push({
+        number: nextNum++,
+        name: p.authors + ' (' + p.year + '). ' + p.title + '. ' + p.journal,
+        url: url,
+        accessed: '2026-05-17'
+      });
+    });
+  }
+  if (allSources.length) {
+    html += '<div class="sdiv"><span class="sdiv-lbl">Sources & Citations (' + allSources.length + ')</span><div class="sdiv-line"></div></div>';
     html += '<div style="background:var(--bg-3);border:1px solid var(--border);padding:14px 16px;margin-bottom:16px">';
-    r.sources.forEach(s => {
-      const link = s.url
-        ? `<a href="${s.url}" target="_blank" style="color:var(--blue);text-decoration:none;font-size:11px">${s.url}</a>`
-        : `<span style="font-size:11px;color:var(--text-4)">No URL available</span>`;
-      html += `<div style="display:grid;grid-template-columns:28px 1fr;gap:8px;padding:7px 0;border-bottom:1px solid var(--border)">
-        <span style="font-family:var(--display);font-size:12px;font-weight:700;color:var(--blue);padding-top:1px">[${s.number}]</span>
-        <div>
-          <div style="font-family:var(--body);font-size:12px;font-weight:500;color:var(--text-2);margin-bottom:2px">${s.name}</div>
-          ${link}
-          ${s.accessed ? `<span style="font-family:var(--body);font-size:10px;color:var(--text-4);margin-left:8px">· Accessed ${s.accessed}</span>` : ''}
-        </div>
-      </div>`;
+    allSources.forEach(function(s) {
+      var link = s.url
+        ? '<a href="' + s.url + '" target="_blank" style="color:var(--blue);text-decoration:none;font-size:11px">' + s.url + '</a>'
+        : '<span style="font-size:11px;color:var(--text-4)">No URL available</span>';
+      html += '<div style="display:grid;grid-template-columns:28px 1fr;gap:8px;padding:7px 0;border-bottom:1px solid var(--border)">';
+      html += '<span style="font-family:var(--display);font-size:12px;font-weight:700;color:var(--blue);padding-top:1px">[' + s.number + ']</span>';
+      html += '<div>';
+      html += '<div style="font-family:var(--body);font-size:12px;font-weight:500;color:var(--text-2);margin-bottom:2px">' + s.name + '</div>';
+      html += link;
+      if (s.accessed) html += '<span style="font-family:var(--body);font-size:10px;color:var(--text-4);margin-left:8px">· Accessed ' + s.accessed + '</span>';
+      html += '</div></div>';
     });
     html += '</div>';
   }
 
-  html += `<div class="rmeta">Generated ${new Date(r.generated_at).toLocaleString()} · ${fmt(r.signals_searched)} signals searched · Model v${r.model_version}</div>`;
+  html += '<div class="rmeta">Generated ${new Date(r.generated_at).toLocaleString()} · ${fmt(r.signals_searched)} signals searched · Model v${r.model_version}</div>`;
   html += '</div>';
 
   document.getElementById('results').innerHTML = html;
