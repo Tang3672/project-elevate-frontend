@@ -1401,7 +1401,7 @@ function renderPIReport(r) {
 
   // STRATEGIC PLAYBOOK
   if (true) { // always show strategic playbook
-  var playbook = r.strategic_playbook || [];
+    var playbook = r.strategic_playbook || [];
     html += chapterHeader('4', 'Strategic Playbook', 'Proven strategies from comparable companies - with named examples and sources');
     html += '<div style="font-family:var(--body);font-size:13px;color:var(--text-2);line-height:1.8;margin-bottom:16px">The following strategies have been used by companies in this space to accelerate development, reduce capital requirements, or expand market opportunity. Each is sourced from a real company and drug.</div>';
     playbook.forEach(function(s, i) {
