@@ -1399,10 +1399,37 @@ function renderPIReport(r) {
     }
   }
 
+  // ── STRATEGIC PLAYBOOK ───────────────────────────────────────────────────────
+  if (r.strategic_playbook && r.strategic_playbook.length) {
+    html += chapterHeader('4', 'Strategic Playbook', 'Proven strategies from comparable companies — with named examples and sources');
+    html += '<div style="font-family:var(--body);font-size:13px;color:var(--text-2);line-height:1.8;margin-bottom:16px">The following strategies have been used by companies in this space to accelerate development, reduce capital requirements, or expand market opportunity. Each is sourced from a real company and drug.</div>';
+    r.strategic_playbook.forEach(function(s, i) {
+      var link = s.source_url ? '<a href="' + s.source_url + '" target="_blank" style="color:var(--blue);font-size:11px;font-weight:600">Source</a>' : '';
+      html += '<div style="border:1px solid var(--border);padding:16px;margin-bottom:12px;background:var(--bg-2)">';
+      html += '<div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">';
+      html += '<div style="background:var(--blue);color:#fff;font-family:var(--display);font-size:11px;font-weight:700;padding:2px 10px;flex-shrink:0">STRATEGY ' + (i+1) + '</div>';
+      html += '<div style="font-family:var(--display);font-size:14px;font-weight:700;color:var(--text)">' + s.strategy + '</div>';
+      html += '</div>';
+      html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:8px">';
+      html += '<div style="background:var(--bg-3);padding:10px">';
+      html += '<div style="font-family:var(--display);font-size:10px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">Real Example</div>';
+      html += '<div style="font-family:var(--body);font-size:12px;color:var(--text-2);font-weight:600">' + (s.example || '') + '</div>';
+      html += '<div style="font-family:var(--body);font-size:11px;color:var(--text-3);margin-top:4px">' + (s.what_they_did || '') + '</div>';
+      html += '</div>';
+      html += '<div style="background:var(--blue-pale);padding:10px;border-left:3px solid var(--blue)">';
+      html += '<div style="font-family:var(--display);font-size:10px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">Apply to Your Product</div>';
+      html += '<div style="font-family:var(--body);font-size:12px;color:var(--text-2)">' + (s.how_to_apply || '') + '</div>';
+      html += '</div>';
+      html += '</div>';
+      if (link) html += '<div style="text-align:right">' + link + '</div>';
+      html += '</div>';
+    });
+  }
+
   // ── CHAPTER 4: GETTING TO MARKET ───────────────────────────────────────────
   if (r.market_access) {
     const ma = r.market_access;
-    html += chapterHeader('4', 'Getting to Market', 'Who buys your product, how reimbursement works, and how to win formulary access');
+    html += chapterHeader('5', 'Getting to Market', 'Who buys your product, how reimbursement works, and how to win formulary access');
 
     html += `<div class="narrative-block">
       FDA approval opens the commercial pathway. This section covers who controls purchasing decisions, how reimbursement is structured, and what drives formulary access at target institutions.
@@ -1452,7 +1479,7 @@ function renderPIReport(r) {
   }
 
   // ── CHAPTER 5: YOUR ACTION PLAN ────────────────────────────────────────────
-  html += chapterHeader('5', 'Your Action Plan', 'Prioritized next steps, funding sources, and the critical path forward');
+  html += chapterHeader('6', 'Your Action Plan', 'Prioritized next steps, funding sources, and the critical path forward');
 
   // Funding
   if (r.regulatory_pathway && r.regulatory_pathway.funding_programs && r.regulatory_pathway.funding_programs.length) {
