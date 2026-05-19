@@ -1453,7 +1453,7 @@ function renderPIReport(r) {
             <div class="buyer-cell"><div class="buyer-cell-lbl">Access Timeline</div><div class="buyer-cell-val">${b.timeline_to_access}</div></div>
           </div>
           <div class="buyer-access"><strong>Access mechanism:</strong> ${b.access_mechanism}</div>
-          <div class="buyer-source">Source: ${b.source}</div>
+          <div class="buyer-source">${b.source_url ? '<a href="' + b.source_url + '" target="_blank" style="color:var(--blue);text-decoration:none">Source: ' + b.source + ' ↗</a>' : (b.source ? 'Source: ' + b.source : '')}</div>
         </div>`;
       });
     }
