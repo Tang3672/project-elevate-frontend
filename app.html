@@ -1501,7 +1501,7 @@ function renderPIReport(r) {
   }
 
   // SUPPORTING EVIDENCE
-  if (r.supporting_evidence && r.supporting_evidence.length) {
+  if (r.supporting_evidence && false && r.supporting_evidence.length) { // hidden - irrelevant signals
     html += `<div class="sdiv"><span class="sdiv-lbl">Demand Signal Evidence (${r.supporting_evidence.length})</span><div class="sdiv-line"></div></div>`;
     r.supporting_evidence.slice(0,8).forEach(e => {
       const srcLink = e.source_url ? `<a href="${e.source_url}" target="_blank" style="color:var(--blue)">↗</a>` : '';
