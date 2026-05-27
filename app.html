@@ -2891,6 +2891,34 @@ function pricingCheckout(plan) {
   if (!currentUser) { openAuth('register'); return; }
   startCheckout(plan);
 }
+
+function setInputMode(mode) {
+  const modes = ['product','disclosure','founder'];
+  modes.forEach(m => {
+    const btn = document.getElementById('mode-' + m);
+    if (btn) {
+      btn.style.background = m === mode ? 'var(--blue)' : 'var(--bg-2)';
+      btn.style.color = m === mode ? '#fff' : 'var(--text-2)';
+      btn.style.borderColor = m === mode ? 'var(--blue)' : 'var(--border)';
+    }
+  });
+  const label = document.getElementById('idea-label');
+  const textarea = document.querySelector('textarea[name="idea"], #idea-input, textarea');
+  const placeholders = {
+    product: 'Describe your product idea, mechanism of action, and target indication...',
+    disclosure: 'Paste your invention disclosure here, or describe: inventor names, technology summary, disease/indication, stage of development, any IP filed...',
+    founder: 'Describe your startup's product, current stage, lead indication, and what you need to understand (market size, FDA pathway, competitive landscape)...'
+  };
+  const labels = {
+    product: 'Describe your product',
+    disclosure: 'Paste Invention Disclosure',
+    founder: 'Describe Your Startup'
+  };
+  if (label) label.textContent = labels[mode] || labels.product;
+  if (textarea) textarea.placeholder = placeholders[mode] || placeholders.product;
+  window._inputMode = mode;
+}
+window._inputMode = 'product';
 </script>
 </body>
 </html>
