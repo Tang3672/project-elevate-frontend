@@ -2962,6 +2962,155 @@ window._inputMode = 'product';
 function showPricingModal() {
   document.getElementById('pricing-modal').style.display = 'flex';
 }
+
+// ── DISCOVERY ENGINE ──────────────────────────────────────────────────────────
+let _discoveryData = [];
+
+async function loadDiscovery() {
+  const listEl = document.getElementById('discovery-list');
+  if (!listEl) return;
+  listEl.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-3)"><div style="font-size:24px;margin-bottom:8px">⏳</div><div style="font-size:14px">Scoring opportunities from ClinicalTrials.gov, NIH Reporter, and IHME GBD...</div></div>';
+  
+  try {
+    const token = localStorage.getItem('pe_token');
+    const res = await fetch(API_BASE + '/api/v1/alignment/discovery/opportunities?top_n=25', {
+      headers: {'Authorization': 'Bearer ' + token}
+    });
+    if (!res.ok) throw new Error('Failed to load');
+    const data = await res.json();
+    _discoveryData = data.opportunities || [];
+    const updEl = document.getElementById('disco-updated');
+    if (updEl) updEl.textContent = 'Scored ' + _discoveryData.length + ' opportunities · ' + new Date().toLocaleDateString();
+    filterDiscovery();
+  } catch (e) {
+    listEl.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-3)">Failed to load opportunities. <button onclick="loadDiscovery()" style="color:var(--blue);background:none;border:none;cursor:pointer">Retry</button></div>';
+  }
+}
+
+function filterDiscovery() {
+  const taFilter = document.getElementById('disco-filter-ta')?.value || '';
+  const tierFilter = document.getElementById('disco-filter-tier')?.value || '';
+  let filtered = _discoveryData.filter(o => {
+    if (taFilter && o.therapeutic_area !== taFilter) return false;
+    if (tierFilter && o.tier !== tierFilter) return false;
+    return true;
+  });
+  renderDiscovery(filtered);
+}
+
+function renderDiscovery(opps) {
+  const listEl = document.getElementById('discovery-list');
+  if (!listEl) return;
+  if (!opps.length) {
+    listEl.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-3)">No opportunities match the current filters.</div>';
+    return;
+  }
+  
+  const taLabels = {
+    oncology:'Oncology', rare_disease:'Rare Disease', amr_infectious:'AMR/Infectious',
+    cns:'CNS/Neurology', cardiovascular:'Cardiovascular', metabolic:'Metabolic',
+    gene_therapy:'Gene Therapy', device:'Device', ophthalmology:'Ophthalmology',
+    vaccine:'Vaccine', immunology:'Immunology',
+  };
+  
+  listEl.innerHTML = opps.map((o, i) => {
+    const comp = o.components || {};
+    const barColor = o.tier_color || '#0891b2';
+    const taLabel = taLabels[o.therapeutic_area] || o.therapeutic_area;
+    
+    return `
+    <div style="border:1px solid var(--border);margin-bottom:12px;background:var(--bg)">
+      <div style="padding:14px 16px;display:grid;grid-template-columns:36px 1fr auto;gap:12px;align-items:start">
+        
+        <!-- Rank -->
+        <div style="font-family:var(--display);font-size:20px;font-weight:800;color:var(--text-4);padding-top:2px">#${i+1}</div>
+        
+        <!-- Main content -->
+        <div>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+            <div style="font-family:var(--display);font-size:15px;font-weight:700;color:var(--text)">${o.disease}</div>
+            <span style="font-size:10px;font-weight:700;padding:2px 7px;background:${barColor}22;color:${barColor};border:1px solid ${barColor}44">${o.tier}</span>
+            <span style="font-size:10px;color:var(--text-4);background:var(--bg-2);padding:2px 6px;border:1px solid var(--border)">${taLabel}</span>
+            <span style="font-size:10px;color:var(--text-4)">Phase: ${o.phase || 'preclinical'}</span>
+          </div>
+          <div style="font-size:12px;color:var(--text-3);margin-bottom:10px">${o.notes || ''}</div>
+          
+          <!-- Factor bars -->
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px">
+            ${Object.entries({
+              'Unmet Need': comp.unmet_need,
+              'PTRS×TRL': comp.feasibility,
+              'Disease Burden': comp.burden,
+              'Market Size': comp.market,
+              'Competition': comp.competition,
+              'IP/Exclusivity': comp.exclusivity,
+            }).map(([label, val]) => `
+              <div>
+                <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-4);margin-bottom:2px">
+                  <span>${label}</span><span>${Math.round(val||0)}</span>
+                </div>
+                <div style="height:4px;background:var(--border);border-radius:2px">
+                  <div style="height:4px;background:${barColor};border-radius:2px;width:${Math.round(val||0)}%"></div>
+                </div>
+              </div>`).join('')}
+          </div>
+          
+          <div style="margin-top:8px;font-size:10px;color:var(--text-4)">
+            PTRS: ${o.ptrs}% &nbsp;·&nbsp; 
+            Confidence range: ${o.confidence_low}–${o.confidence_high} &nbsp;·&nbsp;
+            Raw score: ${o.score_raw}
+          </div>
+        </div>
+        
+        <!-- Score -->
+        <div style="text-align:center;min-width:80px">
+          <div style="font-family:var(--display);font-size:36px;font-weight:800;color:${barColor};line-height:1">${o.score}</div>
+          <div style="font-size:10px;color:var(--text-4);margin-top:2px">/ 100</div>
+          <button onclick="runDiscoveryReport('${o.disease.replace(/'/g,"\'")}', '${o.therapeutic_area}')" 
+            style="margin-top:8px;padding:5px 10px;background:var(--blue);color:#fff;border:none;border-radius:4px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap">
+            Run Report →
+          </button>
+        </div>
+        
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleAlgo() {
+  const d = document.getElementById('algo-details');
+  const t = document.getElementById('algo-toggle');
+  if (d && t) {
+    const show = d.style.display === 'none';
+    d.style.display = show ? 'block' : 'none';
+    t.textContent = show ? 'Hide ▴' : 'Show ▾';
+  }
+}
+
+function runDiscoveryReport(disease, ta) {
+  // Pre-fill the analysis form and switch to analysis tab
+  tab('analysis');
+  setTimeout(() => {
+    const textarea = document.querySelector('textarea') || document.getElementById('idea-input');
+    if (textarea) textarea.value = disease + ' — novel therapeutic approach';
+    const taMap = {
+      oncology: 'biologic', rare_disease: 'gene_cell_therapy',
+      amr_infectious: 'other', cns: 'other', gene_therapy: 'gene_cell_therapy',
+      device: 'device', metabolic: 'other',
+    };
+    const ptKey = taMap[ta] || 'other';
+    const btn = document.getElementById('pt-' + ptKey) || document.querySelector(`[data-pt="${ptKey}"]`);
+    if (btn) btn.click();
+  }, 100);
+}
+
+// Load discovery when tab is activated
+const _origTab = window.tab;
+window.tab = function(name) {
+  if (typeof _origTab === 'function') _origTab(name);
+  if (name === 'discovery' && _discoveryData.length === 0) loadDiscovery();
+};
+
 </script>
 
 </body>
