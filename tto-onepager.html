@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Project Elevate — Technology Transfer One-Pager</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Calibri', Arial, sans-serif; color: #1e293b; background: #fff; width: 8.5in; margin: 0 auto; }
+  .page { padding: 0.5in 0.6in; min-height: 11in; }
+  
+  .header { display: flex; align-items: center; justify-content: space-between; padding-bottom: 16px; border-bottom: 3px solid #0891b2; margin-bottom: 20px; }
+  .logo { display: flex; align-items: center; gap: 12px; }
+  .logo-box { width: 42px; height: 42px; background: #0891b2; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 800; font-size: 16px; }
+  .logo-text h1 { font-size: 22px; font-weight: 800; color: #0d1b2a; }
+  .logo-text p { font-size: 11px; color: #64748b; }
+  .header-right { text-align: right; font-size: 11px; color: #64748b; }
+  .header-right strong { display: block; font-size: 13px; color: #0d1b2a; }
+
+  .tagline { background: #0d1b2a; color: #fff; padding: 14px 20px; margin-bottom: 20px; }
+  .tagline h2 { font-size: 17px; font-weight: 700; margin-bottom: 4px; }
+  .tagline p { font-size: 12px; color: #94a3b8; }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+  .section-title { font-size: 11px; font-weight: 700; color: #0891b2; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px; }
+
+  .problem-list { list-style: none; }
+  .problem-list li { padding: 8px 0; border-bottom: 1px solid #f1f5f9; font-size: 12px; display: flex; gap: 8px; }
+  .problem-list li:last-child { border-bottom: none; }
+  .bullet { color: #0891b2; font-weight: 700; flex-shrink: 0; }
+
+  .report-section { border: 1px solid #e2e8f0; padding: 14px; background: #f8fafc; margin-bottom: 20px; }
+  .report-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 10px; }
+  .report-item { background: #fff; border: 1px solid #e2e8f0; padding: 10px; }
+  .report-item strong { display: block; font-size: 11px; color: #0d1b2a; margin-bottom: 4px; }
+  .report-item span { font-size: 10px; color: #64748b; line-height: 1.4; }
+
+  .stat-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+  .stat { text-align: center; padding: 12px; border: 1px solid #e2e8f0; background: #f8fafc; }
+  .stat-num { font-size: 26px; font-weight: 800; color: #0891b2; }
+  .stat-label { font-size: 10px; color: #64748b; margin-top: 2px; }
+
+  .use-cases { margin-bottom: 20px; }
+  .use-case-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 10px; }
+  .use-case { background: #f0f9ff; border-left: 3px solid #0891b2; padding: 10px 12px; }
+  .use-case strong { font-size: 12px; color: #0d1b2a; display: block; margin-bottom: 3px; }
+  .use-case span { font-size: 11px; color: #475569; line-height: 1.4; }
+
+  .pricing-row { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+  .pricing-tier { border: 1px solid #e2e8f0; padding: 12px; text-align: center; }
+  .pricing-tier.featured { border-color: #0891b2; border-width: 2px; }
+  .price { font-size: 20px; font-weight: 800; color: #0891b2; }
+  .price-label { font-size: 10px; color: #64748b; }
+  .price-detail { font-size: 10px; color: #94a3b8; margin-top: 4px; }
+
+  .footer { border-top: 2px solid #0891b2; padding-top: 12px; display: flex; justify-content: space-between; align-items: center; }
+  .footer-left { font-size: 11px; color: #475569; }
+  .footer-left strong { color: #0d1b2a; }
+  .cta-box { background: #0891b2; color: #fff; padding: 10px 20px; text-align: center; }
+  .cta-box strong { font-size: 13px; display: block; }
+  .cta-box span { font-size: 11px; opacity: 0.85; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="header">
+    <div class="logo">
+      <div class="logo-box">PE</div>
+      <div class="logo-text">
+        <h1>Project Elevate</h1>
+        <p>Biomedical Research Intelligence Platform</p>
+      </div>
+    </div>
+    <div class="header-right">
+      <strong>project-elevate-staging.netlify.app</strong>
+      Isaac Wang &nbsp;|&nbsp; WashU Class of 2027<br>
+      isaac@projectelevate.io
+    </div>
+  </div>
+
+  <div class="tagline">
+    <h2>Commercial potential intelligence for every invention disclosure — in 90 seconds.</h2>
+    <p>Automated market sizing, FDA pathway analysis, competitive landscape, and licensing strategy for tech transfer offices and biotech founders.</p>
+  </div>
+
+  <div class="stat-row">
+    <div class="stat"><div class="stat-num">90s</div><div class="stat-label">Full report generation</div></div>
+    <div class="stat"><div class="stat-num">25+</div><div class="stat-label">Live sources per report</div></div>
+    <div class="stat"><div class="stat-num">32</div><div class="stat-label">Biomedical domains</div></div>
+    <div class="stat"><div class="stat-num">5</div><div class="stat-label">AI validation agents</div></div>
+  </div>
+
+  <div class="two-col">
+    <div>
+      <div class="section-title">The Problem for Tech Transfer Offices</div>
+      <ul class="problem-list">
+        <li><span class="bullet">→</span><span>Commercial potential assessments take weeks of manual research per disclosure</span></li>
+        <li><span class="bullet">→</span><span>Market sizing requires expensive subscriptions to Evaluate Pharma, IQVIA, or BioWorld</span></li>
+        <li><span class="bullet">→</span><span>FDA pathway complexity varies by product type — few TTOs have deep regulatory expertise across all domains</span></li>
+        <li><span class="bullet">→</span><span>Licensing comp analysis requires searching dozens of databases manually</span></li>
+        <li><span class="bullet">→</span><span>High volume of disclosures makes thorough analysis economically impossible</span></li>
+      </ul>
+    </div>
+    <div>
+      <div class="section-title">The Problem for Biotech Founders</div>
+      <ul class="problem-list">
+        <li><span class="bullet">→</span><span>Market research reports cost $5,000–$50,000 and take weeks to deliver</span></li>
+        <li><span class="bullet">→</span><span>FDA pathway strategy requires $500+/hr regulatory consultants</span></li>
+        <li><span class="bullet">→</span><span>Competitive intelligence is scattered across ClinicalTrials.gov, FDA databases, and PubMed</span></li>
+        <li><span class="bullet">→</span><span>Strategic frameworks (BARDA deals, designation stacking, biomarker enrichment) require deep industry experience</span></li>
+        <li><span class="bullet">→</span><span>Intelligence needs to be updated as strategy evolves — static reports go stale</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="report-section">
+    <div class="section-title">What the Report Delivers</div>
+    <div class="report-grid">
+      <div class="report-item"><strong>🔬 Disease Intelligence</strong><span>Epidemiology, unmet need, resistance landscape with live PubMed citations from Nature, NEJM, Lancet</span></div>
+      <div class="report-item"><strong>📊 Market Sizing</strong><span>Bottom-up TAM/SAM from live CDC, SEER, and NIH data — every calculation shown with sources</span></div>
+      <div class="report-item"><strong>⚖️ FDA Pathway</strong><span>Designations, clinical trial design, guidance documents specific to product type and indication</span></div>
+      <div class="report-item"><strong>♟️ Strategic Playbook</strong><span>Real strategies from Avycaz, Zolgensma, Keytruda — with named companies, deal terms, and sources</span></div>
+      <div class="report-item"><strong>🏥 Market Access</strong><span>Buyer segments, reimbursement pathway, GPO strategy, key opinion leaders to engage</span></div>
+      <div class="report-item"><strong>✅ Validated Facts</strong><span>5 independent LangGraph AI agents fact-check math, sources, and regulatory claims before delivery</span></div>
+    </div>
+  </div>
+
+  <div class="use-cases">
+    <div class="section-title">How TTOs Use Project Elevate</div>
+    <div class="use-case-grid">
+      <div class="use-case"><strong>Triage high-potential disclosures</strong><span>Run every new disclosure through Project Elevate in 90 seconds to identify which warrant deeper investment of staff time and resources.</span></div>
+      <div class="use-case"><strong>Prepare for licensing conversations</strong><span>Generate market sizing and competitive landscape before meeting with potential licensees — arrive informed and credible.</span></div>
+      <div class="use-case"><strong>Support SBIR commercialization sections</strong><span>Give faculty applying for SBIR/STTR the market analysis they need for the commercialization section — a persistent pain point for academic labs.</span></div>
+      <div class="use-case"><strong>Identify licensing comparables</strong><span>Understand what comparable technologies have been licensed for, who the likely licensees are, and what deal structures are precedent.</span></div>
+    </div>
+  </div>
+
+  <div class="section-title">Pricing</div>
+  <div class="pricing-row">
+    <div class="pricing-tier">
+      <div class="price">$19</div>
+      <div class="price-label">/month</div>
+      <div class="price-detail">Basic — 3 reports</div>
+    </div>
+    <div class="pricing-tier">
+      <div class="price">$79</div>
+      <div class="price-label">/month</div>
+      <div class="price-detail">Starter — 15 reports</div>
+    </div>
+    <div class="pricing-tier featured">
+      <div class="price">$299</div>
+      <div class="price-label">/month</div>
+      <div class="price-detail">Professional — unlimited</div>
+    </div>
+    <div class="pricing-tier">
+      <div class="price">Custom</div>
+      <div class="price-label">Enterprise</div>
+      <div class="price-detail">TTO institutional license</div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <div class="footer-left">
+      <strong>Try it free → project-elevate-staging.netlify.app</strong><br>
+      No credit card required for first report &nbsp;|&nbsp; All 32 biomedical domains supported<br>
+      Drugs · Biologics · Gene therapy · Devices · Diagnostics · Digital health · Vaccines
+    </div>
+    <div class="cta-box">
+      <strong>Book a Demo</strong>
+      <span>isaac@projectelevate.io</span>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
