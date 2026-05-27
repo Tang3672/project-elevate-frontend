@@ -1107,6 +1107,7 @@ function tab(name) {
   // Lazy-load tab content
   if (name === 'index')      loadIndex();
   if (name === 'discovery')  { if (!window._discoveryLoaded) { loadDiscovery(); window._discoveryLoaded = true; } }
+  if (name === 'discovery')  { if (!window._discoveryLoaded) { loadDiscovery(); window._discoveryLoaded = true; } }
   if (name === 'needs')      loadNeeds();
   if (name === 'reports')    loadReports();
   if (name === 'profile')    loadProfile();
@@ -3179,6 +3180,101 @@ window.tab = function(name) {
 
       </div>
     </div>
+
+
+<script>
+let _discoveryData = [];
+
+async function loadDiscovery() {
+  const listEl = document.getElementById('discovery-list');
+  if (!listEl) return;
+  listEl.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-3)"><div style="font-size:28px;margin-bottom:8px">⏳</div><div style="font-size:14px">Scoring opportunities from ClinicalTrials.gov, NIH Reporter, and GBD data...</div></div>';
+  try {
+    const token = localStorage.getItem('pe_token');
+    const res = await fetch(API_BASE + '/api/v1/alignment/discovery/opportunities?top_n=25', {
+      headers: {'Authorization': 'Bearer ' + token}
+    });
+    if (!res.ok) throw new Error('Failed');
+    const data = await res.json();
+    _discoveryData = data.opportunities || [];
+    const updEl = document.getElementById('disco-updated');
+    if (updEl) updEl.textContent = 'Scored ' + _discoveryData.length + ' opportunities · ' + new Date().toLocaleDateString();
+    filterDiscovery();
+  } catch(e) {
+    listEl.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-3)">Failed to load. <button onclick="loadDiscovery()" style="color:var(--blue);background:none;border:none;cursor:pointer;font-weight:600">Retry</button></div>';
+  }
+}
+
+function filterDiscovery() {
+  const ta = document.getElementById('disco-filter-ta')?.value || '';
+  const tier = document.getElementById('disco-filter-tier')?.value || '';
+  const filtered = _discoveryData.filter(o => {
+    if (ta && o.therapeutic_area !== ta) return false;
+    if (tier && o.tier !== tier) return false;
+    return true;
+  });
+  renderDiscovery(filtered);
+}
+
+function renderDiscovery(opps) {
+  const listEl = document.getElementById('discovery-list');
+  if (!listEl) return;
+  if (!opps.length) {
+    listEl.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-3)">No opportunities match the current filters.</div>';
+    return;
+  }
+  const taLabels = {oncology:'Oncology',rare_disease:'Rare Disease',amr_infectious:'AMR/Infectious',cns:'CNS/Neurology',cardiovascular:'Cardiovascular',metabolic:'Metabolic',gene_therapy:'Gene Therapy',device:'Device',ophthalmology:'Ophthalmology',vaccine:'Vaccine',immunology:'Immunology'};
+  listEl.innerHTML = opps.map((o, i) => {
+    const comp = o.components || {};
+    const c = o.tier_color || '#0891b2';
+    const ta = taLabels[o.therapeutic_area] || o.therapeutic_area;
+    const bars = [['Unmet Need',comp.unmet_need],['PTRS×TRL',comp.feasibility],['Burden',comp.burden],['Market',comp.market],['Competition',comp.competition],['Exclusivity',comp.exclusivity]];
+    return `<div style="border:1px solid var(--border);margin-bottom:10px;background:var(--bg)">
+      <div style="padding:14px 16px;display:grid;grid-template-columns:40px 1fr 90px;gap:12px;align-items:start">
+        <div style="font-family:var(--display);font-size:18px;font-weight:800;color:var(--text-4);padding-top:4px">#${i+1}</div>
+        <div>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap">
+            <div style="font-family:var(--display);font-size:14px;font-weight:700;color:var(--text)">${o.disease}</div>
+            <span style="font-size:10px;font-weight:700;padding:2px 7px;background:${c}22;color:${c};border:1px solid ${c}44">${o.tier}</span>
+            <span style="font-size:10px;color:var(--text-4);background:var(--bg-2);padding:2px 6px;border:1px solid var(--border)">${ta}</span>
+          </div>
+          <div style="font-size:11px;color:var(--text-3);margin-bottom:8px">${o.notes||''}</div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:5px">
+            ${bars.map(([label,val])=>`<div><div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-4);margin-bottom:2px"><span>${label}</span><span>${Math.round(val||0)}</span></div><div style="height:3px;background:var(--border);border-radius:2px"><div style="height:3px;background:${c};border-radius:2px;width:${Math.round(val||0)}%"></div></div></div>`).join('')}
+          </div>
+          <div style="margin-top:6px;font-size:10px;color:var(--text-4)">PTRS: ${o.ptrs}% · Confidence: ${o.confidence_low}–${o.confidence_high} · Raw: ${o.score_raw}</div>
+        </div>
+        <div style="text-align:center">
+          <div style="font-family:var(--display);font-size:32px;font-weight:800;color:${c};line-height:1">${o.score}</div>
+          <div style="font-size:10px;color:var(--text-4)">/100</div>
+          <button onclick="prefillFromDiscovery('${(o.disease||'').replace(/'/g,"\'")}')"
+            style="margin-top:8px;padding:5px 8px;background:var(--blue);color:#fff;border:none;border-radius:4px;font-size:10px;font-weight:600;cursor:pointer;width:100%">
+            Run Report →
+          </button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleAlgo() {
+  const d = document.getElementById('algo-details');
+  const t = document.getElementById('algo-toggle');
+  if (d && t) {
+    const show = d.style.display === 'none';
+    d.style.display = show ? 'block' : 'none';
+    t.textContent = show ? 'Hide ▴' : 'Show ▾';
+  }
+}
+
+function prefillFromDiscovery(disease) {
+  tab('pi');
+  setTimeout(() => {
+    const ta = document.querySelector('textarea');
+    if (ta) ta.value = disease;
+  }, 200);
+}
+</script>
 
 
 <script>
