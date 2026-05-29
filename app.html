@@ -877,7 +877,7 @@
         <div class="card">
           <div class="ch"><span class="ct">Analysis Output</span><span class="cb-badge" id="sig-badge">-</span></div>
           <div id="alert-bar" class="set-alert-bar"><span class="set-alert-txt">🔔 Get weekly alerts when new signals match this topic</span><button class="set-alert-btn" onclick="createWatchlistFromReport()">Set Alert</button></div>
-          <div id="save-bar" class="save-bar"><span class="save-bar-txt">✓ Analysis complete</span><div style="display:flex;align-items:center;gap:0"><input type="text" id="save-name" placeholder="Name this report…" /><button class="save-bar-btn" onclick="saveReport()">Save Report</button></div></div>
+          <div id="save-bar" class="save-bar"><span class="save-bar-txt">✓ Analysis complete</span><div style="display:flex;align-items:center;gap:0"><input type="text" id="save-name" placeholder="Name this report…" /><button class="save-bar-btn" onclick="saveReport()">Save Report</button><button class="save-bar-btn" onclick="downloadPDF()" style="background:var(--blue);color:#fff;border:1px solid var(--blue)">⬇ Download PDF</button></div></div>
           <div id="results" class="cb">
             <div class="empty">
               <div class="empty-icon">⚕</div>
@@ -3368,6 +3368,72 @@ function prefillFromDiscovery(disease) {
     const ta = document.querySelector('textarea');
     if (ta) ta.value = disease;
   }, 200);
+}
+</script>
+
+
+<style id="print-styles">
+@media print {
+  /* Hide everything except the report */
+  body > *:not(.main) { display: none !important; }
+  .main > *:not(#t-pi) { display: none !important; }
+  #t-pi > *:not(.ao) { display: none !important; }
+  .save-bar, .nav, .sidebar, .ph { display: none !important; }
+  .ao { display: block !important; box-shadow: none !important; border: none !important; }
+  #results { display: block !important; }
+  
+  /* Clean print layout */
+  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  body { background: white !important; font-size: 11pt !important; }
+  
+  /* Page breaks */
+  .section { page-break-inside: avoid; margin-bottom: 20pt; }
+  .section-header { page-break-after: avoid; }
+  
+  /* Header for PDF */
+  #pdf-header { display: block !important; }
+
+  @page {
+    margin: 0.75in;
+    size: letter;
+  }
+}
+</style>
+
+<!-- PDF Header (hidden normally, shows on print) -->
+<div id="pdf-header" style="display:none; margin-bottom:24px; padding-bottom:12px; border-bottom:2px solid #0891b2">
+  <div style="display:flex;justify-content:space-between;align-items:center">
+    <div>
+      <div style="font-size:20pt;font-weight:800;color:#0d1b2a">Project Elevate</div>
+      <div style="font-size:10pt;color:#64748b">SBIR Commercialization Intelligence Report</div>
+    </div>
+    <div style="text-align:right;font-size:9pt;color:#64748b">
+      <div id="pdf-date"></div>
+      <div>project-elevate-staging.netlify.app</div>
+    </div>
+  </div>
+</div>
+
+<script>
+function downloadPDF() {
+  // Set PDF header date
+  const dateEl = document.getElementById('pdf-date');
+  if (dateEl) dateEl.textContent = 'Generated ' + new Date().toLocaleDateString('en-US', {year:'numeric',month:'long',day:'numeric'});
+  
+  // Get report title for filename
+  const titleEl = document.querySelector('.report-title, .disease-name, h2.rpt-title');
+  const title = titleEl ? titleEl.textContent.trim().replace(/[^a-zA-Z0-9 ]/g,'').trim() : 'ProjectElevate-Report';
+  const filename = title.replace(/\s+/g, '-') + '-' + new Date().toISOString().slice(0,10);
+  
+  // Set document title temporarily for PDF filename
+  const origTitle = document.title;
+  document.title = filename;
+  
+  // Trigger print dialog
+  window.print();
+  
+  // Restore title
+  setTimeout(() => { document.title = origTitle; }, 1000);
 }
 </script>
 
