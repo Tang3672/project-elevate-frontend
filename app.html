@@ -3180,43 +3180,8 @@ function prefillFromDiscovery(disease) {
 </script>
 
 
-<style id="print-styles">
-@media print {
-  /* Hide UI chrome */
-  .nav, .sidebar, .save-bar, .ph, .chips, 
-  #panel-discovery, #t-index, #t-needs, #t-pricing,
-  #t-reports, #t-watchlists, #t-trials, #t-portfolio, #t-grant,
-  .type-grid, #pathogen-row, #run-btn, #dev-mock-row,
-  .alert-bar, #disco-filter-ta, #disco-filter-tier { 
-    display: none !important; 
-  }
-  
-  /* Show report content */
-  .main, #t-pi, .ao, #results, #results * { 
-    display: block !important; 
-    visibility: visible !important;
-  }
-  
-  /* Clean print styles */
-  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-  body { background: white !important; margin: 0 !important; padding: 0 !important; }
-  .ao { box-shadow: none !important; border: none !important; padding: 0 !important; }
-  
-  /* Show PDF header */
-  #pdf-header { display: block !important; }
-  
-  /* Page breaks */
-  .section, .cb-section { page-break-inside: avoid; }
 
-  @page { margin: 0.65in; size: letter; }
-}
-</style>
 
-<!-- PDF Header (hidden normally, shows on print) -->
-<div id="pdf-header" style="display:none; margin-bottom:24px; padding-bottom:12px; border-bottom:2px solid #0891b2">
-  <div style="display:flex;justify-content:space-between;align-items:center">
-    <div>
-      <div style="font-size:20pt;font-weight:800;color:#0d1b2a">Project Elevate</div>
       <div style="font-size:10pt;color:#64748b">SBIR Commercialization Intelligence Report</div>
     </div>
     <div style="text-align:right;font-size:9pt;color:#64748b">
@@ -3227,39 +3192,212 @@ function prefillFromDiscovery(disease) {
 </div>
 
 <script>
-function downloadReportPDF(reportId, reportName) {
-  // Load the saved report then print it
-  loadSavedReport(reportId);
-  setTimeout(() => {
-    const dateEl = document.getElementById('pdf-date');
-    if (dateEl) dateEl.textContent = 'Generated ' + new Date().toLocaleDateString('en-US', {year:'numeric',month:'long',day:'numeric'});
-    const filename = (reportName || 'ProjectElevate-Report').replace(/[^a-zA-Z0-9 ]/g,'').trim().replace(/\s+/g,'-');
-    const origTitle = document.title;
-    document.title = filename;
-    window.print();
-    setTimeout(() => { document.title = origTitle; }, 1000);
-  }, 2500); // wait for report to load
+function loadDiscovery() {
+  const listEl = document.getElementById('discovery-list');
+  if (!listEl) return;
+  listEl.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-3)"><div style="font-size:28px;margin-bottom:8px">⏳</div><div style="font-size:14px">Scoring opportunities from ClinicalTrials.gov, NIH Reporter, and GBD data...</div></div>';
+  try {
+    const token = localStorage.getItem('pe_token');
+    const res = await fetch(`${API}/alignment/discovery/opportunities?top_n=25`, {
+      headers: {'Authorization': `Bearer ${token}`}
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    _discoveryData = data.opportunities || [];
+    const updEl = document.getElementById('disco-updated');
+    if (updEl) updEl.textContent = 'Scored ' + _discoveryData.length + ' opportunities · ' + new Date().toLocaleDateString();
+    filterDiscovery();
+  } catch(e) {
+    console.error('Discovery error:', e);
+    const listEl = document.getElementById('discovery-list');
+    if (listEl) listEl.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-3)">Failed to load. <button onclick="loadDiscovery()" style="color:var(--blue);background:none;border:none;cursor:pointer;font-weight:600">Retry</button></div>';
+  }
 }
 
-function downloadPDF() {
-  // Set PDF header date
-  const dateEl = document.getElementById('pdf-date');
-  if (dateEl) dateEl.textContent = 'Generated ' + new Date().toLocaleDateString('en-US', {year:'numeric',month:'long',day:'numeric'});
-  
-  // Get report title for filename
-  const titleEl = document.querySelector('.report-title, .disease-name, h2.rpt-title');
-  const title = titleEl ? titleEl.textContent.trim().replace(/[^a-zA-Z0-9 ]/g,'').trim() : 'ProjectElevate-Report';
-  const filename = title.replace(/\s+/g, '-') + '-' + new Date().toISOString().slice(0,10);
-  
-  // Set document title temporarily for PDF filename
-  const origTitle = document.title;
-  document.title = filename;
-  
-  // Trigger print dialog
-  window.print();
-  
-  // Restore title
-  setTimeout(() => { document.title = origTitle; }, 1000);
+function filterDiscovery() {
+  const ta = document.getElementById('disco-filter-ta')?.value || '';
+  const tier = document.getElementById('disco-filter-tier')?.value || '';
+  const filtered = _discoveryData.filter(o => {
+    if (ta && o.therapeutic_area !== ta) return false;
+    if (tier && o.tier !== tier) return false;
+    return true;
+  });
+  renderDiscovery(filtered);
+}
+
+function renderDiscovery(opps) {
+  const listEl = document.getElementById('discovery-list');
+  if (!listEl) return;
+  if (!opps || !opps.length) {
+    listEl.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-3)">No opportunities match the current filters.</div>';
+    return;
+  }
+  const taLabels = {oncology:'Oncology',rare_disease:'Rare Disease',amr_infectious:'AMR/Infectious',cns:'CNS/Neurology',cardiovascular:'Cardiovascular',metabolic:'Metabolic',gene_therapy:'Gene Therapy',device:'Device',ophthalmology:'Ophthalmology',vaccine:'Vaccine',immunology:'Immunology'};
+  listEl.innerHTML = opps.map((o, i) => {
+    const comp = o.components || {};
+    const c = o.tier_color || '#0891b2';
+    const ta = taLabels[o.therapeutic_area] || o.therapeutic_area;
+    const bars = [['Unmet Need',comp.unmet_need],['PTRS×TRL',comp.feasibility],['Burden',comp.burden],['Market',comp.market],['Competition',comp.competition],['Exclusivity',comp.exclusivity]];
+    return `<div style="border:1px solid var(--border);margin-bottom:10px;background:var(--bg)">
+      <div style="padding:14px 16px;display:grid;grid-template-columns:40px 1fr 90px;gap:12px;align-items:start">
+        <div style="font-size:18px;font-weight:800;color:var(--text-4);padding-top:4px">#${i+1}</div>
+        <div>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap">
+            <div style="font-size:14px;font-weight:700;color:var(--text)">${o.disease}</div>
+            <span style="font-size:10px;font-weight:700;padding:2px 7px;background:${c}22;color:${c};border:1px solid ${c}44">${o.tier}</span>
+            <span style="font-size:10px;color:var(--text-4);background:var(--bg-2);padding:2px 6px;border:1px solid var(--border)">${ta}</span>
+          </div>
+          <div style="font-size:11px;color:var(--text-3);margin-bottom:8px">${o.notes||''}</div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:5px">
+            ${bars.map(([label,val])=>`<div><div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-4);margin-bottom:2px"><span>${label}</span><span>${Math.round(val||0)}</span></div><div style="height:3px;background:var(--border);border-radius:2px"><div style="height:3px;background:${c};border-radius:2px;width:${Math.round(val||0)}%"></div></div></div>`).join('')}
+          </div>
+          <div style="margin-top:6px;font-size:10px;color:var(--text-4)">PTRS: ${o.ptrs}% · Confidence: ${o.confidence_low}–${o.confidence_high} · Raw: ${o.score_raw}</div>
+        </div>
+        <div style="text-align:center">
+          <div style="font-size:32px;font-weight:800;color:${c};line-height:1">${o.score}</div>
+          <div style="font-size:10px;color:var(--text-4)">/100</div>
+          <button onclick="prefillFromDiscovery('${(o.disease||'').replace(/'/g,"\'")}')"
+            style="margin-top:8px;padding:5px 8px;background:var(--blue);color:#fff;border:none;border-radius:4px;font-size:10px;font-weight:600;cursor:pointer;width:100%">
+            Run Report →
+          </button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleAlgo() {
+  const d = document.getElementById('algo-details');
+  const t = document.getElementById('algo-toggle');
+  if (d && t) {
+    const show = d.style.display === 'none';
+    d.style.display = show ? 'block' : 'none';
+    t.textContent = show ? 'Hide ▴' : 'Show ▾';
+  }
+}
+
+function prefillFromDiscovery(disease) {
+  tab('pi');
+  setTimeout(() => {
+    const ta = document.getElementById('idea');
+    if (ta) ta.value = disease;
+  }, 200);
+}
+</script>
+
+
+<!-- PDF Generation -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script>
+async function downloadPDF() {
+  const btn = document.querySelector('[onclick="downloadPDF()"]');
+  const origText = btn ? btn.textContent : '';
+  if (btn) { btn.textContent = 'Generating...'; btn.disabled = true; }
+
+  try {
+    const reportEl = document.getElementById('results');
+    if (!reportEl || reportEl.querySelector('.empty')) {
+      alert('Please run an analysis first.');
+      if (btn) { btn.textContent = origText; btn.disabled = false; }
+      return;
+    }
+
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    const pageW = 210, pageH = 297, margin = 12;
+    const contentW = pageW - margin * 2;
+
+    // Page 1 header
+    pdf.setFillColor(13, 27, 42);
+    pdf.rect(0, 0, pageW, 22, 'F');
+    pdf.setFillColor(8, 145, 178);
+    pdf.rect(0, 0, 4, 22, 'F');
+    pdf.setTextColor(255, 255, 255);
+    pdf.setFontSize(14); pdf.setFont('helvetica', 'bold');
+    pdf.text('Project Elevate', 10, 9);
+    pdf.setFontSize(8); pdf.setFont('helvetica', 'normal');
+    pdf.setTextColor(148, 163, 184);
+    pdf.text('SBIR Commercialization Intelligence Report', 10, 15);
+    pdf.setTextColor(148, 163, 184);
+    pdf.text(new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'}), pageW - margin, 9, {align:'right'});
+    pdf.text('project-elevate-staging.netlify.app', pageW - margin, 15, {align:'right'});
+
+    // Capture report content
+    if (btn) btn.textContent = 'Capturing report...';
+    const canvas = await html2canvas(reportEl, {
+      scale: 1.5,
+      useCORS: true,
+      allowTaint: true,
+      backgroundColor: '#ffffff',
+      windowWidth: 900,
+      logging: false,
+    });
+
+    const imgData = canvas.toDataURL('image/jpeg', 0.92);
+    const imgW = contentW;
+    const imgH = (canvas.height * imgW) / canvas.width;
+    const usableH = pageH - 28; // below header
+
+    let yPos = 26;
+    let remaining = imgH;
+    let srcY = 0;
+
+    while (remaining > 0) {
+      const sliceH = Math.min(remaining, usableH);
+      const sliceSrcH = (sliceH / imgH) * canvas.height;
+
+      // Create slice canvas
+      const sliceCanvas = document.createElement('canvas');
+      sliceCanvas.width = canvas.width;
+      sliceCanvas.height = sliceSrcH;
+      const ctx = sliceCanvas.getContext('2d');
+      ctx.drawImage(canvas, 0, srcY, canvas.width, sliceSrcH, 0, 0, canvas.width, sliceSrcH);
+      const sliceData = sliceCanvas.toDataURL('image/jpeg', 0.92);
+
+      pdf.addImage(sliceData, 'JPEG', margin, yPos, imgW, sliceH);
+
+      remaining -= sliceH;
+      srcY += sliceSrcH;
+
+      if (remaining > 0) {
+        pdf.addPage();
+        // Add header to subsequent pages
+        pdf.setFillColor(13, 27, 42);
+        pdf.rect(0, 0, pageW, 12, 'F');
+        pdf.setFillColor(8, 145, 178);
+        pdf.rect(0, 0, 4, 12, 'F');
+        pdf.setTextColor(255,255,255);
+        pdf.setFontSize(9); pdf.setFont('helvetica','bold');
+        pdf.text('Project Elevate', 10, 8);
+        yPos = 15;
+      }
+    }
+
+    // Footer on last page
+    pdf.setTextColor(148, 163, 184);
+    pdf.setFontSize(7);
+    pdf.text('Generated by Project Elevate · project-elevate-staging.netlify.app · Confidence range ±35% per IQVIA forecast error methodology', pageW/2, pageH - 5, {align:'center'});
+
+    // Get report title for filename
+    const titleEl = document.querySelector('.rpt-name, .disease-name, .report-title');
+    const title = titleEl ? titleEl.textContent.trim().replace(/[^a-zA-Z0-9 ]/g,'').trim() : 'ProjectElevate';
+    const filename = title.replace(/\s+/g,'-').slice(0,50) + '-' + new Date().toISOString().slice(0,10) + '.pdf';
+
+    pdf.save(filename);
+  } catch(e) {
+    console.error('PDF error:', e);
+    alert('PDF generation failed: ' + e.message);
+  } finally {
+    if (btn) { btn.textContent = origText; btn.disabled = false; }
+  }
+}
+
+async function downloadReportPDF(reportId, reportName) {
+  loadSavedReport(reportId);
+  setTimeout(async () => {
+    await downloadPDF();
+  }, 3000);
 }
 </script>
 
