@@ -1132,7 +1132,7 @@ async function runAnalysis() {
   // Require login
   if (!currentUser) { showPaywall(); return; }
   // Check free report / subscription status
-  if (billingStatus) {
+  if (typeof billingStatus !== "undefined" && billingStatus) {
     const isFreeAccount = !billingStatus.is_active;
     const freeUsed = billingStatus.free_reports_used || 0;
     if (isFreeAccount && freeUsed >= 1) { showPricingModal(); return; }
