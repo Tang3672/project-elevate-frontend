@@ -1948,6 +1948,7 @@ async function loadReports() {
             ${new Date(r.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'2-digit',minute:'2-digit'})}
           </div>
         </div>
+        <button class="report-del" onclick="event.stopPropagation();downloadReportPDF(${r.report_id},'${r.name}')" title="Download PDF" style="margin-right:4px;background:var(--blue);color:#fff;border:1px solid var(--blue)">⬇</button>
         <button class="report-del" onclick="event.stopPropagation();deleteReport(${r.report_id},this)" title="Delete">🗑</button>
       </div>`).join('');
   } catch(e) {
@@ -2976,7 +2977,7 @@ async function loadDiscovery() {
   
   try {
     const token = localStorage.getItem('pe_token');
-    const res = await fetch(API_BASE + '/api/v1/alignment/discovery/opportunities?top_n=25', {
+    const res = await fetch(API + '/api/v1/alignment/discovery/opportunities?top_n=25', {
       headers: {'Authorization': 'Bearer ' + token}
     });
     if (!res.ok) throw new Error('Failed to load');
@@ -3191,7 +3192,7 @@ async function loadDiscovery() {
   listEl.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-3)"><div style="font-size:28px;margin-bottom:8px">⏳</div><div style="font-size:14px">Scoring opportunities from ClinicalTrials.gov, NIH Reporter, and GBD data...</div></div>';
   try {
     const token = localStorage.getItem('pe_token');
-    const res = await fetch(API_BASE + '/api/v1/alignment/discovery/opportunities?top_n=25', {
+    const res = await fetch(API + '/api/v1/alignment/discovery/opportunities?top_n=25', {
       headers: {'Authorization': 'Bearer ' + token}
     });
     if (!res.ok) throw new Error('Failed');
@@ -3286,7 +3287,7 @@ async function loadDiscovery() {
   listEl.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-3)"><div style="font-size:28px;margin-bottom:8px">⏳</div><div style="font-size:14px">Scoring opportunities from ClinicalTrials.gov, NIH Reporter, and GBD data...</div></div>';
   try {
     const token = localStorage.getItem('pe_token');
-    const res = await fetch(API_BASE + '/api/v1/alignment/discovery/opportunities?top_n=25', {
+    const res = await fetch(API + '/api/v1/alignment/discovery/opportunities?top_n=25', {
       headers: {'Authorization': 'Bearer ' + token}
     });
     if (!res.ok) throw new Error('Failed');
@@ -3415,6 +3416,20 @@ function prefillFromDiscovery(disease) {
 </div>
 
 <script>
+function downloadReportPDF(reportId, reportName) {
+  // Load the saved report then print it
+  loadSavedReport(reportId);
+  setTimeout(() => {
+    const dateEl = document.getElementById('pdf-date');
+    if (dateEl) dateEl.textContent = 'Generated ' + new Date().toLocaleDateString('en-US', {year:'numeric',month:'long',day:'numeric'});
+    const filename = (reportName || 'ProjectElevate-Report').replace(/[^a-zA-Z0-9 ]/g,'').trim().replace(/\s+/g,'-');
+    const origTitle = document.title;
+    document.title = filename;
+    window.print();
+    setTimeout(() => { document.title = origTitle; }, 1000);
+  }, 2500); // wait for report to load
+}
+
 function downloadPDF() {
   // Set PDF header date
   const dateEl = document.getElementById('pdf-date');
