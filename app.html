@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Project Elevate - Biomedical Research Intelligence Platform</title>
+  <title>Project Elevate — Medical Market Intelligence</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet" />
@@ -106,9 +106,10 @@
 
     /* LOADING */
     .loading{padding:52px 24px;text-align:center}
-    .prog-track{width:100%;height:2px;background:var(--bg-4);overflow:hidden;margin-bottom:20px}
-    .prog-bar{height:100%;background:var(--blue);animation:slide 1.6s ease-in-out infinite}
-    @keyframes slide{0%{width:0;margin-left:0}50%{width:55%;margin-left:22%}100%{width:0;margin-left:100%}}
+    .prog-track{width:100%;height:4px;background:var(--bg-4);border-radius:2px;overflow:hidden;margin-bottom:16px}
+    .prog-bar{height:100%;background:var(--blue);border-radius:2px;width:0%;transition:width .6s ease}
+    .prog-pct{font-family:var(--display);font-size:28px;font-weight:800;color:var(--blue);line-height:1;margin-bottom:8px}
+    .prog-stage{font-family:var(--body);font-size:12px;color:var(--text-3);margin-bottom:4px;min-height:16px}
     .loading-t{font-family:var(--display);font-size:14px;font-weight:700;color:var(--text-2);margin-bottom:4px}
     .loading-s{font-family:var(--body);font-size:12px;color:var(--text-3)}
 
@@ -491,7 +492,7 @@
     <div class="logo-mark">PE</div>
     <span class="logo-name">Project Elevate</span>
     <div class="logo-sep"></div>
-    <span class="logo-sub">Biomedical Research Intelligence Platform</span>
+    <span class="logo-sub">Medical Market Intelligence</span>
   </div>
   <div class="hdr-right" id="hdr-right">
     <div class="sig-badge"><div class="sig-dot"></div><span class="sig-txt" id="sig-hdr">Loading…</span></div>
@@ -526,16 +527,10 @@
 </header>
 
 <nav class="nav">
-  <button class="ntab on" onclick="tab('pi')">Analysis</button>
-  <button class="ntab" onclick="tab('index')">Signal Index</button>
-  <button class="ntab" onclick="tab('needs')">Clinical Needs</button>
-  <button class="ntab" onclick="tab('pricing')">Pricing</button>
+  <button class="ntab on" onclick="tab('pi')">Market Analysis</button>
+  <button class="ntab" id="discovery-tab" onclick="tab('discovery')" style="display:inline-block">Market Discovery</button>
   <button class="ntab" id="reports-tab" onclick="tab('reports')" style="display:none">My Reports</button>
-  <button class="ntab" id="watchlists-tab" onclick="tab('watchlists')" style="display:none">Watchlists</button>
-  <button class="ntab" id="discovery-tab" onclick="tab('discovery')" style="display:inline-block">Discovery</button>
-  <button class="ntab" id="trial-tab" onclick="tab('trials')" style="display:none">Trial Sites</button>
-  <button class="ntab" id="portfolio-tab" onclick="tab('portfolio')" style="display:none">Lab Portfolio</button>
-  <button class="ntab" id="grant-tab" onclick="tab('grant')" style="display:none">Grant Co-Pilot</button>
+  <button class="ntab" onclick="tab('pricing')">Pricing</button>
 </nav>
 
 
@@ -609,13 +604,13 @@
     <!-- Pricing cards -->
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:40px">
 
-      <!-- Basic Plan -->
+      <!-- Explorer Plan -->
       <div style="border:2px solid var(--border);padding:32px;background:var(--bg-2);position:relative">
         <div style="font-family:var(--display);font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-3);margin-bottom:8px">Basic</div>
         <div style="font-family:var(--display);font-size:42px;font-weight:700;color:var(--text);margin-bottom:4px">$20<span style="font-size:16px;font-weight:400;color:var(--text-3)">/month</span></div>
-        <div style="font-family:var(--body);font-size:13px;color:var(--text-3);margin-bottom:24px">For researchers exploring their first idea</div>
+        <div style="font-family:var(--body);font-size:13px;color:var(--text-3);margin-bottom:24px">For individual researchers, students, and first-time innovators</div>
         <ul style="list-style:none;margin-bottom:28px;display:flex;flex-direction:column;gap:10px">
-          <li style="font-family:var(--body);font-size:13px;color:var(--text-2);display:flex;gap:8px"><span style="color:#059669;font-weight:700">✓</span> 3 intelligence reports/month</li>
+          <li style="font-family:var(--body);font-size:13px;color:var(--text-2);display:flex;gap:8px"><span style="color:#059669;font-weight:700">✓</span> 5 market analyses/month</li>
           <li style="font-family:var(--body);font-size:13px;color:var(--text-2);display:flex;gap:8px"><span style="color:#059669;font-weight:700">✓</span> 32 sub-expert profiles</li>
           <li style="font-family:var(--body);font-size:13px;color:var(--text-2);display:flex;gap:8px"><span style="color:#059669;font-weight:700">✓</span> Live web search - 2026 data</li>
           <li style="font-family:var(--body);font-size:13px;color:var(--text-2);display:flex;gap:8px"><span style="color:#059669;font-weight:700">✓</span> Source citations with real URLs</li>
@@ -626,17 +621,17 @@
           <li style="font-family:var(--body);font-size:13px;color:var(--text-4);display:flex;gap:8px"><span>✗</span> Grant co-pilot</li>
           <li style="font-family:var(--body);font-size:13px;color:var(--text-4);display:flex;gap:8px"><span>✗</span> Lab portfolio discovery</li>
         </ul>
-        <button onclick="pricingCheckout('basic')" style="width:100%;padding:14px;background:var(--slate);border:2px solid var(--slate);color:#fff;font-family:var(--display);font-size:13px;font-weight:700;letter-spacing:.04em;cursor:pointer;transition:all .15s">Get Started - $19/month</button>
+        <button onclick="pricingCheckout('basic')" style="width:100%;padding:14px;background:var(--slate);border:2px solid var(--slate);color:#fff;font-family:var(--display);font-size:13px;font-weight:700;letter-spacing:.04em;cursor:pointer;transition:all .15s">Request Access — $49/month</button>
       </div>
 
-      <!-- Starter Plan -->
+      <!-- Innovator Plan -->
       <div style="border:2px solid var(--blue);padding:32px;background:var(--bg-2);position:relative">
         <div style="position:absolute;top:-12px;left:24px;background:var(--blue);color:#fff;font-family:var(--display);font-size:10px;font-weight:700;letter-spacing:.08em;padding:3px 12px">MOST POPULAR</div>
         <div style="font-family:var(--display);font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--blue);margin-bottom:8px">Starter</div>
         <div style="font-family:var(--display);font-size:42px;font-weight:700;color:var(--text);margin-bottom:4px">$79<span style="font-size:16px;font-weight:400;color:var(--text-3)">/month</span></div>
-        <div style="font-family:var(--body);font-size:13px;color:var(--text-3);margin-bottom:24px">For active PIs and early-stage founders</div>
+        <div style="font-family:var(--body);font-size:13px;color:var(--text-3);margin-bottom:24px">For active researchers and innovators and early-stage founders</div>
         <ul style="list-style:none;margin-bottom:28px;display:flex;flex-direction:column;gap:10px">
-          <li style="font-family:var(--body);font-size:13px;color:var(--text-2);display:flex;gap:8px"><span style="color:#059669;font-weight:700">✓</span> <strong>15 reports/month</strong></li>
+          <li style="font-family:var(--body);font-size:13px;color:var(--text-2);display:flex;gap:8px"><span style="color:#059669;font-weight:700">✓</span> <strong>20 analyses/month</strong></li>
           <li style="font-family:var(--body);font-size:13px;color:var(--text-2);display:flex;gap:8px"><span style="color:#059669;font-weight:700">✓</span> 32 sub-expert profiles across all domains</li>
           <li style="font-family:var(--body);font-size:13px;color:var(--text-2);display:flex;gap:8px"><span style="color:#059669;font-weight:700">✓</span> Live web search - 2026 data in every report</li>
           <li style="font-family:var(--body);font-size:13px;color:var(--text-2);display:flex;gap:8px"><span style="color:#059669;font-weight:700">✓</span> 19+ source citations per report with real URLs</li>
@@ -644,27 +639,27 @@
           <li style="font-family:var(--body);font-size:13px;color:var(--text-2);display:flex;gap:8px"><span style="color:#059669;font-weight:700">✓</span> Market sizing (TAM) with methodology</li>
           <li style="font-family:var(--body);font-size:13px;color:var(--text-2);display:flex;gap:8px"><span style="color:#059669;font-weight:700">✓</span> Watchlists & weekly intelligence alerts</li>
           <li style="font-family:var(--body);font-size:13px;color:var(--text-2);display:flex;gap:8px"><span style="color:#059669;font-weight:700">✓</span> Trial site optimizer - top 15 hospitals</li>
-          <li style="font-family:var(--body);font-size:13px;color:var(--text-2);display:flex;gap:8px"><span style="color:#059669;font-weight:700">✓</span> Grant co-pilot - NIH R01, SBIR, NSF</li>
+          <li style="font-family:var(--body);font-size:13px;color:var(--text-2);display:flex;gap:8px"><span style="color:#059669;font-weight:700">✓</span> Grant co-pilot - NIH R01, SBIR, NSF, licensing strategy</li>
           <li style="font-family:var(--body);font-size:13px;color:var(--text-2);display:flex;gap:8px"><span style="color:#059669;font-weight:700">✓</span> Lab portfolio discovery - 2×2 heatmap</li>
         </ul>
-        <button onclick="pricingCheckout('starter')" style="width:100%;padding:14px;background:var(--blue);border:none;color:#fff;font-family:var(--display);font-size:13px;font-weight:700;letter-spacing:.04em;cursor:pointer;transition:background .15s">Get Started - $79/month</button>
+        <button onclick="pricingCheckout('starter')" style="width:100%;padding:14px;background:var(--blue);border:none;color:#fff;font-family:var(--display);font-size:13px;font-weight:700;letter-spacing:.04em;cursor:pointer;transition:background .15s">Request Access — $149/month</button>
       </div>
     </div>
 
-    <!-- Professional Plan -->
+    <!-- Institution Plan -->
     <div style="border:2px solid #7c3aed;padding:32px;background:var(--bg-2);position:relative;margin-bottom:40px">
       <div style="position:absolute;top:-12px;left:24px;background:#7c3aed;color:#fff;font-family:var(--display);font-size:10px;font-weight:700;letter-spacing:.08em;padding:3px 12px">FOR BIOTECH TEAMS</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:start">
         <div>
           <div style="font-family:var(--display);font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#7c3aed;margin-bottom:8px">Professional</div>
           <div style="font-family:var(--display);font-size:42px;font-weight:700;color:var(--text);margin-bottom:4px">$299<span style="font-size:16px;font-weight:400;color:var(--text-3)">/month</span></div>
-          <div style="font-family:var(--body);font-size:13px;color:var(--text-3);margin-bottom:24px">For biotech founders, serial PIs, and CROs</div>
-          <button onclick="pricingCheckout('professional')" style="width:100%;padding:14px;background:#7c3aed;border:none;color:#fff;font-family:var(--display);font-size:13px;font-weight:700;letter-spacing:.04em;cursor:pointer">Get Started - $299/month</button>
+          <div style="font-family:var(--body);font-size:13px;color:var(--text-3);margin-bottom:24px">For tech transfer offices, investment teams, and consulting firms evaluating high volumes of innovations</div>
+          <button onclick="pricingCheckout('professional')" style="width:100%;padding:14px;background:#7c3aed;border:none;color:#fff;font-family:var(--display);font-size:13px;font-weight:700;letter-spacing:.04em;cursor:pointer">Request Access — $799/month</button>
         </div>
         <ul style="list-style:none;display:flex;flex-direction:column;gap:10px;margin-top:8px">
           <li style="font-family:var(--body);font-size:13px;color:var(--text-2);display:flex;gap:8px"><span style="color:#7c3aed;font-weight:700">✓</span> <strong>Unlimited</strong> intelligence reports</li>
           <li style="font-family:var(--body);font-size:13px;color:var(--text-2);display:flex;gap:8px"><span style="color:#7c3aed;font-weight:700">✓</span> Everything in Starter</li>
-          <li style="font-family:var(--body);font-size:13px;color:var(--text-2);display:flex;gap:8px"><span style="color:#7c3aed;font-weight:700">✓</span> PI institutional memory - reports improve over time</li>
+          <li style="font-family:var(--body);font-size:13px;color:var(--text-2);display:flex;gap:8px"><span style="color:#7c3aed;font-weight:700">✓</span> Institutional memory — analyses improve over time - reports improve over time</li>
           <li style="font-family:var(--body);font-size:13px;color:var(--text-2);display:flex;gap:8px"><span style="color:#7c3aed;font-weight:700">✓</span> PubMed landmark publications in every report</li>
           <li style="font-family:var(--body);font-size:13px;color:var(--text-2);display:flex;gap:8px"><span style="color:#7c3aed;font-weight:700">✓</span> Weekly competitive intelligence digest (email)</li>
           <li style="font-family:var(--body);font-size:13px;color:var(--text-2);display:flex;gap:8px"><span style="color:#7c3aed;font-weight:700">✓</span> Priority support</li>
@@ -678,7 +673,7 @@
       <div style="display:flex;flex-direction:column;gap:16px">
         <div><div style="font-family:var(--display);font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px">How is this different from asking ChatGPT?</div><div style="font-family:var(--body);font-size:13px;color:var(--text-3);line-height:1.6">Project Elevate uses 32 domain-specific expert profiles, pulls live data from FDA.gov, ClinicalTrials.gov, CDC, and PubMed at report time, and validates every claim with an independent AI critic. ChatGPT gives generic answers with no citations and can't access current regulatory data.</div></div>
         <div><div style="font-family:var(--display);font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px">Can I cancel anytime?</div><div style="font-family:var(--body);font-size:13px;color:var(--text-3);line-height:1.6">Yes. Cancel from your profile page and you keep access until the end of your billing period.</div></div>
-        <div><div style="font-family:var(--display);font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px">What counts as a "report" on the Basic plan?</div><div style="font-family:var(--body);font-size:13px;color:var(--text-3);line-height:1.6">Each time you run a PI analysis, that counts as one report. Saved reports don't count - only new runs.</div></div>
+        <div><div style="font-family:var(--display);font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px">What counts as an "analysis"?</div><div style="font-family:var(--body);font-size:13px;color:var(--text-3);line-height:1.6">Each market analysis run counts as one use. Saved reports don't count - only new runs.</div></div>
         <div><div style="font-family:var(--display);font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px">Do I need a credit card to try it?</div><div style="font-family:var(--body);font-size:13px;color:var(--text-3);line-height:1.6">You can create a free account and run 1 report without a credit card. A subscription is required for additional reports.</div></div>
       </div>
     </div>
@@ -781,8 +776,8 @@
   <!-- PI ANALYSIS TAB -->
   <div id="t-pi">
     <div class="ph">
-      <div class="ph-title">SBIR Commercialization Intelligence</div>
-      <div class="ph-desc">Build your NIH/NSF SBIR commercialization section in 90 seconds — TAM/SAM, FDA pathway, competitive landscape, and market access. All source-cited.</div>
+      <div class="ph-title">Medical Market Intelligence</div>
+      <div class="ph-desc">Bottom-up market sizing, FDA pathway analysis, competitive landscape, and commercial strategy — for any health innovation, grounded in primary sources.</div>
     </div>
     <div class="two-col">
       <div>
@@ -846,15 +841,15 @@
             <div style="margin-top:14px">
               <span class="chip-lbl">Quick examples</span>
               <div class="chips">
-                <button class="chip" onclick="setEx(0)">SBIR Phase I — AMR antibiotic</button>
-                <button class="chip" onclick="setEx(1)">SBIR Phase II — MRSA oral drug</button>
-                <button class="chip" onclick="setEx(2)">NIH R01 → SBIR — ALS rare disease</button>
-                <button class="chip" onclick="setEx(3)">STTR — GBM immunotherapy</button>
-                <button class="chip" onclick="setEx(4)">SBIR Phase I — SMA gene therapy</button>
-                <button class="chip" onclick="setEx(5)">STTR — Pancreatic cancer ADC</button>
-                <button class="chip" onclick="setEx(6)">SBIR — Rural CGM device</button>
-                <button class="chip" onclick="setEx(7)">SBIR — Sepsis AI diagnostic</button>
-                <button class="chip" onclick="setEx(8)">STTR — Rapid AST diagnostic</button>
+                <button class="chip" onclick="setEx(0)">AMR antibiotic — beta-lactam/BLI</button>
+                <button class="chip" onclick="setEx(1)">MRSA — novel oral antibiotic</button>
+                <button class="chip" onclick="setEx(2)">ALS rare disease — gene silencing</button>
+                <button class="chip" onclick="setEx(3)">GBM — immunotherapy</button>
+                <button class="chip" onclick="setEx(4)">SMA — gene therapy</button>
+                <button class="chip" onclick="setEx(5)">Pancreatic cancer — ADC</button>
+                <button class="chip" onclick="setEx(6)">Rural CGM — next-gen device</button>
+                <button class="chip" onclick="setEx(7)">Sepsis — AI early detection</button>
+                <button class="chip" onclick="setEx(8)">Rapid AST — point-of-care diagnostic</button>
               </div>
             </div>
 
@@ -862,11 +857,8 @@
               <span id="free-report-badge" style="display:none;font-family:var(--body);font-size:11px;font-weight:600;color:#fff;padding:3px 10px;border-radius:2px"></span>
             </div>
             
-            <div style="display:flex;gap:8px">
-              <button class="btn-primary" id="run-btn" onclick="runAnalysis()" style="flex:1">Run Analysis</button>
-              <button id="refine-btn" onclick="refineWithQuestions()" style="padding:0 16px;border:1.5px solid var(--blue);background:var(--bg);color:var(--blue);border-radius:6px;font-family:var(--body);font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap">✨ Refine with questions</button>
-            </div>
-            <div id="clarify-panel" style="display:none;margin-top:14px;padding:16px;background:var(--bg-2);border:1px solid var(--border);border-radius:8px"></div>
+            <button class="btn-primary" id="run-btn" onclick="startAnalysisFlow()" style="width:100%">Refine &amp; Analyze →</button>
+            <div id="clarify-panel" style="display:none;margin-top:14px"></div>
           <div style="margin-top:8px;text-align:center">
             <label style="font-family:var(--body);font-size:11px;color:var(--text-4);cursor:pointer">
               <input type="checkbox" id="mock-toggle" onchange="window._mockMode=this.checked" style="margin-right:4px">
@@ -1010,6 +1002,51 @@
   </div>
 </div>
 
+<!-- DEV TIMELINE TAB -->
+<div id="t-timeline" style="display:none;padding:24px">
+  <div style="max-width:960px;margin:0 auto">
+
+    <div style="margin-bottom:20px">
+      <div style="font-family:var(--display);font-size:22px;font-weight:700;color:var(--text);margin-bottom:6px">Development Timeline</div>
+      <div style="font-size:13px;color:var(--text-3)">Generate a concrete, date-anchored development schedule with regulatory milestones, funding windows, and calendar export.</div>
+    </div>
+
+    <!-- Input form -->
+    <div style="background:var(--bg-2);border:1px solid var(--border);padding:20px;margin-bottom:20px">
+      <div style="display:grid;grid-template-columns:1fr 180px;gap:12px;margin-bottom:12px">
+        <div>
+          <label style="font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:6px">Innovation Description</label>
+          <textarea id="tl-idea" rows="3" placeholder="Describe your product — what it does, what disease it addresses, current development stage..." style="width:100%;box-sizing:border-box;padding:10px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:13px;font-family:var(--body);resize:vertical"></textarea>
+        </div>
+        <div>
+          <label style="font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:6px">Product Type</label>
+          <select id="tl-type" style="width:100%;padding:10px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:13px">
+            <option value="drug_small_molecule">Small Molecule Drug</option>
+            <option value="biologic">Biologic / Antibody</option>
+            <option value="gene_cell_therapy">Gene / Cell Therapy</option>
+            <option value="antibiotic">Antibiotic (AMR)</option>
+            <option value="medical_device">Medical Device</option>
+            <option value="diagnostic">Diagnostic</option>
+            <option value="vaccine_immunotherapy">Vaccine</option>
+            <option value="other">Other</option>
+          </select>
+          <label style="font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:6px;margin-top:10px">Start Date</label>
+          <input type="month" id="tl-start" style="width:100%;padding:9px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:13px;box-sizing:border-box">
+        </div>
+      </div>
+      <button onclick="generateTimeline()" id="tl-btn" style="padding:10px 24px;background:var(--blue);color:#fff;border:none;border-radius:4px;font-size:13px;font-weight:700;cursor:pointer">Generate Timeline →</button>
+    </div>
+
+    <!-- Results -->
+    <div id="tl-results">
+      <div style="text-align:center;padding:60px;color:var(--text-3)">
+        <div style="font-size:36px;margin-bottom:12px">📅</div>
+        <div style="font-size:14px">Enter your idea above and click Generate to build your development schedule.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
 </main>
 
 <script>
@@ -1094,29 +1131,35 @@ function tab(name) {
   // Lock tools for non-subscribers (dev emails always bypass)
   const isDev = currentUser && DEV_EMAILS.includes(currentUser.email);
   const isActive = (typeof billingStatus !== "undefined") && billingStatus && billingStatus.is_active;
-  if (LOCKED_TABS.includes(name) && !isDev && !isActive) {
-    showPaywall();
-    return;
-  }
+  // Tab locking disabled during early-access / TTO demo period
+  // if (LOCKED_TABS.includes(name) && !isDev && !isActive) {
+  //   showPaywall(); return;
+  // }
 
   // Use original tab switching with t- prefix IDs
-  ['pi','index','needs','pricing','reports','profile','watchlists','trials','portfolio','grant','discovery'].forEach(t => {
+  ['pi','pricing','reports','profile','watchlists','trials','portfolio','grant','discovery','timeline','index','needs'].forEach(t => {
     const el = document.getElementById('t-'+t);
     if (el) el.style.display = t === name ? '' : 'none';
   });
   document.querySelectorAll('.ntab').forEach((el,i) => {
-    el.classList.toggle('on', ['pi','index','needs','pricing','reports','watchlists','trials','portfolio','grant','discovery'][i] === name);
+    el.classList.toggle('on', ['pi','discovery','reports','pricing'][i] === name);
   });
 
   // Lazy-load tab content
   if (name === 'index')      loadIndex();
-  if (name === 'discovery')  { if (!window._discoveryLoaded) { loadDiscovery(); window._discoveryLoaded = true; } }
   if (name === 'discovery')  { if (!window._discoveryLoaded) { loadDiscovery(); window._discoveryLoaded = true; } }
   if (name === 'needs')      loadNeeds();
   if (name === 'reports')    loadReports();
   if (name === 'profile')    loadProfile();
   if (name === 'watchlists') { loadWatchlists(); loadGrantDeadlines(); }
   if (name === 'portfolio')  initPortfolio();
+  if (name === 'timeline') {
+    const inp = document.getElementById('tl-start');
+    if (inp && !inp.value) {
+      const now = new Date();
+      inp.value = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+    }
+  }
 }
 
 
@@ -1133,25 +1176,70 @@ async function runAnalysis() {
   const idea = document.getElementById('idea').value.trim();
   if (!idea || idea.length < 30) { alert('Please describe your product in at least 30 characters.'); return; }
 
-  // Require login
-  if (!currentUser) { showPaywall(); return; }
-  // Check free report / subscription status
-  if (typeof billingStatus !== "undefined" && billingStatus) {
-    const isFreeAccount = !billingStatus.is_active;
-    const freeUsed = billingStatus.free_reports_used || 0;
-    if (isFreeAccount && freeUsed >= 1) { showPricingModal(); return; }
+  // Show pricing first, then sign in after — no free reports
+  const _devEmails = ['test@projectelevate.io','ijw91021@gmail.com','admin@projectelevate.io','oneonesie100@gmail.com'];
+  const _isDev = currentUser && _devEmails.includes(currentUser.email);
+  if (!_isDev && !window._earlyAccessGranted) {
+    showPaywall();
+    return;
   }
+  // Require login (after they've seen pricing and requested access)
+  if (!currentUser) { openAuth('login'); return; }
 
   const btn = document.getElementById('run-btn');
   btn.disabled = true; btn.textContent = 'Analyzing…';
 
-  const typeLabels = {antibiotic:'antibiotic',medical_device:'device',software:'software',diagnostic:'diagnostic',other:'product'};
+  // ── Named progress stages (timing tuned to ~30s typical report) ────────────
+  const _stages = [
+    { pct:  4, label: 'Routing to expert model…' },
+    { pct: 12, label: `Searching ${fmt(lastCount)} clinical demand signals…` },
+    { pct: 22, label: 'Pulling live trial competition from ClinicalTrials.gov…' },
+    { pct: 34, label: 'Loading disease burden from WHO + CDC databases…' },
+    { pct: 44, label: 'Sizing the market (patients × price × penetration)…' },
+    { pct: 55, label: 'Mapping FDA regulatory pathway and designations…' },
+    { pct: 66, label: 'Analyzing clinical trial requirements and costs…' },
+    { pct: 75, label: 'Identifying friction points, loopholes, and funding programs…' },
+    { pct: 83, label: 'Building market access strategy and buyer segments…' },
+    { pct: 91, label: 'Citing sources and finalizing strategic playbook…' },
+    { pct: 96, label: 'Almost done — assembling report…' },
+  ];
+
   document.getElementById('results').innerHTML = `
-    <div class="loading">
-      <div class="prog-track"><div class="prog-bar"></div></div>
-      <div class="loading-t">Generating intelligence report…</div>
-      <div class="loading-s">Searching ${fmt(lastCount)} demand signals · Pulling regulatory data · Building market sizing<br>This takes 20-40 seconds for a full ${typeLabels[selectedType]} analysis</div>
+    <div class="loading" id="prog-container">
+      <div class="prog-pct" id="prog-pct">0%</div>
+      <div class="prog-track"><div class="prog-bar" id="prog-bar"></div></div>
+      <div class="loading-t" id="prog-title">Starting analysis…</div>
+      <div class="prog-stage" id="prog-stage"></div>
     </div>`;
+
+  // Advance through stages over ~28s, hold at 96% until fetch resolves
+  let _stageIdx = 0, _progTimer = null;
+  function _advanceStage() {
+    if (_stageIdx >= _stages.length) return;
+    const s = _stages[_stageIdx++];
+    const bar = document.getElementById('prog-bar');
+    const pctEl = document.getElementById('prog-pct');
+    const titleEl = document.getElementById('prog-title');
+    if (bar) bar.style.width = s.pct + '%';
+    if (pctEl) pctEl.textContent = s.pct + '%';
+    if (titleEl) titleEl.textContent = 'Generating intelligence report…';
+    const stageEl = document.getElementById('prog-stage');
+    if (stageEl) stageEl.textContent = s.label;
+    // Each stage: spread 28s across 11 stages = ~2.5s each, easing slower at the end
+    const delay = _stageIdx < 8 ? 2400 : 3800;
+    if (_stageIdx < _stages.length) _progTimer = setTimeout(_advanceStage, delay);
+  }
+  _progTimer = setTimeout(_advanceStage, 300);
+
+  function _completeProgress() {
+    clearTimeout(_progTimer);
+    const bar = document.getElementById('prog-bar');
+    const pctEl = document.getElementById('prog-pct');
+    if (bar) bar.style.width = '100%';
+    if (pctEl) pctEl.textContent = '100%';
+    const stageEl = document.getElementById('prog-stage');
+    if (stageEl) stageEl.textContent = 'Report ready.';
+  }
 
   try {
     const payload = {
@@ -1166,9 +1254,13 @@ async function runAnalysis() {
       : {method:'POST', headers:{'Content-Type':'application/json','Authorization':`Bearer ${localStorage.getItem('pe_token')}`}, body: JSON.stringify(payload)};
     const res = await fetch(endpoint, fetchOpts);
     if (!res.ok) { const e = await res.json(); throw new Error(e.detail || `HTTP ${res.status}`); }
-    renderPIReport(await res.json());
+    const data = await res.json();
+    _completeProgress();
+    await new Promise(r => setTimeout(r, 350)); // brief pause at 100% before rendering
+    renderPIReport(data);
   } catch(e) {
-    document.getElementById('results').innerHTML = `<div class="err">Error: ${e.message}</div><div class="empty"><div class="empty-s">Make sure the server is running on localhost:8000</div></div>`;
+    clearTimeout(_progTimer);
+    document.getElementById('results').innerHTML = `<div class="err">Error: ${e.message}</div><div class="empty"><div class="empty-s">Make sure the server is running and your API key is valid.</div></div>`;
   } finally { btn.disabled = false; btn.textContent = 'Run Analysis'; }
 }
 
@@ -1178,11 +1270,27 @@ function renderPIReport(r) {
   let html = '<div class="sg">';
 
   // REPORT HEADER
+  const _val = r.validation || {};
+  const _valColor  = {ERROR:'#dc2626', FLAG:'#d97706', REVIEW:'#0891b2', PASS:'#059669'}[_val.status] || '#6366f1';
+  const _valIcon   = {ERROR:'✗', FLAG:'⚠', REVIEW:'ℹ', PASS:'✓'}[_val.status] || '…';
+  const _valBadge  = _val.status
+    ? `<div style="margin-top:10px;padding:7px 12px;background:${_valColor}11;border:1px solid ${_valColor}33;border-radius:3px;display:flex;gap:8px;align-items:flex-start">
+        <span style="font-size:14px;color:${_valColor};font-weight:800;flex-shrink:0">${_valIcon}</span>
+        <div>
+          <div style="font-size:11px;font-weight:700;color:${_valColor}">LangGraph Validation — ${_val.status}</div>
+          <div style="font-size:11px;color:var(--text-2);margin-top:1px">${_val.summary || ''}</div>
+          ${(_val.errors||[]).length ? `<div style="font-size:10px;color:#dc2626;margin-top:4px">${_val.errors.map(e=>`<strong>${e.agent}:</strong> ${e.issue}`).join('<br>')}</div>` : ''}
+          ${(_val.warnings||[]).length && !(_val.errors||[]).length ? `<div style="font-size:10px;color:#d97706;margin-top:4px">${_val.warnings.slice(0,2).map(w=>`<strong>${w.agent}:</strong> ${w.issue}`).join('<br>')}</div>` : ''}
+        </div>
+      </div>`
+    : '';
+
   html += `
     <div style="border-left:4px solid var(--blue);padding:16px 20px;background:var(--bg-2);margin-bottom:28px">
-      <div style="font-family:var(--display);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--blue);margin-bottom:6px">Go-to-Market Intelligence Report</div>
+      <div style="font-family:var(--display);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--blue);margin-bottom:6px">Medical Market Intelligence Report</div>
       <div style="font-family:var(--display);font-size:20px;font-weight:700;color:var(--text);margin-bottom:8px">${r.disease_intelligence ? r.disease_intelligence.condition : 'Analysis'}</div>
       <div style="font-family:var(--body);font-size:13px;color:var(--text-2);line-height:1.7">${r.executive_summary}</div>
+      ${_valBadge}
     </div>`;
 
   // CHAPTER 1: THE OPPORTUNITY
@@ -1275,7 +1383,12 @@ function renderPIReport(r) {
       </div>
     </div>`;
 
-    html += `<div class="ms-formula"><strong>Formula:</strong> ${ms.formula}</div>`;
+    // Clean formula: replace underscore variable names with readable symbols
+    const _cleanMsFormula = (ms.formula || '')
+      .replace(/N_eligible/g,'N·D·T').replace(/N_prev/g,'N')
+      .replace(/D_yield/g,'D').replace(/T_rate/g,'T').replace(/P_net/g,'P')
+      .replace(/Bass_F\(5\)/g,'F₅').replace(/BLP_share/g,'σ');
+    html += `<div class="ms-formula"><strong>Formula:</strong> ${_cleanMsFormula}</div>`;
 
     html += '<div class="ms-steps">';
     ms.steps.forEach(s => {
@@ -1294,6 +1407,9 @@ function renderPIReport(r) {
     });
     html += '</div>';
     html += `<div class="ms-note">Methodology: ${ms.methodology_note}</div>`;
+
+    // Anchor for the derivation panel — inserted here by _renderDerivationPanel
+    html += `<div id="derivation-anchor" style="margin-top:4px"></div>`;
 
     // Market geography inline
     if (r.market_geography) {
@@ -1587,17 +1703,378 @@ function renderPIReport(r) {
     html += '</div>';
   }
 
+  // CHAPTER 7: COMPETITIVE LANDSCAPE (loaded asynchronously after report renders)
+  html += chapterHeader('7', 'Competitive Landscape', 'Named competitors, their key advantages, market white space, and your differentiation levers');
+  html += `
+    <div id="comp-sweep-panel" style="background:var(--bg-2);border:1px solid var(--border);padding:16px;margin-bottom:16px">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div style="font-size:13px;color:var(--text-3)">Sweeping openFDA, ClinicalTrials.gov, and OpenAlex for named competitors…</div>
+        <div style="width:120px;height:3px;background:var(--border);border-radius:2px;overflow:hidden">
+          <div style="height:100%;background:var(--blue);width:0%;transition:width .5s ease" id="comp-sweep-bar"></div>
+        </div>
+      </div>
+    </div>`;
+
   html += '<div class="rmeta">Generated ' + new Date(r.generated_at).toLocaleString() + ' · ' + fmt(r.signals_searched) + ' signals searched · Model v' + r.model_version + '</div>';
   html += '</div>';
 
   document.getElementById('results').innerHTML = html;
   lastReport = r;
+
+  // Animate sweep bar then fetch competitive data
+  const bar = document.getElementById('comp-sweep-bar');
+  if (bar) {
+    let pct = 0;
+    const tick = setInterval(() => { pct = Math.min(pct + 3, 90); bar.style.width = pct + '%'; }, 200);
+    const disease = r.disease_intelligence ? r.disease_intelligence.condition : (r.idea_submitted || '').slice(0,60);
+    const ta = r.expert_domain || 'other';
+    _loadCompetitiveSweep(disease, ta, tick, bar);
+  }
+
+  // Integrated tools panel — appears after report renders
+  _renderPostReportTools(r);
+}
+
+function _renderPostReportTools(r) {
+  const idea      = document.getElementById('idea')?.value || r.idea_submitted || '';
+  const disease   = (r.disease_intelligence?.condition || idea).slice(0,80);
+  const ptype     = r.product_type || selectedType || 'other';
+  const existingPanel = document.getElementById('post-report-tools');
+  if (existingPanel) existingPanel.remove();
+
+  const panel = document.createElement('div');
+  panel.id = 'post-report-tools';
+  panel.style.cssText = 'margin-top:20px;border-top:2px solid var(--blue);padding-top:16px';
+  panel.innerHTML = `
+    <div style="font-family:var(--display);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--blue);margin-bottom:12px">What do you want to do next?</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+
+      <!-- Save Report -->
+      <div style="border:1px solid var(--border);background:var(--bg-2);padding:14px 16px">
+        <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">💾 Save Report</div>
+        <div style="font-size:11px;color:var(--text-3);margin-bottom:10px">Save this analysis to My Reports for future reference and team sharing.</div>
+        <input id="pr-save-name" type="text" placeholder="Report name…" value="${disease.slice(0,50)}"
+          style="width:100%;box-sizing:border-box;padding:7px 10px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:12px;margin-bottom:8px"/>
+        <button onclick="_saveReportInline()" style="width:100%;padding:7px;background:var(--blue);color:#fff;border:none;border-radius:3px;font-size:12px;font-weight:600;cursor:pointer">Save to My Reports</button>
+        <div id="pr-save-status" style="font-size:11px;color:var(--text-3);margin-top:6px"></div>
+      </div>
+
+      <!-- Trial Sites -->
+      <div style="border:1px solid var(--border);background:var(--bg-2);padding:14px 16px">
+        <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">🏥 Find Trial Sites</div>
+        <div style="font-size:11px;color:var(--text-3);margin-bottom:10px">Identify top hospitals and research centres for running clinical trials in this indication.</div>
+        <button onclick="_runTrialSitesInline('${disease.replace(/'/g,"\\'")}'')"
+          style="width:100%;padding:7px;background:var(--bg);border:1px solid var(--border);color:var(--text-2);border-radius:3px;font-size:12px;font-weight:600;cursor:pointer">
+          Find Sites for ${disease.slice(0,30)}${disease.length>30?'…':''}
+        </button>
+        <div id="pr-trials-result" style="margin-top:10px;font-size:11px;color:var(--text-3)"></div>
+      </div>
+
+      <!-- Dev Timeline -->
+      <div style="border:1px solid var(--border);background:var(--bg-2);padding:14px 16px">
+        <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">📅 Development Timeline</div>
+        <div style="font-size:11px;color:var(--text-3);margin-bottom:10px">Generate a date-anchored schedule with regulatory milestones and funding windows.</div>
+        <button onclick="_runTimelineInline('${idea.slice(0,100).replace(/'/g,"\\'")}', '${ptype}')"
+          style="width:100%;padding:7px;background:var(--bg);border:1px solid var(--border);color:var(--text-2);border-radius:3px;font-size:12px;font-weight:600;cursor:pointer">
+          Build Timeline →
+        </button>
+        <div id="pr-timeline-result" style="margin-top:10px"></div>
+      </div>
+
+      <!-- Export PDF -->
+      <div style="border:1px solid var(--border);background:var(--bg-2);padding:14px 16px;grid-column:1/-1">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div>
+            <div style="font-size:13px;font-weight:700;color:var(--text)">📄 Export Report</div>
+            <div style="font-size:11px;color:var(--text-3)">Download the full analysis as a PDF for sharing with tech transfer offices, investors, or advisors.</div>
+          </div>
+          <button onclick="downloadPDF()" style="padding:8px 20px;background:var(--blue);color:#fff;border:none;border-radius:3px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap">⬇ Download PDF</button>
+        </div>
+      </div>
+    </div>`;
+
+  const resultsEl = document.getElementById('results');
+  if (resultsEl) resultsEl.appendChild(panel);
   if (currentUser) {
-    showSaveBar(document.getElementById('idea').value, document.getElementById('pathogen').value);
     showAlertBar(r);
+  }
+
+  // Load the sourced market sizing derivation directly from structured data
+  _loadMarketSizingDerivation(idea, ptype, disease, r);
+}
+
+async function _loadMarketSizingDerivation(idea, ptype, disease, report) {
+  // Find the market sizing chapter in the rendered report and append the full derivation
+  // below it — rendered from structured API data, not Claude's text (prevents hallucination)
+  const token = localStorage.getItem('pe_token');
+  try {
+    const res = await fetch(`${API}/alignment/market-sizing-derivation`, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json','Authorization':`Bearer ${token || ''}`},
+      body: JSON.stringify({
+        idea,
+        product_type:          ptype,
+        disease_name:          disease,
+        therapeutic_area:      report?.expert_domain || 'other',
+        us_patient_population: report?.disease_intelligence?.data_points?.[0]?.value ? 0 : 0,
+      }),
+    });
+    if (!res.ok) return;
+    const d = await res.json();
+    _renderDerivationPanel(d);
+  } catch(e) { console.debug('Derivation panel skipped:', e.message); }
+}
+
+function _renderDerivationPanel(d) {
+  const results = document.getElementById('results');
+  if (!results) return;
+
+  // ── Variable definitions mapping (underscore names → readable labels) ──────
+  const _VAR_LABELS = {
+    'N_prev':     ['N', 'Prevalent Patient Population', 'All US patients with this condition (diagnosed or not)'],
+    'N_diagnosed':['N·D', 'Diagnosed Population', 'Patients who have received a formal diagnosis'],
+    'N_eligible': ['N·D·T', 'Treatment-Eligible Population', 'Diagnosed patients who qualify for a novel therapy'],
+    'P_net':      ['P', 'Net Realized Price', 'Wholesale price minus payer rebates (WAC × GTN ratio)'],
+    'DoT':        ['Δt', 'Duration of Therapy', 'Expected years a patient remains on therapy (Weibull model)'],
+    'D':          ['D', 'Diagnostic Yield', 'Fraction of prevalent patients with confirmed diagnosis'],
+    'T':          ['T', 'Treatment Eligibility Rate', 'Fraction of diagnosed patients eligible for novel therapy'],
+    'GTN':        ['γ', 'Gross-to-Net Ratio', 'Net price as fraction of WAC after payer rebates'],
+    'WAC':        ['W', 'Wholesale Acquisition Cost', 'Published list price before rebates'],
+    'F(t=5)':     ['F₅', 'Bass Diffusion (Year 5)', 'Fraction of addressable market penetrated by Year 5'],
+    'BLP_share':  ['σ', 'BLP Market Share', 'Order-of-entry share from BLP econometric model'],
+  };
+
+  // Clean formula display: replace underscores and make readable
+  function _fmtFormula(raw) {
+    return (raw || '')
+      .replace(/N_prev/g,     '<em>N</em>')
+      .replace(/D_yield/g,    '<em>D</em>')
+      .replace(/T_rate/g,     '<em>T</em>')
+      .replace(/P_net/g,      '<em>P</em>')
+      .replace(/Bass_F\(5\)/g,'<em>F₅</em>')
+      .replace(/BLP_share/g,  '<em>σ</em>')
+      .replace(/\*/g,         ' × ')
+      .replace(/__/g,         '_');
+  }
+
+  // Format step values nicely
+  function _fmtVal(v) {
+    if (typeof v !== 'number') return v;
+    if (v >= 1e9) return '$' + (v/1e9).toFixed(1) + 'B';
+    if (v >= 1e6) return '$' + (v/1e6).toFixed(0) + 'M';
+    if (v >= 1000) return v.toLocaleString();
+    return v.toFixed(v < 10 ? 2 : 0);
+  }
+
+  // Clean the formula overview: "TAM = N_prev × D_yield × T_rate × P_net"
+  const cleanOverview = (d.formula_overview || '')
+    .replace(/N_prev/g,     'N')
+    .replace(/D_yield/g,    'D')
+    .replace(/T_rate/g,     'T')
+    .replace(/P_net/g,      'P')
+    .replace(/Bass_F\(5\)/g,'F₅')
+    .replace(/BLP_share/g,  'σ');
+
+  const panel = document.createElement('div');
+  panel.id = 'market-derivation-panel';
+  panel.style.cssText = 'margin:20px 0 0;border:1px solid var(--border);border-radius:4px;overflow:hidden';
+
+  panel.innerHTML = `
+    <!-- Header: formula + results summary -->
+    <div style="background:var(--blue);color:#fff;padding:14px 18px">
+      <div style="font-family:var(--display);font-size:13px;font-weight:700;margin-bottom:8px">
+        Bottom-Up Market Sizing — Full Derivation with Sources
+      </div>
+      <!-- The master formula -->
+      <div style="background:rgba(255,255,255,.12);padding:10px 14px;border-radius:3px;margin-bottom:10px;font-family:var(--display)">
+        <div style="font-size:15px;font-weight:700;letter-spacing:.02em">
+          TAM = N × D × T × P &nbsp;=&nbsp; ${d.tam_fmt}
+        </div>
+        <div style="font-size:11px;opacity:.8;margin-top:4px">
+          SAM = TAM × F₅ = ${d.sam_fmt} &nbsp;·&nbsp; SOM = SAM × σ = ${d.som_fmt}
+        </div>
+      </div>
+      <!-- Variable key -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px">
+        ${[
+          ['N', 'Prevalent patients', '(all US patients)'],
+          ['D', 'Diagnostic yield', '(fraction diagnosed)'],
+          ['T', 'Eligibility rate', '(fraction qualify)'],
+          ['P', 'Net price/patient', '(WAC × gross-to-net)'],
+          ['F₅', 'Bass diffusion', '(Year 5 penetration)'],
+          ['σ',  'BLP market share', '(order-of-entry %)'],
+        ].map(([sym, name, note]) => `
+          <div style="font-size:10px;line-height:1.3">
+            <span style="font-size:13px;font-weight:700;font-family:var(--display)">${sym}</span>
+            <span style="opacity:.8"> = ${name}</span><br>
+            <span style="opacity:.6">${note}</span>
+          </div>`).join('')}
+      </div>
+    </div>
+
+    <!-- Confidence note -->
+    <div style="padding:8px 16px;background:#f8faff;border-bottom:1px solid var(--border);font-size:10px;color:var(--text-3)">
+      ${d.confidence_note}
+    </div>
+
+    <!-- Steps -->
+    <div style="padding:12px 16px;background:var(--bg-2)">
+      ${(d.steps || []).map((step, idx) => {
+        // Clean step title: remove underscores, prettify variable names
+        const cleanTitle = (step.title || '')
+          .replace(/N_prev/g, 'N — Prevalent Population')
+          .replace(/D_yield/g, 'D — Diagnostic Yield')
+          .replace(/T_rate/g, 'T — Treatment Eligibility')
+          .replace(/P_net/g, 'P — Net Price')
+          .replace(/\(D\)/g, '(D)').replace(/\(T\)/g, '(T)');
+
+        // Clean formula
+        const cleanFormula = (step.formula || '')
+          .replace(/N_prev/g, 'N').replace(/N_diagnosed/g, 'N·D')
+          .replace(/N_eligible/g, 'N·D·T').replace(/D_yield/g, 'D')
+          .replace(/T_rate/g, 'T').replace(/P_net/g, 'P')
+          .replace(/Bass_F\(5\)/g, 'F₅').replace(/BLP_share/g, 'σ');
+
+        const valDisplay = _fmtVal(step.value);
+        const isMonetary = step.unit && (step.unit.includes('USD') || step.unit.includes('$'));
+
+        return `
+        <div style="border:1px solid var(--border);background:var(--bg);border-radius:3px;padding:12px 14px;margin-bottom:8px">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;gap:12px">
+            <div style="font-family:var(--display);font-size:12px;font-weight:700;color:var(--blue)">${cleanTitle}</div>
+            <div style="text-align:right;flex-shrink:0">
+              <span style="font-size:${isMonetary ? 16 : 14}px;font-weight:800;color:var(--text)">${valDisplay}</span>
+              <span style="font-size:10px;color:var(--text-4);margin-left:4px">${step.unit}</span>
+            </div>
+          </div>
+          <div style="font-family:monospace;font-size:11px;background:var(--bg-2);border:1px solid var(--border);padding:5px 10px;border-radius:2px;margin-bottom:8px;color:var(--text-2)">${cleanFormula}</div>
+          <div style="font-size:11px;color:var(--text-2);line-height:1.65;margin-bottom:8px">${step.explanation}</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px">
+            <div style="font-size:10px;color:var(--text-4)">
+              <strong style="color:var(--text-3)">Primary citation:</strong><br>
+              ${step.source_paper.slice(0,100)}${step.source_paper.length>100?'…':''}
+              ${step.source_url ? `<br><a href="${step.source_url}" target="_blank" style="color:var(--blue)">View source ↗</a>` : ''}
+            </div>
+            <div style="font-size:10px;color:var(--text-4)">
+              <strong style="color:var(--text-3)">Data from:</strong><br>
+              ${step.data_source}
+              ${(step.assumptions||[]).length ? `<br><em>Assumed: ${step.assumptions[0]}</em>` : ''}
+            </div>
+          </div>
+        </div>`;
+      }).join('')}
+
+      <!-- Citations grid -->
+      <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">
+        <div style="font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--text-3);margin-bottom:6px">Primary Citations</div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:5px">
+          ${(d.primary_citations||[]).map(c => `
+            <div style="font-size:10px;background:var(--bg);border:1px solid var(--border);padding:5px 8px;border-radius:2px">
+              <strong style="color:var(--text-2)">${c.ref}</strong><br>
+              <span style="color:var(--text-3)">${c.title.slice(0,45)}${c.title.length>45?'…':''}</span><br>
+              <a href="${c.url}" target="_blank" style="color:var(--blue)">View ↗</a>
+            </div>`).join('')}
+        </div>
+      </div>
+    </div>`;
+
+  // ── Insert into the derivation anchor inside Chapter 2 ────────────────────
+  const anchor = document.getElementById('derivation-anchor');
+  if (anchor) {
+    anchor.appendChild(panel);
+  } else {
+    // Fallback: append to results
+    results.appendChild(panel);
   }
 }
 
+async function _saveReportInline() {
+  if (!lastReport || !currentUser) { alert('Please sign in to save reports.'); return; }
+  const name  = document.getElementById('pr-save-name')?.value || 'Report';
+  const token = localStorage.getItem('pe_token');
+  const st    = document.getElementById('pr-save-status');
+  if (st) st.textContent = 'Saving…';
+  try {
+    // Correct endpoint: POST /api/v1/auth/reports
+    const res = await fetch(`${API}/auth/reports`, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json','Authorization':`Bearer ${token}`},
+      body: JSON.stringify({
+        name,
+        product_type: lastReport.product_type || selectedType,
+        idea: document.getElementById('idea')?.value || '',
+        pathogen: document.getElementById('pathogen')?.value || '',
+        report_data: lastReport,
+      }),
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    if (st) { st.textContent = '✓ Saved to My Reports'; st.style.color = '#059669'; }
+  } catch(e) { if (st) { st.textContent = 'Save failed: ' + e.message; st.style.color = '#dc2626'; } }
+}
+
+async function _runTrialSitesInline(disease) {
+  const el = document.getElementById('pr-trials-result');
+  if (!el) return;
+  el.innerHTML = '<div style="font-size:11px;color:var(--text-3)">Searching trial sites…</div>';
+  try {
+    const token = localStorage.getItem('pe_token');
+    const idea  = document.getElementById('idea')?.value || disease;
+    // Correct payload: requires idea + indication (not disease_name)
+    const res = await fetch(`${API}/trial-sites`, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json','Authorization':`Bearer ${token}`},
+      body: JSON.stringify({
+        idea:           idea.length >= 20 ? idea : disease + ' — novel therapeutic approach',
+        indication:     disease.length >= 5 ? disease : 'general indication',
+        disease_domain: 'auto',
+        num_sites:      8,
+      }),
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    const sites = (data.sites || []).slice(0, 5);
+    if (!sites.length) { el.innerHTML = '<div style="font-size:11px;color:var(--text-3)">No sites found for this indication.</div>'; return; }
+    el.innerHTML = sites.map(s =>
+      `<div style="padding:5px 0;border-bottom:1px solid var(--border)">
+        <strong style="font-size:12px;color:var(--text)">${s.hospital_name || s.name || '?'}</strong>
+        <span style="font-size:10px;color:var(--text-4)"> · ${s.city||''}, ${s.state||''}</span>
+        ${s.score ? `<span style="font-size:10px;color:var(--blue);margin-left:4px">Score: ${s.score}</span>` : ''}
+        ${s.active_trials ? `<div style="font-size:10px;color:var(--text-3)">${s.active_trials} active trials</div>` : ''}
+       </div>`
+    ).join('');
+  } catch(e) { el.innerHTML = `<div style="font-size:11px;color:var(--text-3)">Could not load trial sites: ${e.message}</div>`; }
+}
+
+async function _runTimelineInline(idea, ptype) {
+  const el = document.getElementById('pr-timeline-result');
+  if (!el) return;
+  el.innerHTML = '<div style="color:var(--text-3);font-size:11px">Generating timeline…</div>';
+  try {
+    const token = localStorage.getItem('pe_token');
+    const res = await fetch(`${API}/timeline/generate`, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json','Authorization':`Bearer ${token}`},
+      body: JSON.stringify({idea, product_type: ptype}),
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const tl = await res.json();
+    window._lastTimeline = tl;
+    el.innerHTML = `
+      <div style="font-size:11px;color:var(--text-2);margin-bottom:6px">
+        <strong>${tl.estimated_approval_date}</strong> estimated approval ·
+        ${tl.total_duration_years}yr · ${tl.total_cost_fmt}
+      </div>
+      ${tl.phases.slice(0,4).map(ph=>`
+        <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-3);padding:2px 0">
+          <span>${ph.name.replace('— ','').slice(0,35)}</span>
+          <span style="color:var(--text-4)">${ph.start_date.split(' ')[1]}→${ph.end_date.split(' ')[1]}</span>
+        </div>`).join('')}
+      <button onclick="exportICal()" style="margin-top:8px;width:100%;padding:6px;background:none;border:1px solid var(--blue);color:var(--blue);border-radius:3px;font-size:11px;font-weight:600;cursor:pointer">
+        📅 Export to Calendar (.ics)
+      </button>`;
+  } catch(e) { el.innerHTML = `<div style="font-size:11px;color:var(--text-3)">Timeline generation failed.</div>`; }
+}
+
 function chapterHeader(num, title, subtitle) {
   return `<div style="display:flex;align-items:flex-start;gap:16px;margin:32px 0 16px;padding-bottom:12px;border-bottom:2px solid var(--blue)">
     <div style="background:var(--blue);color:#fff;font-family:var(--display);font-size:14px;font-weight:700;width:32px;height:32px;display:flex;align-items:center;justify-content:center;flex-shrink:0">${num}</div>
@@ -1617,6 +2094,83 @@ function chapterHeader(num, title, subtitle) {
       <div style="font-family:var(--body);font-size:12px;color:var(--text-3);margin-top:2px">${subtitle}</div>
     </div>
   </div>`;
+}
+
+// ── COMPETITIVE SWEEP ──────────────────────────────────────────────────────
+
+async function _loadCompetitiveSweep(disease, ta, tickInterval, bar) {
+  try {
+    const token = localStorage.getItem('pe_token');
+    const res = await fetch(`${API}/alignment/competitive-sweep`, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json','Authorization':`Bearer ${token}`},
+      body: JSON.stringify({disease_name: disease, therapeutic_area: ta}),
+    });
+    clearInterval(tickInterval);
+    if (bar) bar.style.width = '100%';
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    const panel = document.getElementById('comp-sweep-panel');
+    if (panel) panel.outerHTML = renderCompetitiveLandscape(data);
+  } catch(e) {
+    clearInterval(tickInterval);
+    const panel = document.getElementById('comp-sweep-panel');
+    if (panel) panel.innerHTML = `<div style="font-size:12px;color:var(--text-3)">Competitive sweep unavailable: ${e.message}</div>`;
+  }
+}
+
+function renderCompetitiveLandscape(data) {
+  const stageIcon  = {approved:'✅', phase3:'🔵', phase2:'🟡', phase1:'⚪'};
+  const stageLabel = {approved:'Approved', phase3:'Phase 3', phase2:'Phase 2', phase1:'Phase 1'};
+  const sc = {empty:'#059669','pre-launch':'#0891b2',monopoly:'#d97706',oligopoly:'#d97706',competitive:'#dc2626',crowded:'#dc2626'}[data.market_structure] || '#6366f1';
+
+  let html = `<div style="margin-bottom:16px">
+    <div style="display:flex;gap:10px;align-items:center;margin-bottom:12px;flex-wrap:wrap">
+      <span style="font-size:11px;font-weight:700;padding:3px 9px;background:${sc}22;color:${sc};border:1px solid ${sc}44;border-radius:2px;text-transform:uppercase">${data.market_structure}</span>
+      <span style="font-size:12px;color:var(--text-3)">${data.approved_count} approved · ${data.pipeline_count} in pipeline</span>
+    </div>
+    <div style="font-size:13px;color:var(--text-2);line-height:1.6;margin-bottom:16px">${data.competitive_summary}</div>`;
+
+  if (data.competitors && data.competitors.length) {
+    html += `<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-3);margin-bottom:8px">Named Competitors</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:8px;margin-bottom:16px">`;
+    data.competitors.slice(0,8).forEach(c => {
+      const brand = c.brand_name ? ` (${c.brand_name})` : '';
+      const route = c.route ? ` · ${c.route}` : '';
+      html += `<div style="background:var(--bg-2);border:1px solid var(--border);padding:10px 12px">
+        <div style="font-size:11px;color:var(--text-4);margin-bottom:4px">${stageIcon[c.stage]||'⚪'} ${stageLabel[c.stage]||c.stage}${route}</div>
+        <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:2px">${c.name}${brand}</div>
+        <div style="font-size:11px;color:var(--text-3);margin-bottom:6px">${c.company}</div>
+        ${(c.advantages||[]).slice(0,2).map(a=>`<div style="font-size:11px;color:#059669;padding:1px 0">▲ ${a}</div>`).join('')}
+        ${(c.vulnerabilities||[]).slice(0,1).map(v=>`<div style="font-size:11px;color:#dc2626;padding:1px 0">▽ ${v}</div>`).join('')}
+        ${c.positioning_signal?`<div style="font-size:10px;color:var(--text-4);margin-top:4px;font-style:italic">→ ${c.positioning_signal.slice(0,120)}${c.positioning_signal.length>120?'…':''}</div>`:''}
+      </div>`;
+    });
+    html += `</div>`;
+  }
+
+  if (data.white_space && data.white_space.length) {
+    html += `<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#059669;margin-bottom:8px">Competitive White Space — Gaps No Competitor Addresses</div>`;
+    data.white_space.slice(0,3).forEach(ws => {
+      html += `<div style="background:#05966911;border:1px solid #05966933;padding:10px 14px;margin-bottom:6px">
+        <div style="font-size:12px;font-weight:700;color:#059669;margin-bottom:3px">• ${ws.description}</div>
+        <div style="font-size:11px;color:var(--text-2)">Segment: <strong>${ws.patient_segment}</strong></div>
+        <div style="font-size:11px;color:var(--text-3)">Opportunity: ${ws.opportunity_size}</div>
+      </div>`;
+    });
+  }
+
+  if (data.differentiation_levers && data.differentiation_levers.length) {
+    html += `<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--blue);margin-bottom:8px;margin-top:12px">Differentiation Levers — What a New Entrant Could Exploit</div>
+      <div style="display:flex;flex-direction:column;gap:4px">`;
+    data.differentiation_levers.slice(0,5).forEach(l => {
+      html += `<div style="font-size:12px;color:var(--text-2);padding:4px 0;border-bottom:1px solid var(--border)">→ ${l}</div>`;
+    });
+    html += `</div>`;
+  }
+
+  html += `</div>`;
+  return html;
 }
 
 
@@ -1713,12 +2267,8 @@ function onLoggedIn() {
   document.getElementById('user-avatar').textContent = (currentUser.name || currentUser.email)[0].toUpperCase();
   document.getElementById('user-email-display').textContent = currentUser.name || currentUser.email.split('@')[0];
   document.getElementById('reports-tab').style.display = '';
-  document.getElementById('watchlists-tab').style.display = '';
   document.getElementById('bell-wrap').style.display = '';
   loadUnreadCount();
-  document.getElementById('trial-tab').style.display = '';
-  document.getElementById('portfolio-tab').style.display = '';
-  document.getElementById('grant-tab').style.display = '';
 }
 
 function logout() {
@@ -1728,11 +2278,7 @@ function logout() {
   document.getElementById('sign-in-btn').style.display    = '';
   document.getElementById('user-menu-wrap').style.display = 'none';
   document.getElementById('reports-tab').style.display    = 'none';
-  document.getElementById('watchlists-tab').style.display = 'none';
   document.getElementById('bell-wrap').style.display       = 'none';
-  document.getElementById('trial-tab').style.display        = 'none';
-  document.getElementById('portfolio-tab').style.display    = 'none';
-  document.getElementById('grant-tab').style.display        = 'none';
   document.getElementById('user-menu').classList.remove('open');
   tab('pi');
 }
@@ -2700,28 +3246,28 @@ document.getElementById('pathogen-row').style.display = '';
 <div id="paywall-overlay" class="paywall-overlay" style="display:none" onclick="if(event.target===this)closePaywall()">
   <div class="paywall-modal">
     <div class="paywall-header">
-      <div class="paywall-badge">Project Elevate</div>
+      <div class="paywall-badge">Project Elevate — Early Access</div>
       <div class="paywall-title">Choose your plan</div>
-      <div class="paywall-sub">Subscribe to run reports and unlock all tools. Cancel anytime.</div>
+      <div class="paywall-sub">Billing launches soon. Request early access below and we'll set up your account manually — no credit card needed yet, full access immediately.</div>
     </div>
     <div class="paywall-body">
       <div class="pricing-card" style="border-color:#6b7280;margin-bottom:12px">
-        <div class="pricing-name">Basic Plan</div>
+        <div class="pricing-name">Explorer Plan</div>
         <div class="pricing-price">$20<span>/month</span></div>
-        <div class="pricing-trial" style="color:var(--text-3)">3 reports per month</div>
+        <div class="pricing-trial" style="color:var(--text-3)">5 market analyses/month</div>
         <ul class="pricing-features">
-          <li>3 intelligence reports/month</li>
+          <li>5 market analyses/month</li>
           <li>32 sub-expert profiles</li>
           <li>Live web search - current 2026 data</li>
           <li>Source citations with real URLs</li>
         </ul>
-        <button class="paywall-cta" style="background:#6b7280" onclick="startCheckout('basic')">Subscribe for $19/month →</button>
+        <button class="paywall-cta" style="background:#6b7280" onclick="startCheckout('basic')">Request early access →</button>
       </div>
       <div class="pricing-card">
         <div class="pricing-badge">MOST POPULAR</div>
-        <div class="pricing-name">Starter Plan</div>
+        <div class="pricing-name">Innovator Plan</div>
         <div class="pricing-price">$79<span>/month</span></div>
-        <div class="pricing-trial">✓ Unlimited reports - cancel anytime</div>
+        <div class="pricing-trial">✓ 20 analyses/month — cancel anytime</div>
         <ul class="pricing-features">
           <li>Unlimited intelligence reports</li>
           <li>32 sub-expert profiles across all disease domains</li>
@@ -2729,24 +3275,24 @@ document.getElementById('pathogen-row').style.display = '';
           <li>19+ source citations per report with real URLs</li>
           <li>Trial site optimizer - top 15 recruitment hospitals</li>
           <li>Lab portfolio discovery - 2×2 innovation heatmap</li>
-          <li>Grant co-pilot - NIH R01, SBIR, NSF sections</li>
+          <li>Development timeline with regulatory milestones</li>
           <li>LangGraph validation - independent AI fact-checking</li>
         </ul>
-        <button class="paywall-cta" onclick="startCheckout('starter')">Subscribe for $79/month →</button>
-        <button class="paywall-dismiss" onclick="closePaywall()">Maybe later</button>
+        <button class="paywall-cta" onclick="startCheckout('starter')">Request early access →</button>
+        <button class="paywall-dismiss" onclick="window._earlyAccessGranted=true;closePaywall();if(!currentUser)openAuth('register');">Sign up &amp; continue →</button>
       </div>
       <div style="border:2px solid #7c3aed;padding:24px;margin-top:12px;position:relative">
         <div style="position:absolute;top:-10px;left:16px;background:#7c3aed;color:#fff;font-family:var(--display);font-size:9px;font-weight:700;letter-spacing:.08em;padding:2px 10px">FOR BIOTECH TEAMS</div>
-        <div class="pricing-name" style="color:#7c3aed">Professional Plan</div>
+        <div class="pricing-name" style="color:#7c3aed">Institution Plan</div>
         <div class="pricing-price" style="color:#7c3aed">$299<span>/month</span></div>
-        <div class="pricing-trial" style="color:var(--text-3)">Unlimited reports + everything in Starter</div>
+        <div class="pricing-trial" style="color:var(--text-3)">Unlimited analyses + everything in Innovator</div>
         <ul class="pricing-features">
           <li>Unlimited intelligence reports</li>
-          <li>PI institutional memory</li>
+          <li>Institutional memory — analyses improve over time</li>
           <li>Weekly competitive intelligence digest</li>
           <li>Priority support</li>
         </ul>
-        <button class="paywall-cta" style="background:#7c3aed" onclick="startCheckout('professional')">Subscribe for $299/month →</button>
+        <button class="paywall-cta" style="background:#7c3aed" onclick="startCheckout('professional')">Contact us →</button>
       </div>
     </div>
   </div>
@@ -2849,51 +3395,130 @@ function closePaywall() {
 }
 
 async function startCheckout(plan='starter') {
-  if (!currentUser) { openAuth('login'); return; }
-  const token = localStorage.getItem('pe_token');
-  try {
-    const stripeTab = window.open('', '_blank');
-    const res  = await fetch(`${API}/billing/create-checkout`, {
-      method:'POST', headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},
-      body: JSON.stringify({plan})
-    });
-    const data = await res.json();
-    if (data.checkout_url) {
-      stripeTab.location.href = data.checkout_url;
-      const stripeTabRef = stripeTab;
-      // Poll for return - close modal when billing status becomes active
-      const poll = setInterval(async () => {
-        await loadBillingStatus();
-        if (billingStatus && billingStatus.is_active) {
-          clearInterval(poll);
-          closePaywall();
-          const banner = document.createElement('div');
-          banner.style.cssText = 'position:fixed;top:16px;left:50%;transform:translateX(-50%);background:#059669;color:#fff;padding:12px 24px;font-family:var(--display);font-size:13px;font-weight:700;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.3);border-radius:2px';
-          banner.textContent = '🎉 Free trial activated! You have 7 days of full access.';
-          document.body.appendChild(banner);
-          setTimeout(() => banner.remove(), 5000);
-        }
-      }, 3000);
-      // Stop polling after 10 minutes
-      setTimeout(() => clearInterval(poll), 600000);
-    } else {
-      alert('Failed to start checkout: ' + (data.detail || 'Unknown error'));
-    }
-  } catch(e) { alert('Checkout failed: ' + e.message); }
+  // Stripe billing not yet active — show waitlist / contact modal instead of crashing
+  _showEarlyAccessModal(plan);
 }
 
-// Intercept 402 errors from any API call and show paywall
-const _originalFetch = window.fetch;
-window.fetch = async function(...args) {
-  const response = await _originalFetch(...args);
-  if (response.status === 402) {
-    const clone = response.clone();
-    clone.json().then(data => {
-      if (data.detail?.error === 'subscription_required') showPaywall();
-    }).catch(() => showPaywall());
+function _showEarlyAccessModal(plan) {
+  const existing = document.getElementById('early-access-modal');
+  if (existing) existing.remove();
+
+  const planLabel = plan === 'professional' ? 'Institution ($799/mo)' : plan === 'basic' ? 'Explorer ($49/mo)' : 'Innovator ($149/mo)';
+  const modal = document.createElement('div');
+  modal.id = 'early-access-modal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(10,22,40,.88);z-index:2000;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);padding:20px';
+  modal.innerHTML = `
+    <div style="background:var(--bg-2);border:1px solid var(--border);max-width:480px;width:100%;padding:36px;position:relative;border-radius:4px;box-shadow:0 32px 80px rgba(0,0,0,.6)">
+      <button onclick="document.getElementById('early-access-modal').remove()"
+        style="position:absolute;top:14px;right:16px;background:none;border:none;color:var(--text-3);font-size:22px;cursor:pointer;line-height:1">×</button>
+
+      <div style="font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--blue);margin-bottom:10px">Early Access — ${planLabel}</div>
+      <div style="font-family:var(--display);font-size:20px;font-weight:700;color:var(--text);margin-bottom:6px">Request your access</div>
+      <div style="font-size:13px;color:var(--text-3);line-height:1.55;margin-bottom:22px">
+        No credit card needed. We'll set up your account within 24 hours and reach out to confirm.
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+        <div>
+          <label style="font-size:11px;font-weight:600;color:var(--text-3);display:block;margin-bottom:4px">Full name *</label>
+          <input id="ea-name" type="text" placeholder="Jane Smith"
+            style="width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:13px;border-radius:3px"/>
+        </div>
+        <div>
+          <label style="font-size:11px;font-weight:600;color:var(--text-3);display:block;margin-bottom:4px">Email *</label>
+          <input id="ea-email" type="email" placeholder="jane@wustl.edu"
+            style="width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:13px;border-radius:3px"/>
+        </div>
+      </div>
+      <div style="margin-bottom:10px">
+        <label style="font-size:11px;font-weight:600;color:var(--text-3);display:block;margin-bottom:4px">Institution / Organization</label>
+        <input id="ea-institution" type="text" placeholder="Washington University in St. Louis"
+          style="width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:13px;border-radius:3px"/>
+      </div>
+      <div style="margin-bottom:10px">
+        <label style="font-size:11px;font-weight:600;color:var(--text-3);display:block;margin-bottom:4px">Your role</label>
+        <select id="ea-role"
+          style="width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:13px;border-radius:3px">
+          <option value="">Select role…</option>
+          <option value="Tech Transfer Officer">Tech Transfer Officer</option>
+          <option value="Principal Investigator">Principal Investigator / Researcher</option>
+          <option value="Biotech Founder">Biotech Founder / Entrepreneur</option>
+          <option value="Investor / VC">Investor / VC</option>
+          <option value="Student / Postdoc">Student / Postdoc</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      <div style="margin-bottom:18px">
+        <label style="font-size:11px;font-weight:600;color:var(--text-3);display:block;margin-bottom:4px">What will you use Project Elevate for? <span style="font-weight:400">(optional)</span></label>
+        <textarea id="ea-message" rows="2" placeholder="e.g. Evaluating commercialization potential of lab inventions for our TTO…"
+          style="width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:13px;border-radius:3px;resize:vertical;font-family:inherit"></textarea>
+      </div>
+
+      <button id="ea-submit-btn" onclick="_submitEarlyAccess('${plan}')"
+        style="width:100%;padding:13px;background:var(--blue);color:#fff;border:none;font-size:14px;font-weight:700;cursor:pointer;border-radius:3px;transition:all .15s">
+        Request early access →
+      </button>
+      <div style="font-size:11px;color:var(--text-4);text-align:center;margin-top:10px">
+        Or email us: <a href="mailto:contact@projectelevate.io" style="color:var(--blue)">contact@projectelevate.io</a>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+  setTimeout(() => document.getElementById('ea-name')?.focus(), 100);
+}
+
+async function _submitEarlyAccess(plan) {
+  const name        = document.getElementById('ea-name')?.value.trim() || '';
+  const email       = document.getElementById('ea-email')?.value.trim() || '';
+  const institution = document.getElementById('ea-institution')?.value.trim() || '';
+  const role        = document.getElementById('ea-role')?.value || '';
+  const message     = document.getElementById('ea-message')?.value.trim() || '';
+
+  if (!name) { document.getElementById('ea-name')?.focus(); alert('Please enter your name.'); return; }
+  if (!email || !email.includes('@')) { document.getElementById('ea-email')?.focus(); alert('Please enter a valid email.'); return; }
+
+  const btn = document.getElementById('ea-submit-btn');
+  if (btn) { btn.textContent = 'Submitting…'; btn.disabled = true; }
+
+  try {
+    const res = await fetch(`${API}/auth/waitlist`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ name, email, institution, role, plan, message })
+    });
+    // If already registered, still treat as success
+  } catch(e) {
+    // Network error — still show confirmation (form data visible to user)
+    console.warn('Waitlist submit failed:', e);
   }
-  return response;
-};
+
+  const modal = document.getElementById('early-access-modal');
+  if (modal) modal.innerHTML = `
+    <div style="background:var(--bg-2);border:1px solid var(--border);max-width:460px;width:90%;padding:48px 36px;text-align:center;border-radius:4px;box-shadow:0 32px 80px rgba(0,0,0,.6)">
+      <div style="font-size:40px;margin-bottom:16px">✓</div>
+      <div style="font-family:var(--display);font-size:20px;font-weight:700;color:var(--text);margin-bottom:10px">You're on the list, ${name.split(' ')[0]}!</div>
+      <div style="font-size:13px;color:var(--text-3);line-height:1.65;margin-bottom:24px">
+        We'll reach out to <strong style="color:var(--text-2)">${email}</strong> within 24 hours to set up your account.
+        <br><br>
+        Create a free account now to start exploring — we'll upgrade you manually when your access is confirmed.
+      </div>
+      <button onclick="window._earlyAccessGranted=true;document.getElementById('early-access-modal').remove();closePaywall();if(!currentUser)openAuth('register');"
+        style="width:100%;padding:14px;background:var(--blue);color:#fff;border:none;font-size:14px;font-weight:700;cursor:pointer;border-radius:3px;margin-bottom:8px">
+        Create account &amp; start exploring →
+      </button>
+      <button onclick="window._earlyAccessGranted=true;document.getElementById('early-access-modal').remove();closePaywall();"
+        style="width:100%;padding:10px;background:none;border:1px solid var(--border);color:var(--text-3);font-size:13px;cursor:pointer;border-radius:3px">
+        I'm already signed in — continue
+      </button>
+    </div>`;
+
+// 402 intercept disabled during early-access period — don't block users.
+// Re-enable when Stripe billing is live.
+// const _originalFetch = window.fetch;
+// window.fetch = async function(...args) {
+//   const response = await _originalFetch(...args);
+//   if (response.status === 402) { showPaywall(); }
+//   return response;
+// };
 
 function pricingCheckout(plan) {
   if (!currentUser) { openAuth('register'); return; }
@@ -2943,7 +3568,7 @@ window._inputMode = 'product';
         <div style="font-family:var(--display);font-size:13px;font-weight:700;color:var(--text);margin-bottom:8px">Basic</div>
         <div style="font-size:28px;font-weight:800;color:var(--blue)">$19</div>
         <div style="font-size:11px;color:var(--text-3);margin-bottom:12px">/month</div>
-        <div style="font-size:12px;color:var(--text-2);margin-bottom:14px">3 reports/month</div>
+        <div style="font-size:12px;color:var(--text-2);margin-bottom:14px">5 analyses/month</div>
         <button onclick="pricingCheckout('basic')" style="width:100%;padding:8px;background:var(--blue);color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer">Get Started</button>
       </div>
       <div style="border:2px solid var(--blue);border-radius:8px;padding:18px;text-align:center;position:relative">
@@ -2951,14 +3576,14 @@ window._inputMode = 'product';
         <div style="font-family:var(--display);font-size:13px;font-weight:700;color:var(--text);margin-bottom:8px">Starter</div>
         <div style="font-size:28px;font-weight:800;color:var(--blue)">$79</div>
         <div style="font-size:11px;color:var(--text-3);margin-bottom:12px">/month</div>
-        <div style="font-size:12px;color:var(--text-2);margin-bottom:14px">15 reports/month</div>
+        <div style="font-size:12px;color:var(--text-2);margin-bottom:14px">20 analyses/month</div>
         <button onclick="pricingCheckout('starter')" style="width:100%;padding:8px;background:var(--blue);color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer">Get Started</button>
       </div>
       <div style="border:1.5px solid var(--border);border-radius:8px;padding:18px;text-align:center">
         <div style="font-family:var(--display);font-size:13px;font-weight:700;color:var(--text);margin-bottom:8px">Professional</div>
         <div style="font-size:28px;font-weight:800;color:var(--blue)">$299</div>
         <div style="font-size:11px;color:var(--text-3);margin-bottom:12px">/month</div>
-        <div style="font-size:12px;color:var(--text-2);margin-bottom:14px">Unlimited reports</div>
+        <div style="font-size:12px;color:var(--text-2);margin-bottom:14px">Unlimited analyses</div>
         <button onclick="pricingCheckout('pro')" style="width:100%;padding:8px;background:var(--blue);color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer">Get Started</button>
       </div>
     </div>
@@ -3025,17 +3650,60 @@ window.tab = function(name) {
             <div id="algo-toggle" style="font-size:11px;color:var(--blue)">Show ▾</div>
           </div>
           <div id="algo-details" style="display:none;margin-top:12px">
-            <div style="font-size:12px;color:var(--text-2);margin-bottom:10px">6-factor weighted MCDA algorithm (EVIDEM v3.0 · PII · AIFA · Ozmosi LENZ):</div>
-            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
-              <div style="background:var(--bg);border:1px solid var(--border);padding:8px 10px"><div style="font-size:11px;font-weight:700;color:var(--text)">Unmet Need <span style="color:var(--blue)">22%</span></div><div style="font-size:10px;color:var(--text-3)">Inverse of approved treatments; PII UTN weight</div></div>
-              <div style="background:var(--bg);border:1px solid var(--border);padding:8px 10px"><div style="font-size:11px;font-weight:700;color:var(--text)">PTRS × TRL <span style="color:var(--blue)">20%</span></div><div style="font-size:10px;color:var(--text-3)">Phase-specific success probability (Hay 2014; Wong 2019)</div></div>
-              <div style="background:var(--bg);border:1px solid var(--border);padding:8px 10px"><div style="font-size:11px;font-weight:700;color:var(--text)">Disease Burden <span style="color:var(--blue)">18%</span></div><div style="font-size:10px;color:var(--text-3)">IHME DALYs — best predictor of funding (Gillum 2011)</div></div>
-              <div style="background:var(--bg);border:1px solid var(--border);padding:8px 10px"><div style="font-size:11px;font-weight:700;color:var(--text)">Market Size <span style="color:var(--blue)">18%</span></div><div style="font-size:10px;color:var(--text-3)">Patients × WTP; ICER $150K/QALY anchor</div></div>
-              <div style="background:var(--bg);border:1px solid var(--border);padding:8px 10px"><div style="font-size:11px;font-weight:700;color:var(--text)">Competition <span style="color:var(--blue)">12%</span></div><div style="font-size:10px;color:var(--text-3)">Bivalent sigmoid — 0 = unvalidated, >10 = commoditized</div></div>
-              <div style="background:var(--bg);border:1px solid var(--border);padding:8px 10px"><div style="font-size:11px;font-weight:700;color:var(--text)">IP & Exclusivity <span style="color:var(--blue)">10%</span></div><div style="font-size:10px;color:var(--text-3)">Designation premiums; orphan 3.4–8.9% CAR (Miller 2017)</div></div>
+            <div style="font-size:12px;color:var(--text-2);margin-bottom:4px;font-weight:600">8-criterion MCDA — grounded in EVIDEM v3.0 (Goetghebeur et al., PMC3192743) + Advanced Market Sizing Framework (DisMod · BLP · UCRCD · BIA)</div>
+            <div style="font-size:10px;color:var(--text-3);margin-bottom:10px">Weights derived from: EVIDEM v3.0 domain consensus · BIO/Informa 2011–2020 success rates · Wong, Siah &amp; Lo (Biostatistics 2019) · Mauskopf BIA (ISPOR) · ICER reference case</div>
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:8px">
+              <div style="background:var(--bg);border:1px solid var(--border);padding:7px 9px">
+                <div style="font-size:11px;font-weight:700;color:var(--text)">Disease Severity &amp; Burden <span style="color:var(--blue)">18%</span></div>
+                <div style="font-size:10px;color:var(--text-3)">DALYs (WHO GHO) + mortality + prevalence. EVIDEM Domain 1a. Gillum 2011: DALYs best predictor of research investment.</div>
+              </div>
+              <div style="background:var(--bg);border:1px solid var(--border);padding:7px 9px">
+                <div style="font-size:11px;font-weight:700;color:var(--text)">Unmet Medical Need <span style="color:var(--blue)">16%</span></div>
+                <div style="font-size:10px;color:var(--text-3)">Inverse of approved therapies + treatment gap. EVIDEM Domain 1b. Scores 100 when no alternatives exist; 20 when ≥7 approved agents.</div>
+              </div>
+              <div style="background:var(--bg);border:1px solid var(--border);padding:7px 9px">
+                <div style="font-size:11px;font-weight:700;color:var(--text)">Clinical Success (PTRS) <span style="color:var(--blue)">15%</span></div>
+                <div style="font-size:10px;color:var(--text-3)">Phase-specific LOA × TA multiplier × biomarker boost. BIO 2011–2020: P1 overall 7.9%, hematology 23.9%, oncology 5.3%. Wong 2019: 13.8%.</div>
+              </div>
+              <div style="background:var(--bg);border:1px solid var(--border);padding:7px 9px">
+                <div style="font-size:11px;font-weight:700;color:var(--text)">Comparative Efficacy <span style="color:var(--blue)">12%</span></div>
+                <div style="font-size:10px;color:var(--text-3)">Mechanism novelty + biomarker selection + first-in-class premium. EVIDEM Domain 2. BIO: biomarker-selected programs have 3× LOA.</div>
+              </div>
+              <div style="background:var(--bg);border:1px solid var(--border);padding:7px 9px">
+                <div style="font-size:11px;font-weight:700;color:var(--text)">Economic Value &amp; Revenue <span style="color:var(--blue)">14%</span></div>
+                <div style="font-size:10px;color:var(--text-3)">5-stage market sizing: DisMod cascade × Weibull DoT × BLP demand × Bass/UCRCD diffusion × BIA gate. EVIDEM Domain 5. ICER $150K/QALY anchor.</div>
+              </div>
+              <div style="background:var(--bg);border:1px solid var(--border);padding:7px 9px">
+                <div style="font-size:11px;font-weight:700;color:var(--text)">Competitive Dynamics <span style="color:var(--blue)">12%</span></div>
+                <div style="font-size:10px;color:var(--text-3)">Pipeline density (CT.gov live) + BLP order-of-entry share + UCRCD cross-WOM. Guseo-Guidolin 2015: b&lt;0 cannibalization, b&gt;0 class effect.</div>
+              </div>
+              <div style="background:var(--bg);border:1px solid var(--border);padding:7px 9px">
+                <div style="font-size:11px;font-weight:700;color:var(--text)">Regulatory &amp; IP Position <span style="color:var(--blue)">8%</span></div>
+                <div style="font-size:10px;color:var(--text-3)">FDA designations (Orphan, Breakthrough, QIDP, RMAT) + exclusivity years. EVIDEM Domain 3. Orphan adds 7yr exclusivity; QIDP adds +5yr.</div>
+              </div>
+              <div style="background:var(--bg);border:1px solid var(--border);padding:7px 9px">
+                <div style="font-size:11px;font-weight:700;color:var(--text)">Payer Access &amp; BIA <span style="color:var(--blue)">5%</span></div>
+                <div style="font-size:10px;color:var(--text-3)">Budget impact (Mauskopf ISPOR BIA §6): if per-patient cost &gt;$300K or total US spend &gt;$500M, revenue is dampened by logarithmic access restriction.</div>
+              </div>
             </div>
-            <div style="font-size:10px;color:var(--text-4);margin-top:8px">Score = 100 × Σ(wᵢ×sᵢ) × PTRS(phase,TA) × (1+designation_uplift) · ±35% confidence band (IQVIA 71% forecast error)</div>
+            <div style="font-size:10px;color:var(--text-4)">
+              Score = (Opportunity^0.35 × Probability^0.28 × Value^0.25 × Innovation^0.12) — geometric model prevents any single near-zero factor from masking real opportunity.
+              Confidence interval ±18–23% (Weibull DoT uncertainty + IQVIA 71% forecast error). Sources: EVIDEM v3.0 (PMC3192743) · BIO/Informa 2021 · Wong et al. Biostatistics 2019 · Goetghebeur 2012 MDMA · Mauskopf ISPOR 2012.
+            </div>
           </div>
+        </div>
+
+        <!-- Search bar -->
+        <div style="position:relative;margin-bottom:10px">
+          <label style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--blue);display:block;margin-bottom:4px">
+            🔍 Search diseases — type here to find any condition
+          </label>
+          <input id="disco-search" type="text"
+            placeholder="Type any disease: Alzheimer, obesity, diabetes, hair loss, breast cancer…"
+            oninput="searchDiscovery(this.value)"
+            style="width:100%;box-sizing:border-box;padding:11px 40px 11px 14px;border:2px solid var(--blue);background:var(--bg);color:var(--text);font-size:13px;border-radius:4px;outline:none"/>
+          <button onclick="document.getElementById('disco-search').value='';filterDiscovery();"
+            style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text-4);font-size:16px;cursor:pointer;margin-top:11px">✕</button>
         </div>
 
         <!-- Filters -->
@@ -3049,6 +3717,8 @@ window.tab = function(name) {
             <option value="gene_therapy">Gene Therapy</option>
             <option value="metabolic">Metabolic</option>
             <option value="cardiovascular">Cardiovascular</option>
+            <option value="immunology">Immunology</option>
+            <option value="ophthalmology">Ophthalmology</option>
             <option value="device">Device / Diagnostic</option>
           </select>
           <select id="disco-filter-tier" onchange="filterDiscovery()" style="padding:6px 10px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:12px;border-radius:4px">
@@ -3059,6 +3729,7 @@ window.tab = function(name) {
             <option value="LOW">Low (&lt;40)</option>
           </select>
           <button onclick="loadDiscovery()" style="padding:6px 14px;background:var(--blue);color:#fff;border:none;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer">Refresh</button>
+          <button id="show-all-btn" onclick="loadAllDiscovery()" style="padding:6px 14px;background:none;border:1px solid var(--border);color:var(--text-2);border-radius:4px;font-size:12px;font-weight:600;cursor:pointer">Show All</button>
           <div id="disco-updated" style="margin-left:auto;font-size:11px;color:var(--text-4)"></div>
         </div>
 
@@ -3075,49 +3746,27 @@ window.tab = function(name) {
 
 
 <script>
-let _discoveryData = [];
-
-
-
-
-
-
-
-
-
-
-</script>
-
-
-<script>
-let _discoveryData = [];
-
-
-
-
-
-
-
-
-
-
-</script>
-
-<script>
 async function loadDiscovery() {
   const listEl = document.getElementById('discovery-list');
   if (!listEl) return;
   listEl.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-3)"><div style="font-size:28px;margin-bottom:8px">⏳</div><div style="font-size:14px">Scoring opportunities from ClinicalTrials.gov, NIH Reporter, and GBD data...</div></div>';
   try {
     const token = localStorage.getItem('pe_token');
-    const res = await fetch(`${API}/alignment/discovery/opportunities?top_n=25`, {
+    const res = await fetch(`${API}/alignment/discovery/opportunities?top_n=100`, {
       headers: {'Authorization': `Bearer ${token}`}
     });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
     _discoveryData = data.opportunities || [];
+    window._universeSize = data.universe_size || _discoveryData.length;
     const updEl = document.getElementById('disco-updated');
-    if (updEl) updEl.textContent = 'Scored ' + _discoveryData.length + ' opportunities · ' + new Date().toLocaleDateString();
+    const uSize = window._universeSize;
+    const uLabel = uSize > 309
+      ? `${uSize.toLocaleString()} diseases indexed`
+      : `${_discoveryData.length} of ${uSize.toLocaleString()} diseases`;
+    if (updEl) updEl.textContent = uLabel + ' · ' + new Date().toLocaleDateString();
+    const showBtn = document.getElementById('show-all-btn');
+    if (showBtn) showBtn.textContent = `Show All ${uSize.toLocaleString()}`;
     filterDiscovery();
   } catch(e) {
     console.error('Discovery error:', e);
@@ -3127,14 +3776,78 @@ async function loadDiscovery() {
 }
 
 function filterDiscovery() {
-  const ta = document.getElementById('disco-filter-ta')?.value || '';
+  const ta   = document.getElementById('disco-filter-ta')?.value || '';
   const tier = document.getElementById('disco-filter-tier')?.value || '';
+  const q    = (document.getElementById('disco-search')?.value || '').toLowerCase().trim();
   const filtered = _discoveryData.filter(o => {
-    if (ta && o.therapeutic_area !== ta) return false;
-    if (tier && o.tier !== tier) return false;
+    if (ta   && o.therapeutic_area !== ta) return false;
+    if (tier && o.tier !== tier)           return false;
+    if (q    && !(o.disease || '').toLowerCase().includes(q) &&
+                !(o.notes   || '').toLowerCase().includes(q) &&
+                !(o.therapeutic_area || '').toLowerCase().includes(q)) return false;
     return true;
   });
   renderDiscovery(filtered);
+  // If search returns nothing and we haven't loaded all 309, offer to load more
+  if (q && filtered.length === 0 && _discoveryData.length < 200) {
+    const listEl = document.getElementById('discovery-list');
+    if (listEl) listEl.innerHTML = `
+      <div style="text-align:center;padding:24px;background:var(--bg-2);border:1px solid var(--border)">
+        <div style="font-size:13px;color:var(--text-2);margin-bottom:10px">
+          "<strong>${q}</strong>" not found in current top-${_discoveryData.length}.
+        </div>
+        <button onclick="loadAllDiscovery('${q.replace(/'/g,"\\'")}'')"
+          style="padding:7px 16px;background:var(--blue);color:#fff;border:none;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer">
+          Search all 309 diseases for "${q}"
+        </button>
+      </div>`;
+  }
+}
+
+function searchDiscovery(q) {
+  filterDiscovery();
+  // If nothing found, auto-load all 309 after a short debounce
+  if (q && q.length >= 3) {
+    clearTimeout(window._searchTimer);
+    window._searchTimer = setTimeout(() => {
+      const listEl = document.getElementById('discovery-list');
+      if (listEl && listEl.querySelector('button[onclick*="loadAllDiscovery"]')) {
+        // Button is showing — auto-trigger
+        loadAllDiscovery(q);
+      }
+    }, 600);
+  }
+}
+
+async function loadAllDiscovery(searchAfter) {
+  const q = searchAfter || document.getElementById('disco-search')?.value || '';
+  const listEl = document.getElementById('discovery-list');
+  if (listEl) listEl.innerHTML = `<div style="text-align:center;padding:24px;color:var(--text-3)">
+    <div style="font-size:22px;margin-bottom:8px">🔍</div>
+    <div>Searching full disease universe${q ? ' for "'+q+'"' : ''}…</div>
+  </div>`;
+  try {
+    const token = localStorage.getItem('pe_token');
+    // If searching, pass search param so backend queries all diseases in DB
+    const params = new URLSearchParams({top_n: 500});
+    if (q) params.set('search', q);
+    const res = await fetch(`${API}/alignment/discovery/opportunities?${params}`, {
+      headers: {'Authorization': `Bearer ${token}`}
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    _discoveryData = data.opportunities || [];
+    const total = data.universe_size || _discoveryData.length;
+    const updEl = document.getElementById('disco-updated');
+    if (updEl) updEl.textContent = `Found ${_discoveryData.length} of ${total.toLocaleString()} diseases · ${new Date().toLocaleDateString()}`;
+    if (searchAfter) {
+      const si = document.getElementById('disco-search');
+      if (si) si.value = searchAfter;
+    }
+    filterDiscovery();
+  } catch(e) {
+    if (listEl) listEl.innerHTML = `<div style="color:var(--red,#dc2626);padding:16px">Failed: ${e.message}</div>`;
+  }
 }
 
 function renderDiscovery(opps) {
@@ -3159,7 +3872,11 @@ function renderDiscovery(opps) {
             <span style="font-size:10px;font-weight:700;padding:2px 7px;background:${c}22;color:${c};border:1px solid ${c}44">${o.tier}</span>
             <span style="font-size:10px;color:var(--text-4);background:var(--bg-2);padding:2px 6px;border:1px solid var(--border)">${ta}</span>
           </div>
-          <div style="font-size:11px;color:var(--text-3);margin-bottom:8px">${o.notes||''}</div>
+          <div style="font-size:11px;color:var(--text-3);margin-bottom:6px">${o.notes||''}</div>
+          ${o.us_tam_fmt ? `<div style="display:flex;gap:14px;margin-bottom:7px;font-size:11px">
+            <span style="color:var(--text-4)">TAM <strong style="color:var(--text-2)">${o.us_tam_fmt}</strong></span>
+            <span style="color:var(--text-4)">Peak Rev <strong style="color:var(--text-2)">${o.peak_revenue_fmt||'—'}</strong></span>
+          </div>` : ''}
           <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:5px">
             ${bars.map(([label,val])=>`<div><div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-4);margin-bottom:2px"><span>${label}</span><span>${Math.round(val||0)}</span></div><div style="height:3px;background:var(--border);border-radius:2px"><div style="height:3px;background:${c};border-radius:2px;width:${Math.round(val||0)}%"></div></div></div>`).join('')}
           </div>
@@ -3230,7 +3947,7 @@ async function downloadPDF() {
     pdf.text('Project Elevate', 10, 9);
     pdf.setFontSize(8); pdf.setFont('helvetica', 'normal');
     pdf.setTextColor(148, 163, 184);
-    pdf.text('SBIR Commercialization Intelligence Report', 10, 15);
+    pdf.text('Medical Market Intelligence Report', 10, 15);
     pdf.setTextColor(148, 163, 184);
     pdf.text(new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'}), pageW - margin, 9, {align:'right'});
     pdf.text('project-elevate-staging.netlify.app', pageW - margin, 15, {align:'right'});
@@ -3317,7 +4034,8 @@ async function downloadReportPDF(reportId, reportName) {
 <script>
 // ── FUNDING PATHWAY + CLARIFYING QUESTIONS ───────────────────────────────────
 window.selectedPathway = 'commercial';
-window.clarifyAnswers = {};
+window.clarifyAnswers  = {};
+window._questionsShown = false;
 
 function selectPathway(pathway, btn) {
   window.selectedPathway = pathway;
@@ -3331,23 +4049,80 @@ function selectPathway(pathway, btn) {
     btn.style.border = '1.5px solid var(--blue)';
     btn.style.background = 'var(--blue-soft, #eff6ff)';
   }
-  // Clear any existing clarify answers when pathway changes
-  window.clarifyAnswers = {};
+  window.clarifyAnswers  = {};
+  window._questionsShown = false;
   const panel = document.getElementById('clarify-panel');
   if (panel) panel.style.display = 'none';
+  const runBtn = document.getElementById('run-btn');
+  if (runBtn) { runBtn.textContent = 'Refine & Analyze →'; runBtn.onclick = startAnalysisFlow; }
 }
 
-async function refineWithQuestions() {
-  const idea = document.getElementById('idea').value.trim();
+// ── MANDATORY QUESTION FLOW ─────────────────────────────────────────────────
+// Step 1: user clicks "Refine & Analyze" → questions appear (forced)
+// Step 2: user answers ≥3 questions → "Generate Market Analysis" button unlocks
+// Step 3: user clicks generate → runAnalysis() fires with answers embedded
+
+async function startAnalysisFlow() {
+  const idea = document.getElementById('idea')?.value.trim();
   if (!idea || idea.length < 30) {
-    alert('Please describe your innovation first (at least 30 characters).');
+    alert('Please describe your innovation in at least 30 characters before proceeding.');
     return;
   }
+
+  // Step 1: Show pricing / early access FIRST (for everyone not already granted access)
+  const _devEmails2 = ['test@projectelevate.io','ijw91021@gmail.com','admin@projectelevate.io','oneonesie100@gmail.com'];
+  const _isDev2 = currentUser && _devEmails2.includes(currentUser.email);
+  if (!_isDev2 && !window._earlyAccessGranted) {
+    showPaywall();
+    return;
+  }
+
+  // Step 2: After pricing/early-access, require login
+  if (!currentUser) { openAuth('login'); return; }
+
+  // Step 3: Questions → report
+  if (window._questionsShown && Object.keys(window.clarifyAnswers).length >= 1) {
+    runAnalysis(); return;
+  }
+  await _showMandatoryQuestions(idea);
+}
+
+async function _showMandatoryQuestions(idea) {
   const panel = document.getElementById('clarify-panel');
-  const btn = document.getElementById('refine-btn');
+  const runBtn = document.getElementById('run-btn');
   panel.style.display = 'block';
-  panel.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-3)"><div style="font-size:20px">✨</div><div style="font-size:13px;margin-top:6px">Generating clarifying questions...</div></div>';
-  if (btn) btn.disabled = true;
+  // Animated loading bar while Claude generates questions
+  panel.innerHTML = `
+    <div style="background:var(--blue);color:#fff;padding:10px 14px;border-radius:4px 4px 0 0">
+      <div style="font-size:13px;font-weight:700">Step 1 of 2 — Refine your idea</div>
+      <div style="font-size:11px;opacity:.85;margin-top:2px">Generating targeted questions for your innovation…</div>
+    </div>
+    <div style="padding:16px;background:var(--bg-2);border:1px solid var(--border);border-top:none;border-radius:0 0 4px 4px">
+      <div style="height:4px;background:var(--border);border-radius:2px;overflow:hidden;margin-bottom:10px">
+        <div id="q-load-bar" style="height:100%;width:0%;background:var(--blue);border-radius:2px;transition:width .4s ease"></div>
+      </div>
+      <div id="q-load-label" style="font-size:11px;color:var(--text-3)">Analysing your innovation and generating questions…</div>
+    </div>`;
+  if (runBtn) { runBtn.disabled = true; runBtn.textContent = 'Loading questions…'; }
+
+  // Animate the loading bar while waiting
+  const _loadStages = [
+    [15, 'Identifying product archetype and disease area…'],
+    [35, 'Sweeping competitive landscape for named competitors…'],
+    [55, 'Determining relevant market topology questions…'],
+    [75, 'Generating targeted multiple-choice options…'],
+    [90, 'Finalising questions…'],
+  ];
+  let _stageIdx = 0;
+  const _loadTick = setInterval(() => {
+    if (_stageIdx >= _loadStages.length) return;
+    const [pct, label] = _loadStages[_stageIdx++];
+    const bar = document.getElementById('q-load-bar');
+    const lbl = document.getElementById('q-load-label');
+    if (bar) bar.style.width = pct + '%';
+    if (lbl) lbl.textContent = label;
+  }, 900);
+  window._qLoadTimer = _loadTick;
 
   try {
     const token = localStorage.getItem('pe_token');
@@ -3355,46 +4130,383 @@ async function refineWithQuestions() {
       method: 'POST',
       headers: {'Content-Type':'application/json','Authorization':`Bearer ${token}`},
       body: JSON.stringify({
-        idea: idea,
-        pathway: window.selectedPathway,
-        product_type: window.selectedType || 'drug_small_molecule',
+        idea,
+        pathway:      window.selectedPathway || 'commercial',
+        product_type: window.selectedType    || 'drug_small_molecule',
       }),
     });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
     const questions = data.questions || [];
+
+    clearInterval(window._qLoadTimer);
+    const bar = document.getElementById('q-load-bar');
+    if (bar) bar.style.width = '100%';
+
     if (!questions.length) {
-      panel.innerHTML = '<div style="color:var(--text-3);font-size:13px">No additional questions needed — your description is detailed enough. Just hit Run Analysis.</div>';
+      window._questionsShown = true;
+      panel.innerHTML = `<div style="padding:12px 14px;background:var(--bg-2);border:1px solid var(--border);font-size:13px;color:var(--text-2)">
+        ✓ Your description is detailed enough — generating report now…</div>`;
+      if (runBtn) { runBtn.disabled = false; }
+      await runAnalysis();
       return;
     }
-    panel.innerHTML = `
-      <div style="font-family:var(--display);font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">Refine your input</div>
-      <div style="font-size:12px;color:var(--text-3);margin-bottom:14px">Answer as many as you'd like — each one makes the report more accurate. All optional.</div>
-      ${questions.map((q, i) => `
-        <div style="margin-bottom:12px">
-          <label style="display:block;font-size:12px;font-weight:600;color:var(--text-2);margin-bottom:4px">${q.question}</label>
-          <input type="text" data-field="${q.field || 'q'+i}" placeholder="${(q.hint||'').replace(/"/g,'&quot;')}"
-            style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:5px;font-size:13px;background:var(--bg)" />
-        </div>`).join('')}
-      <button onclick="applyClarifyAnswers()" style="margin-top:6px;padding:8px 16px;background:var(--blue);color:#fff;border:none;border-radius:5px;font-size:13px;font-weight:600;cursor:pointer">Apply & close</button>
-    `;
+
+    window._questionsShown = true;
+    _renderQuestionForm(questions, panel, runBtn);
+
   } catch(e) {
-    panel.innerHTML = '<div style="color:var(--text-3);font-size:13px">Could not generate questions. You can still run the analysis directly.</div>';
-  } finally {
-    if (btn) btn.disabled = false;
+    clearInterval(window._qLoadTimer);
+    window._questionsShown = true;
+    const fallbackQs = _fallbackQuestions();
+    _renderQuestionForm(fallbackQs, panel, runBtn);
   }
 }
 
+function _fallbackQuestions() {
+  return [
+    {
+      question: "Which patient population does this primarily target?",
+      field: "patient_population",
+      options: ["Treatment-naive / newly diagnosed patients", "Patients who failed 2+ prior therapies (refractory)", "Specific biomarker-selected subgroup", "Broad population regardless of prior therapy"],
+      hint: "Add any specific biomarker, disease stage, or line-of-therapy detail"
+    },
+    {
+      question: "What is the current standard of care and what specific gap does your product address?",
+      field: "standard_of_care",
+      options: ["No approved therapy exists — true first-to-market", "Approved therapies exist but have significant safety/tolerability issues", "Approved therapies exist but only work for a subset of patients", "Generic/off-patent therapies dominate — limited innovation"],
+      hint: "Name the specific SoC drug/device and the exact unmet need your product addresses"
+    },
+    {
+      question: "Who is the primary purchase decision-maker?",
+      field: "buyer",
+      options: ["Individual physician (outpatient prescribing)", "Hospital P&T committee / formulary decision", "Lab director or hospital procurement (devices/diagnostics)", "Patient / direct-to-consumer"],
+      hint: "Describe the sales cycle and whether this requires institutional approval"
+    },
+    {
+      question: "What is the current development stage?",
+      field: "stage",
+      options: ["Concept / early preclinical (no animal data yet)", "Preclinical — animal models with efficacy data", "Phase 1 / IND filed — first-in-human safety ongoing", "Phase 2 or later — proof-of-concept efficacy data exists"],
+      hint: "Describe the strongest piece of evidence you currently have"
+    },
+    {
+      question: "What is the intended pricing model?",
+      field: "pricing",
+      options: ["One-time procedure or course (acute / episodic)", "Annual chronic therapy (patient on drug indefinitely)", "Per-test / per-scan / per-use (diagnostics or devices)", "SaaS / annual software license (digital health)"],
+      hint: "Name a comparable approved product and its WAC/list price as your pricing anchor"
+    },
+    {
+      question: "How does this fit into the clinical workflow?",
+      field: "workflow",
+      options: ["Entirely new step — adds to workflow, doesn't replace anything", "Replaces an existing optional test or therapy", "Replaces a guideline-mandated procedure (high adoption barrier)", "Integrates transparently into existing EHR/workflow systems"],
+      hint: "If replacing a mandated procedure, name the specific guideline (e.g. ASCO, AHA, IDSA) that requires it"
+    },
+    {
+      question: "What is your key differentiation vs. the closest competitor or standard of care?",
+      field: "differentiation",
+      options: ["Mechanism of action — covers resistant/refractory cases that SoC misses", "Administration route — oral vs. IV, or less frequent dosing", "Safety profile — fewer serious adverse events vs. comparator", "Price — substantially cheaper than existing options"],
+      hint: "Name the specific competitor and the head-to-head advantage (e.g. 'vs. Avycaz — covers NDM-producing organisms')"
+    },
+  ];
+}
+
+function _renderQuestionForm(questions, panel, runBtn) {
+  const minRequired = questions.length;  // all questions required
+  panel.innerHTML = `
+    <div style="background:var(--blue);color:#fff;padding:12px 16px;border-radius:4px 4px 0 0">
+      <div style="font-size:13px;font-weight:700">Step 1 of 2 — Refine your idea <span style="opacity:.7;font-weight:400">(${minRequired} questions)</span></div>
+      <div style="font-size:11px;opacity:.85;margin-top:3px">
+        Select the best option for each question — these set the formula parameters for market sizing.
+        Use "Other:" below any choice to add specific detail.
+      </div>
+    </div>
+    <div style="padding:14px 16px;background:var(--bg-2);border:1px solid var(--border);border-top:none;border-radius:0 0 4px 4px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+        <div style="flex:1;height:4px;background:var(--border);border-radius:2px">
+          <div id="q-progress-fill" style="height:100%;background:var(--blue);border-radius:2px;width:0%;transition:width .4s"></div>
+        </div>
+        <div id="q-progress-label" style="font-size:11px;color:var(--text-3);white-space:nowrap">0 / ${minRequired} answered</div>
+      </div>
+
+      ${questions.map((q, i) => {
+        const opts = q.options || [];
+        return `
+        <div style="margin-bottom:10px;padding:12px 14px;background:var(--bg);border:1px solid var(--border);border-radius:4px" id="q-block-${i}">
+          <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:8px">${q.question}</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:8px">
+            ${opts.map((opt, oi) => `
+              <label style="display:flex;align-items:flex-start;gap:7px;padding:7px 10px;border:1px solid var(--border);border-radius:3px;cursor:pointer;font-size:12px;color:var(--text-2);background:var(--bg-2)"
+                     id="q-opt-label-${i}-${oi}">
+                <input type="radio" name="q_${i}" value="${opt.replace(/"/g,'&quot;')}" data-qidx="${i}"
+                  onchange="_onOptionSelect(${minRequired})"
+                  style="margin-top:2px;flex-shrink:0;accent-color:var(--blue)">
+                <span>${opt}</span>
+              </label>`).join('')}
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;margin-top:4px">
+            <span style="font-size:11px;font-weight:600;color:var(--text-3);white-space:nowrap;flex-shrink:0">Other:</span>
+            <input type="text" id="q-detail-${i}" data-field="${q.field || 'q'+i}"
+              placeholder="Add specific detail here (optional)"
+              style="flex:1;padding:5px 9px;border:1px solid var(--border);border-radius:3px;font-size:12px;color:var(--text);background:var(--bg-2)" />
+          </div>
+        </div>`;
+      }).join('')}
+
+      <div id="q-submit-wrap" style="margin-top:12px;display:none">
+        <button onclick="_submitQuestionsAndRun()" id="q-submit-btn"
+          style="width:100%;padding:13px;background:var(--blue);color:#fff;border:none;border-radius:4px;font-size:14px;font-weight:700;cursor:pointer;letter-spacing:.01em">
+          Generate Market Analysis →
+        </button>
+      </div>
+      <div id="q-need-more" style="font-size:11px;color:var(--text-3);margin-top:10px;text-align:center">
+        Answer all ${minRequired} questions to continue
+      </div>
+    </div>`;
+
+  if (runBtn) { runBtn.disabled = true; runBtn.textContent = 'Answer questions above ↑'; }
+}
+
+function _onOptionSelect(minRequired) {
+  const panel = document.getElementById('clarify-panel');
+  if (!panel) return;
+
+  // Count how many question groups have a radio selected
+  let answered = 0;
+  const allNames = new Set(Array.from(panel.querySelectorAll('input[type=radio]')).map(r => r.name));
+  allNames.forEach(name => {
+    if (panel.querySelector(`input[name="${name}"]:checked`)) answered++;
+  });
+
+  // Highlight selected option
+  panel.querySelectorAll('input[type=radio]').forEach(radio => {
+    const label = radio.closest('label');
+    if (!label) return;
+    label.style.border   = radio.checked ? '1.5px solid var(--blue)' : '1px solid var(--border)';
+    label.style.background = radio.checked ? '#eff6ff' : 'var(--bg-2)';
+    label.style.color    = radio.checked ? 'var(--blue)' : 'var(--text-2)';
+    label.style.fontWeight = radio.checked ? '600' : '';
+  });
+
+  const pct   = Math.min(100, Math.round(answered / minRequired * 100));
+  const fill  = document.getElementById('q-progress-fill');
+  const label = document.getElementById('q-progress-label');
+  const wrap  = document.getElementById('q-submit-wrap');
+  const need  = document.getElementById('q-need-more');
+  if (fill)  fill.style.width = pct + '%';
+  if (label) label.textContent = `${answered} / ${minRequired} answered`;
+  if (wrap)  wrap.style.display = answered >= minRequired ? 'block' : 'none';
+  if (need)  need.style.display = answered >= minRequired ? 'none' : 'block';
+}
+
+// Keep text input change also updating count (for detail fields)
+function _onQuestionInput(minRequired) { _onOptionSelect(minRequired); }
+
+async function _submitQuestionsAndRun() {
+  const panel = document.getElementById('clarify-panel');
+  if (!panel) return;
+
+  // Collect: selected radio value + optional detail text per question
+  window.clarifyAnswers = {};
+  const allNames = new Set(Array.from(panel.querySelectorAll('input[type=radio]')).map(r => r.name));
+  allNames.forEach(name => {
+    const checked = panel.querySelector(`input[name="${name}"]:checked`);
+    if (!checked) return;
+    const qIdx    = checked.dataset.qidx;
+    const field   = panel.querySelector(`#q-detail-${qIdx}`)?.dataset.field || name;
+    const detail  = panel.querySelector(`#q-detail-${qIdx}`)?.value.trim() || '';
+    window.clarifyAnswers[field] = checked.value + (detail ? ` — ${detail}` : '');
+  });
+
+  // Also collect any detail fields for unanswered questions
+  panel.querySelectorAll('input[type=text][data-field]').forEach(inp => {
+    if (inp.value.trim() && !Object.values(window.clarifyAnswers).some(v => v.startsWith(inp.value.trim()))) {
+      window.clarifyAnswers[inp.dataset.field] = inp.value.trim();
+    }
+  });
+
+  const count = Object.keys(window.clarifyAnswers).length;
+  panel.innerHTML = `
+    <div style="padding:10px 16px;background:#f0fdf4;border:1px solid #059669;border-radius:4px;font-size:12px;color:#059669;font-weight:600">
+      ✓ ${count} answers recorded — generating your market analysis now…
+    </div>`;
+
+  const runBtn = document.getElementById('run-btn');
+  if (runBtn) runBtn.disabled = false;
+  await runAnalysis();
+}
+
+// Legacy function kept for backward compatibility
+async function refineWithQuestions() { await startAnalysisFlow(); }
 function applyClarifyAnswers() {
   const panel = document.getElementById('clarify-panel');
   window.clarifyAnswers = {};
-  panel.querySelectorAll('input[data-field]').forEach(inp => {
+  panel?.querySelectorAll('input[data-field]').forEach(inp => {
     if (inp.value.trim()) window.clarifyAnswers[inp.dataset.field] = inp.value.trim();
   });
-  const count = Object.keys(window.clarifyAnswers).length;
-  panel.innerHTML = `<div style="font-size:13px;color:var(--green,#059669);font-weight:600">✓ ${count} answer${count!==1?'s':''} added. They'll be included in your report.</div>`;
 }
 </script>
+
+<script>
+// ── DEV TIMELINE ─────────────────────────────────────────────────────────────
+
+const _PHASE_COLORS = {
+  preclinical: '#6366f1', phase1: '#0891b2', phase2: '#059669',
+  phase3: '#d97706', submission: '#dc2626', review: '#7c3aed'
+};
+const _EVENT_COLORS = {
+  regulatory: '#dc2626', funding: '#059669', strategic: '#0891b2', clinical: '#d97706'
+};
+
+let _currentTimeline = null;
+
+async function generateTimeline() {
+  const idea  = document.getElementById('tl-idea').value.trim();
+  const ptype = document.getElementById('tl-type').value;
+  const mth   = document.getElementById('tl-start').value;  // "2026-06"
+  const btn   = document.getElementById('tl-btn');
+
+  if (!idea || idea.length < 20) {
+    alert('Please enter a more detailed description (at least 20 characters).');
+    return;
+  }
+
+  btn.disabled = true; btn.textContent = 'Generating…';
+  document.getElementById('tl-results').innerHTML = `
+    <div style="text-align:center;padding:40px;color:var(--text-3)">
+      <div style="font-size:28px;margin-bottom:8px">⏳</div>
+      <div style="font-size:14px">Building your development schedule…</div>
+    </div>`;
+
+  try {
+    const token = localStorage.getItem('pe_token');
+    const body  = { idea, product_type: ptype };
+    if (mth) body.start_date = mth + '-01';
+
+    const res = await fetch(`${API}/timeline/generate`, {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json', 'Authorization':`Bearer ${token}` },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) { const e = await res.json(); throw new Error(e.detail || `HTTP ${res.status}`); }
+    _currentTimeline = await res.json();
+    renderTimeline(_currentTimeline);
+  } catch(e) {
+    document.getElementById('tl-results').innerHTML =
+      `<div style="color:var(--red,#dc2626);padding:20px">Error: ${e.message}</div>`;
+  } finally { btn.disabled = false; btn.textContent = 'Generate Timeline →'; }
+}
+
+function renderTimeline(tl) {
+  const el = document.getElementById('tl-results');
+
+  // ── Header summary ────────────────────────────────────────────────────────
+  let html = `
+    <div style="border-left:4px solid var(--blue);padding:14px 18px;background:var(--bg-2);margin-bottom:20px">
+      <div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--blue);margin-bottom:4px">Development Schedule</div>
+      <div style="font-size:17px;font-weight:700;color:var(--text);margin-bottom:6px">${tl.disease}</div>
+      <div style="display:flex;gap:24px;flex-wrap:wrap;font-size:12px;color:var(--text-3)">
+        <span>Start <strong style="color:var(--text-2)">${tl.start_date}</strong></span>
+        <span>Approval <strong style="color:var(--text-2)">${tl.estimated_approval_date}</strong></span>
+        <span>Duration <strong style="color:var(--text-2)">${tl.total_duration_years} years</strong></span>
+        <span>Total cost <strong style="color:var(--text-2)">${tl.total_cost_fmt}</strong></span>
+        <span>LOA from Phase I <strong style="color:var(--text-2)">${tl.probability_of_approval}</strong></span>
+      </div>
+      <button onclick="exportICal()" style="margin-top:10px;padding:6px 14px;background:none;border:1px solid var(--blue);color:var(--blue);border-radius:4px;font-size:11px;font-weight:600;cursor:pointer">
+        📅 Export to Calendar (.ics)
+      </button>
+    </div>`;
+
+  // ── Gantt chart ───────────────────────────────────────────────────────────
+  const totalMonths = tl.total_duration_years * 12;
+  html += `
+    <div style="margin-bottom:20px">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-3);margin-bottom:10px">Development Gantt</div>
+      <div style="background:var(--bg-2);border:1px solid var(--border);padding:16px">`;
+
+  tl.phases.forEach(ph => {
+    const startPct = 0; // phases are sequential
+    const widthPct = (ph.duration_months / totalMonths * 100).toFixed(1);
+    const c = _PHASE_COLORS[ph.type] || '#6366f1';
+    html += `
+      <div style="margin-bottom:10px">
+        <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-3);margin-bottom:3px">
+          <span style="font-weight:600;color:var(--text-2)">${ph.name}</span>
+          <span>${ph.start_date} → ${ph.end_date} &nbsp;|&nbsp; ${ph.duration_months}mo &nbsp;|&nbsp; ${ph.cost_fmt}</span>
+        </div>
+        <div style="height:22px;background:var(--bg-4);border-radius:3px;overflow:hidden;position:relative">
+          <div style="height:100%;width:${widthPct}%;background:${c};border-radius:3px;display:flex;align-items:center;padding:0 8px;box-sizing:border-box;min-width:2px"></div>
+        </div>
+        <div style="font-size:10px;color:var(--text-4);margin-top:2px">${ph.key_activities.slice(0,3).join(' · ')}</div>
+      </div>`;
+  });
+  html += `</div></div>`;
+
+  // ── 3-column timeline: Regulatory | Funding | Strategic ───────────────────
+  html += `<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:20px">`;
+
+  const sections = [
+    { key: 'regulatory_milestones', label: '🏛 Regulatory Milestones', color: '#dc2626' },
+    { key: 'funding_windows',       label: '💰 Funding Windows',       color: '#059669' },
+    { key: 'strategic_calendar',    label: '⭐ Strategic Calendar',     color: '#0891b2' },
+  ];
+
+  sections.forEach(({ key, label, color }) => {
+    html += `<div style="background:var(--bg-2);border:1px solid var(--border);padding:14px">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:${color};margin-bottom:10px">${label}</div>`;
+
+    (tl[key] || []).forEach(item => {
+      const desc = (item.description || '').slice(0, 160);
+      const amount = item.amount ? ` <span style="color:${color};font-weight:700">${item.amount}</span>` : '';
+      html += `
+        <div style="margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid var(--border)">
+          <div style="font-size:10px;font-weight:700;color:${color};margin-bottom:2px">${item.date}</div>
+          <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:2px">${item.event}${amount}</div>
+          <div style="font-size:11px;color:var(--text-3);line-height:1.4">${desc}${desc.length===160?'…':''}</div>
+        </div>`;
+    });
+    html += `</div>`;
+  });
+  html += `</div>`;
+
+  // ── Key risks ─────────────────────────────────────────────────────────────
+  if (tl.key_risks && tl.key_risks.length) {
+    html += `
+      <div style="background:var(--bg-2);border:1px solid var(--border);padding:14px">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#dc2626;margin-bottom:8px">⚠ Key Risks to This Timeline</div>
+        ${tl.key_risks.map(r => `<div style="font-size:12px;color:var(--text-2);padding:4px 0;border-bottom:1px solid var(--border)">• ${r}</div>`).join('')}
+      </div>`;
+  }
+
+  el.innerHTML = html;
+}
+
+async function exportICal() {
+  if (!_currentTimeline) return;
+  try {
+    const token = localStorage.getItem('pe_token');
+    const res = await fetch(`${API}/timeline/export/ical`, {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json', 'Authorization':`Bearer ${token}` },
+      body: JSON.stringify({ timeline: _currentTimeline }),
+    });
+    if (!res.ok) throw new Error('Export failed');
+    const blob = await res.blob();
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href = url; a.download = 'development_timeline.ics'; a.click();
+    URL.revokeObjectURL(url);
+  } catch(e) { alert('Export failed: ' + e.message); }
+}
+</script>
+
+<footer style="border-top:1px solid rgba(255,255,255,.06);background:#070c1a;padding:24px 40px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;font-size:13px;color:#475569;">
+  <span>© 2026 Project Elevate · Medical market intelligence for tech transfer offices &amp; health innovators</span>
+  <span style="display:flex;gap:20px;">
+    <a href="/terms.html" style="color:#3b82f6;text-decoration:none;" target="_blank">Terms of Service</a>
+    <a href="/privacy.html" style="color:#3b82f6;text-decoration:none;" target="_blank">Privacy Policy</a>
+    <a href="mailto:contact@projectelevate.io" style="color:#3b82f6;text-decoration:none;">Contact</a>
+  </span>
+</footer>
 
 </body>
 </html>
