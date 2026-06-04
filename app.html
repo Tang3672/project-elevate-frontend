@@ -1180,7 +1180,7 @@ async function runAnalysis() {
   const _devEmails = ['test@projectelevate.io','ijw91021@gmail.com','admin@projectelevate.io','oneonesie100@gmail.com'];
   const _isDev = currentUser && _devEmails.includes(currentUser.email);
   if (!_isDev && !window._earlyAccessGranted) {
-    showPaywall();
+    (window.showPaywall || function(){ document.getElementById('paywall-overlay').style.display='flex'; })();
     return;
   }
   // Require login (after they've seen pricing and requested access)
@@ -3386,13 +3386,13 @@ async function loadBillingStatus() {
   } catch(e) { /* silent */ }
 }
 
-function showPaywall() {
+window.showPaywall = function showPaywall() {
   document.getElementById('paywall-overlay').style.display = 'flex';
-}
+};
 
-function closePaywall() {
+window.closePaywall = function closePaywall() {
   document.getElementById('paywall-overlay').style.display = 'none';
-}
+};
 
 async function startCheckout(plan='starter') {
   // Stripe billing not yet active — show waitlist / contact modal instead of crashing
@@ -4073,7 +4073,7 @@ async function startAnalysisFlow() {
   const _devEmails2 = ['test@projectelevate.io','ijw91021@gmail.com','admin@projectelevate.io','oneonesie100@gmail.com'];
   const _isDev2 = currentUser && _devEmails2.includes(currentUser.email);
   if (!_isDev2 && !window._earlyAccessGranted) {
-    showPaywall();
+    (window.showPaywall || function(){ document.getElementById('paywall-overlay').style.display='flex'; })();
     return;
   }
 
