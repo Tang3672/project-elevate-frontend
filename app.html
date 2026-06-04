@@ -3406,10 +3406,10 @@ window.closePaywall = function closePaywall() {
   document.getElementById('paywall-overlay').style.display = 'none';
 };
 
-async function startCheckout(plan='starter') {
+window.startCheckout = async function startCheckout(plan='starter') {
   // Stripe billing not yet active — show waitlist / contact modal instead of crashing
   _showEarlyAccessModal(plan);
-}
+};
 
 function _showEarlyAccessModal(plan) {
   const existing = document.getElementById('early-access-modal');
@@ -3478,7 +3478,7 @@ function _showEarlyAccessModal(plan) {
   setTimeout(() => document.getElementById('ea-name')?.focus(), 100);
 }
 
-async function _submitEarlyAccess(plan) {
+window._submitEarlyAccess = async function _submitEarlyAccess(plan) {
   const name        = document.getElementById('ea-name')?.value.trim() || '';
   const email       = document.getElementById('ea-email')?.value.trim() || '';
   const institution = document.getElementById('ea-institution')?.value.trim() || '';
@@ -3522,6 +3522,7 @@ async function _submitEarlyAccess(plan) {
         I'm already signed in — continue
       </button>
     </div>`;
+};
 
 // 402 intercept disabled during early-access period — don't block users.
 // Re-enable when Stripe billing is live.
