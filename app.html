@@ -3913,11 +3913,9 @@ window.tab = function(name) {
             </div>
           </div>
 
-          <!-- STEP 1: Profile quiz -->
+          <!-- STEP 1: Profile quiz — quiz content directly here, no inner step div -->
           <div id="build-step-1" style="display:block">
-          <!-- markets grid hidden — populated in background for auto-matching -->
           <div id="build-markets-grid" style="display:none"></div>
-          <div id="build-step-2" style="display:block">
             <div style="max-width:600px">
 
               <!-- Q1: Innovation type -->
@@ -4124,7 +4122,7 @@ function buildStep(n) {
     if (dot) {
       dot.style.background = n >= 3 ? 'var(--green)' : 'var(--blue)';
       dot.style.color = '#fff';
-      if (n >= 3) dot.textContent = '✓';
+      dot.textContent = n >= 3 ? '✓' : '1';  // always reset text
     }
   }
   if (ind3) {
