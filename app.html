@@ -3651,6 +3651,20 @@ window.tab = function(name) {
     <div id="t-discovery" style="display:none;padding:24px">
       <div style="max-width:960px;margin:0 auto">
 
+        <!-- Mode toggle: Browse vs Build -->
+        <div style="display:flex;gap:0;margin-bottom:20px;border:1px solid var(--border);border-radius:6px;overflow:hidden;width:fit-content">
+          <button id="disco-mode-browse" onclick="setDiscoMode('browse')"
+            style="padding:9px 20px;border:none;background:var(--blue);color:#fff;font-family:var(--display);font-size:12px;font-weight:700;cursor:pointer;letter-spacing:.04em">
+            🔭 Browse Markets
+          </button>
+          <button id="disco-mode-build" onclick="setDiscoMode('build')"
+            style="padding:9px 20px;border:none;background:var(--bg-2);color:var(--text-3);font-family:var(--display);font-size:12px;font-weight:700;cursor:pointer;letter-spacing:.04em">
+            💡 Build My Idea
+          </button>
+        </div>
+
+        <!-- ── BROWSE MODE (existing) ─────────────────────────────────────── -->
+        <div id="disco-browse-panel">
         <div style="margin-bottom:20px">
           <div style="font-family:var(--display);font-size:22px;font-weight:700;color:var(--text);margin-bottom:6px">Opportunity Discovery</div>
           <div style="font-size:13px;color:var(--text-3)">Ranked biomedical markets scored by unmet need, disease burden, pipeline competition, and risk-adjusted commercial potential. Click any opportunity to run a full report.</div>
@@ -3754,11 +3768,465 @@ window.tab = function(name) {
           </div>
         </div>
 
+        </div><!-- end disco-browse-panel -->
+
+        <!-- ── BUILD MY IDEA MODE ──────────────────────────────────────────── -->
+        <div id="disco-build-panel" style="display:none">
+
+          <!-- Header -->
+          <div style="margin-bottom:24px">
+            <div style="font-family:var(--display);font-size:22px;font-weight:700;color:var(--text);margin-bottom:6px">Idea Builder</div>
+            <div style="font-size:13px;color:var(--text-3)">Tell us about your capability and we'll match you to the highest-opportunity markets, then generate a refined idea statement you can take into Market Analysis.</div>
+          </div>
+
+          <!-- Step indicators -->
+          <div style="display:flex;align-items:center;gap:0;margin-bottom:28px">
+            <div id="build-step-1-ind" style="display:flex;align-items:center;gap:8px">
+              <div style="width:24px;height:24px;border-radius:50%;background:var(--blue);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center">1</div>
+              <span style="font-size:12px;font-weight:600;color:var(--blue)">Top Markets</span>
+            </div>
+            <div style="width:32px;height:1px;background:var(--border);margin:0 6px"></div>
+            <div id="build-step-2-ind" style="display:flex;align-items:center;gap:8px;opacity:0.4">
+              <div style="width:24px;height:24px;border-radius:50%;background:var(--border);color:var(--text-3);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center">2</div>
+              <span style="font-size:12px;font-weight:600;color:var(--text-3)">Your Profile</span>
+            </div>
+            <div style="width:32px;height:1px;background:var(--border);margin:0 6px"></div>
+            <div id="build-step-3-ind" style="display:flex;align-items:center;gap:8px;opacity:0.4">
+              <div style="width:24px;height:24px;border-radius:50%;background:var(--border);color:var(--text-3);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center">3</div>
+              <span style="font-size:12px;font-weight:600;color:var(--text-3)">Matched Ideas</span>
+            </div>
+          </div>
+
+          <!-- STEP 1: Top market hotspots -->
+          <div id="build-step-1">
+            <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:14px">
+              These are the highest-opportunity markets right now — select up to 3 that interest you:
+            </div>
+            <div id="build-markets-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px">
+              <!-- Populated by JS from discovery data -->
+              <div style="text-align:center;padding:20px;color:var(--text-3);grid-column:1/-1">
+                <div style="font-size:11px">Loading top markets… <button onclick="loadDiscoveryForBuilder()" style="color:var(--blue);background:none;border:none;cursor:pointer;font-weight:600">Load now</button></div>
+              </div>
+            </div>
+            <button onclick="buildStep(2)" style="padding:11px 28px;background:var(--blue);color:#fff;border:none;font-family:var(--display);font-size:13px;font-weight:700;cursor:pointer;border-radius:3px">
+              Continue → Profile
+            </button>
+          </div>
+
+          <!-- STEP 2: Quick profile quiz -->
+          <div id="build-step-2" style="display:none">
+            <div style="max-width:600px">
+
+              <!-- Q1: Innovation type -->
+              <div style="margin-bottom:22px">
+                <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:10px">1 · What type of innovation do you have?</div>
+                <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px" id="q1-grid">
+                  <button class="build-opt" data-q="q1" data-v="Small Molecule Drug" onclick="selectBuildOpt(this)">💊 Small Molecule Drug</button>
+                  <button class="build-opt" data-q="q1" data-v="Biologic / Antibody" onclick="selectBuildOpt(this)">🧫 Biologic / Antibody</button>
+                  <button class="build-opt" data-q="q1" data-v="Gene or Cell Therapy" onclick="selectBuildOpt(this)">🧬 Gene / Cell Therapy</button>
+                  <button class="build-opt" data-q="q1" data-v="Medical Device" onclick="selectBuildOpt(this)">🔬 Medical Device</button>
+                  <button class="build-opt" data-q="q1" data-v="Diagnostic Test" onclick="selectBuildOpt(this)">🧪 Diagnostic / IVD</button>
+                  <button class="build-opt" data-q="q1" data-v="Digital Health / AI" onclick="selectBuildOpt(this)">💻 Digital / AI</button>
+                </div>
+              </div>
+
+              <!-- Q2: Development stage -->
+              <div style="margin-bottom:22px">
+                <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:10px">2 · Where is your work right now?</div>
+                <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px">
+                  <button class="build-opt" data-q="q2" data-v="Just an idea — no lab work yet" onclick="selectBuildOpt(this)">💭 Just an idea</button>
+                  <button class="build-opt" data-q="q2" data-v="Early-stage research / preclinical data" onclick="selectBuildOpt(this)">🔬 Preclinical research</button>
+                  <button class="build-opt" data-q="q2" data-v="Phase 1 / early clinical" onclick="selectBuildOpt(this)">🏥 Phase 1 / early clinical</button>
+                  <button class="build-opt" data-q="q2" data-v="Existing technology looking for new indication" onclick="selectBuildOpt(this)">🔄 Repurposing / new indication</button>
+                </div>
+              </div>
+
+              <!-- Q3: Primary constraint -->
+              <div style="margin-bottom:22px">
+                <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:10px">3 · What is your biggest constraint?</div>
+                <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px">
+                  <button class="build-opt" data-q="q3" data-v="Time to market — need faster path to approval" onclick="selectBuildOpt(this)">⚡ Speed / regulatory path</button>
+                  <button class="build-opt" data-q="q3" data-v="Capital — limited funding, need non-dilutive grants" onclick="selectBuildOpt(this)">💰 Capital / funding</button>
+                  <button class="build-opt" data-q="q3" data-v="Team size — small academic or startup team" onclick="selectBuildOpt(this)">👥 Team / resources</button>
+                  <button class="build-opt" data-q="q3" data-v="Freedom to operate — IP landscape concerns" onclick="selectBuildOpt(this)">🔒 IP / freedom to operate</button>
+                </div>
+              </div>
+
+              <!-- Q4: Key differentiator -->
+              <div style="margin-bottom:28px">
+                <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:10px">4 · What makes your approach different?</div>
+                <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px">
+                  <button class="build-opt" data-q="q4" data-v="Novel target or mechanism of action" onclick="selectBuildOpt(this)">🎯 Novel target / mechanism</button>
+                  <button class="build-opt" data-q="q4" data-v="Better delivery or formulation" onclick="selectBuildOpt(this)">🚀 Better delivery / formulation</button>
+                  <button class="build-opt" data-q="q4" data-v="Biomarker-selected patient population" onclick="selectBuildOpt(this)">🧬 Biomarker-selected patients</button>
+                  <button class="build-opt" data-q="q4" data-v="Lower cost or improved access" onclick="selectBuildOpt(this)">♿ Cost / access improvement</button>
+                </div>
+              </div>
+
+              <div style="display:flex;gap:10px">
+                <button onclick="buildStep(1)" style="padding:10px 20px;background:none;border:1px solid var(--border);color:var(--text-3);font-size:13px;font-weight:600;cursor:pointer;border-radius:3px">← Back</button>
+                <button onclick="generateIdeas()" style="padding:11px 28px;background:var(--blue);color:#fff;border:none;font-family:var(--display);font-size:13px;font-weight:700;cursor:pointer;border-radius:3px">
+                  Generate My Ideas →
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- STEP 3: Matched results + refined idea -->
+          <div id="build-step-3" style="display:none">
+            <div id="build-results-loading" style="text-align:center;padding:40px;color:var(--text-3)">
+              <div style="font-size:24px;margin-bottom:8px">✨</div>
+              <div style="font-size:14px">Matching your profile to market opportunities…</div>
+            </div>
+            <div id="build-results" style="display:none">
+              <!-- Populated by JS -->
+            </div>
+            <div style="margin-top:20px">
+              <button onclick="buildStep(2)" style="padding:10px 20px;background:none;border:1px solid var(--border);color:var(--text-3);font-size:13px;font-weight:600;cursor:pointer;border-radius:3px">← Refine answers</button>
+            </div>
+          </div>
+
+        </div><!-- end disco-build-panel -->
+
       </div>
     </div>
 
 
+<style>
+.build-opt {
+  padding: 10px 12px;
+  border: 2px solid var(--border);
+  background: var(--bg);
+  color: var(--text-2);
+  font-family: var(--body);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 4px;
+  text-align: left;
+  transition: border-color .15s, background .15s, color .15s;
+}
+.build-opt:hover { border-color: var(--blue); color: var(--text); }
+.build-opt.selected { border-color: var(--blue); background: rgba(26,79,214,.08); color: var(--blue); }
+.build-market-card {
+  border: 2px solid var(--border);
+  padding: 12px 14px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: border-color .15s, background .15s;
+  position: relative;
+}
+.build-market-card:hover { border-color: var(--blue); background: rgba(26,79,214,.04); }
+.build-market-card.selected { border-color: var(--blue); background: rgba(26,79,214,.08); }
+.build-market-card .sel-check {
+  position: absolute; top: 8px; right: 8px;
+  width: 16px; height: 16px; border-radius: 50%;
+  border: 2px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 9px; color: transparent;
+}
+.build-market-card.selected .sel-check { background: var(--blue); border-color: var(--blue); color: #fff; }
+.idea-card {
+  border: 1px solid var(--border);
+  background: var(--bg-2);
+  border-radius: 4px;
+  padding: 18px 20px;
+  margin-bottom: 12px;
+}
+.idea-card-primary { border-color: var(--blue); border-width: 2px; }
+</style>
+
 <script>
+// ── IDEA BUILDER STATE ────────────────────────────────────────────────────
+window._builderSelections = { q1: null, q2: null, q3: null, q4: null };
+window._builderMarkets = [];
+window._currentBuildStep = 1;
+
+function setDiscoMode(mode) {
+  const browse = document.getElementById('disco-browse-panel');
+  const build  = document.getElementById('disco-build-panel');
+  const btnBrowse = document.getElementById('disco-mode-browse');
+  const btnBuild  = document.getElementById('disco-mode-build');
+  if (mode === 'browse') {
+    browse.style.display = '';
+    build.style.display  = 'none';
+    btnBrowse.style.background = 'var(--blue)';
+    btnBrowse.style.color = '#fff';
+    btnBuild.style.background = 'var(--bg-2)';
+    btnBuild.style.color = 'var(--text-3)';
+  } else {
+    browse.style.display = 'none';
+    build.style.display  = '';
+    btnBrowse.style.background = 'var(--bg-2)';
+    btnBrowse.style.color = 'var(--text-3)';
+    btnBuild.style.background = 'var(--blue)';
+    btnBuild.style.color = '#fff';
+    // Auto-load top markets from existing discovery data or fetch
+    loadDiscoveryForBuilder();
+  }
+}
+
+function buildStep(n) {
+  [1,2,3].forEach(i => {
+    const panel = document.getElementById('build-step-' + i);
+    const ind   = document.getElementById('build-step-' + i + '-ind');
+    if (panel) panel.style.display = i === n ? '' : 'none';
+    if (ind) {
+      const dot = ind.querySelector('div');
+      ind.style.opacity = i <= n ? '1' : '0.4';
+      if (dot) {
+        dot.style.background = i < n ? 'var(--green)' : i === n ? 'var(--blue)' : 'var(--border)';
+        dot.style.color = i <= n ? '#fff' : 'var(--text-3)';
+        if (i < n) dot.textContent = '✓';
+      }
+    }
+  });
+  window._currentBuildStep = n;
+}
+
+async function loadDiscoveryForBuilder() {
+  const grid = document.getElementById('build-markets-grid');
+  if (!grid) return;
+
+  // Use already-loaded discovery data if available
+  let top = (window._discoveryData || [])
+    .filter(o => o && o.score)
+    .sort((a,b) => b.score - a.score)
+    .slice(0, 9);
+
+  if (!top.length) {
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:12px;font-size:12px;color:var(--text-3)">Loading… <button onclick="loadDiscovery().then(loadDiscoveryForBuilder)" style="color:var(--blue);background:none;border:none;cursor:pointer;font-weight:600">fetch markets</button></div>';
+    try {
+      await loadDiscovery();
+      top = (window._discoveryData || []).sort((a,b) => b.score - a.score).slice(0, 9);
+    } catch(e) { return; }
+  }
+
+  const _TA_ICONS = {
+    oncology:'🎗️', amr_infectious:'🦠', cns:'🧠', rare_disease:'🧬',
+    gene_therapy:'🧬', metabolic:'⚖️', cardiovascular:'❤️',
+    immunology:'🛡️', vaccine:'💉', device:'🔬', diagnostic:'🧪',
+    ophthalmology:'👁️', other:'💊',
+  };
+
+  grid.innerHTML = top.map(o => {
+    const icon = _TA_ICONS[o.therapeutic_area] || '💊';
+    const tam  = o.us_tam_fmt || (o.us_tam_usd ? '$'+Math.round(o.us_tam_usd/1e6)+'M' : '—');
+    return `<div class="build-market-card" data-disease="${o.disease}" data-ta="${o.therapeutic_area}" data-score="${o.score}" data-tam="${tam}" onclick="toggleMarketCard(this)">
+      <div class="sel-check">✓</div>
+      <div style="font-size:16px;margin-bottom:4px">${icon}</div>
+      <div style="font-family:var(--display);font-size:12px;font-weight:700;color:var(--text);margin-bottom:2px;line-height:1.3">${o.disease}</div>
+      <div style="font-size:10px;color:var(--text-3);margin-bottom:6px">${(o.therapeutic_area||'').replace('_',' ')}</div>
+      <div style="display:flex;gap:6px;align-items:center">
+        <div style="font-size:11px;font-weight:700;color:${o.tier_color||'#d97706'}">${o.tier||'—'}</div>
+        <div style="font-size:10px;color:var(--text-4)">${o.score?.toFixed(0)||'—'}/100</div>
+        <div style="margin-left:auto;font-size:10px;color:var(--blue);font-weight:600">${tam}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleMarketCard(card) {
+  const selected = document.querySelectorAll('.build-market-card.selected');
+  if (card.classList.contains('selected')) {
+    card.classList.remove('selected');
+  } else if (selected.length < 3) {
+    card.classList.add('selected');
+  } else {
+    // Deselect oldest, select new
+    selected[0].classList.remove('selected');
+    card.classList.add('selected');
+  }
+}
+
+function selectBuildOpt(btn) {
+  const q = btn.dataset.q;
+  document.querySelectorAll(`.build-opt[data-q="${q}"]`).forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  window._builderSelections[q] = btn.dataset.v;
+}
+
+async function generateIdeas() {
+  // Validate answers
+  const missing = ['q1','q2','q3','q4'].filter(q => !window._builderSelections[q]);
+  if (missing.length) {
+    alert('Please answer all 4 questions before continuing.');
+    return;
+  }
+
+  buildStep(3);
+  const resultsEl = document.getElementById('build-results');
+  const loadingEl = document.getElementById('build-results-loading');
+  if (resultsEl) resultsEl.style.display = 'none';
+  if (loadingEl) loadingEl.style.display = '';
+
+  // Gather selected markets
+  const selectedCards = [...document.querySelectorAll('.build-market-card.selected')];
+  const selectedMarkets = selectedCards.map(c => ({
+    disease: c.dataset.disease,
+    ta: c.dataset.ta,
+    score: parseFloat(c.dataset.score),
+    tam: c.dataset.tam,
+  }));
+
+  // If no markets selected, take top 3 from discovery data
+  const markets = selectedMarkets.length
+    ? selectedMarkets
+    : (window._discoveryData || []).sort((a,b) => b.score - a.score).slice(0,3).map(o => ({
+        disease: o.disease, ta: o.therapeutic_area, score: o.score,
+        tam: o.us_tam_fmt || '—',
+      }));
+
+  const profile = window._builderSelections;
+
+  try {
+    const token = localStorage.getItem('pe_token');
+    const res = await fetch(`${API}/alignment/idea-builder`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify({
+        modality:      profile.q1,
+        stage:         profile.q2,
+        constraint:    profile.q3,
+        differentiator:profile.q4,
+        markets:       markets,
+      }),
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    renderBuilderResults(data, markets, profile);
+  } catch(e) {
+    // Fallback: client-side idea generation without API
+    renderBuilderResults(null, markets, profile);
+  }
+}
+
+function renderBuilderResults(apiData, markets, profile) {
+  const loadingEl = document.getElementById('build-results-loading');
+  const resultsEl = document.getElementById('build-results');
+  if (loadingEl) loadingEl.style.display = 'none';
+  if (!resultsEl) return;
+  resultsEl.style.display = '';
+
+  const ideas = apiData?.ideas || _generateClientSideIdeas(markets, profile);
+
+  const html = `
+    <div style="margin-bottom:16px">
+      <div style="font-family:var(--display);font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px">
+        Your matched opportunities
+      </div>
+      <div style="font-size:12px;color:var(--text-3)">Based on your ${profile.q1} background at ${profile.q2.split('—')[0].trim()} stage — ranked by fit with your profile.</div>
+    </div>
+
+    ${ideas.map((idea, i) => `
+    <div class="idea-card ${i===0?'idea-card-primary':''}">
+      ${i===0 ? '<div style="font-size:10px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">✨ Best match</div>' : ''}
+      <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:10px">
+        <div>
+          <div style="font-family:var(--display);font-size:14px;font-weight:700;color:var(--text);margin-bottom:2px">${idea.disease}</div>
+          <div style="font-size:11px;color:var(--text-3)">${idea.therapeutic_area?.replace(/_/g,' ')} · ${idea.tam || '—'} market</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:18px;font-weight:700;color:var(--blue)">${Math.round(idea.match_score || 75)}<span style="font-size:11px;color:var(--text-3)">/100 fit</span></div>
+        </div>
+      </div>
+
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:3px;padding:12px;margin-bottom:12px">
+        <div style="font-size:10px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Refined idea statement</div>
+        <div style="font-size:13px;color:var(--text);line-height:1.6;font-style:italic">"${idea.refined_idea}"</div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px;font-size:11px">
+        <div><div style="color:var(--text-4);margin-bottom:2px">Why this fits</div><div style="color:var(--text-2);font-weight:600">${idea.fit_reason}</div></div>
+        <div><div style="color:var(--text-4);margin-bottom:2px">Key opportunity</div><div style="color:var(--text-2);font-weight:600">${idea.opportunity}</div></div>
+        <div><div style="color:var(--text-4);margin-bottom:2px">Fast path</div><div style="color:var(--text-2);font-weight:600">${idea.fast_path}</div></div>
+      </div>
+
+      <div style="display:flex;gap:8px">
+        <button onclick="useIdeaInAnalysis('${encodeURIComponent(idea.refined_idea)}','${encodeURIComponent(idea.disease)}')"
+          style="padding:8px 16px;background:var(--blue);color:#fff;border:none;font-family:var(--display);font-size:11px;font-weight:700;cursor:pointer;border-radius:3px">
+          → Analyze in Market Analysis
+        </button>
+        <button onclick="copyIdea('${encodeURIComponent(idea.refined_idea)}')"
+          style="padding:8px 14px;background:none;border:1px solid var(--border);color:var(--text-3);font-size:11px;font-weight:600;cursor:pointer;border-radius:3px">
+          📋 Copy idea
+        </button>
+      </div>
+    </div>
+    `).join('')}
+
+    <div style="margin-top:16px;padding:14px 16px;background:var(--bg-2);border:1px solid var(--border);border-radius:4px;font-size:12px;color:var(--text-3)">
+      💡 <strong style="color:var(--text)">Next step:</strong> Click "Analyze in Market Analysis" to generate a full TAM derivation, regulatory pathway, and strategic playbook for your refined idea.
+    </div>
+  `;
+
+  resultsEl.innerHTML = html;
+}
+
+function _generateClientSideIdeas(markets, profile) {
+  // Client-side fallback when API unavailable — generates ideas from market data + profile answers
+  const modality = profile.q1 || 'intervention';
+  const differentiator = profile.q4 || 'novel approach';
+  const constraint = profile.q3 || '';
+  const stage = profile.q2 || '';
+
+  const _FAST_PATH_MAP = {
+    'Speed / regulatory path': 'Seek Breakthrough Therapy / QIDP designation early',
+    'Capital / funding': 'Apply for BARDA, CARB-X, or NIH SBIR non-dilutive grants',
+    'Team / resources': 'Partner with CRO for clinical execution; license key IP',
+    'IP / freedom to operate': 'File continuation patents; design around existing claims',
+  };
+  const fast_path = Object.entries(_FAST_PATH_MAP).find(([k]) => constraint.includes(k.split(' ')[0]))?.[1] || 'Pursue FDA expedited designation';
+
+  return markets.slice(0, 3).map((m, i) => {
+    const score = 88 - i * 9;
+    const disease = m.disease || 'target disease';
+    const ta = (m.ta || 'therapeutic area').replace(/_/g,' ');
+
+    // Generate a plausible refined idea statement
+    const idea = `A ${modality.toLowerCase()} targeting ${disease} through ${differentiator.toLowerCase()}, designed for ${stage.split('—')[0].trim()} translation with a focus on ${constraint.split('—')[0].trim().toLowerCase()}.`;
+
+    return {
+      disease,
+      therapeutic_area: m.ta,
+      tam: m.tam,
+      match_score: score,
+      refined_idea: idea,
+      fit_reason: `${modality} fits ${ta} modality profile`,
+      opportunity: `${m.score > 55 ? 'High' : 'Moderate'} unmet need`,
+      fast_path,
+    };
+  });
+}
+
+function useIdeaInAnalysis(encodedIdea, encodedDisease) {
+  const idea = decodeURIComponent(encodedIdea);
+  const disease = decodeURIComponent(encodedDisease);
+  // Switch to Market Analysis tab and pre-fill the idea
+  tab('pi');
+  const ideaEl = document.getElementById('idea');
+  if (ideaEl) {
+    ideaEl.value = idea;
+    ideaEl.dispatchEvent(new Event('input'));
+  }
+  // Scroll to the input
+  ideaEl?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  // Flash the textarea to signal it was filled
+  if (ideaEl) {
+    ideaEl.style.borderColor = 'var(--blue)';
+    setTimeout(() => { ideaEl.style.borderColor = ''; }, 2000);
+  }
+}
+
+function copyIdea(encodedIdea) {
+  navigator.clipboard.writeText(decodeURIComponent(encodedIdea)).then(() => {
+    const btn = event.target;
+    const orig = btn.textContent;
+    btn.textContent = '✓ Copied!';
+    setTimeout(() => { btn.textContent = orig; }, 1500);
+  });
+}
+
 async function loadDiscovery() {
   const listEl = document.getElementById('discovery-list');
   if (!listEl) return;
