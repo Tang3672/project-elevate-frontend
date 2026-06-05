@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Project Elevate — Medical Market Intelligence</title>
+  <title>Medlevate — Medical Market Intelligence</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet" />
@@ -506,8 +506,8 @@
 
 <header class="hdr">
   <div class="logo">
-    <div class="logo-mark">PE</div>
-    <span class="logo-name">Project Elevate</span>
+    <div class="logo-mark">ME</div>
+    <span class="logo-name">Medlevate</span>
     <div class="logo-sep"></div>
     <span class="logo-sub">Medical Market Intelligence</span>
   </div>
@@ -688,7 +688,7 @@
     <div style="border:1px solid var(--border);padding:28px;background:var(--bg-2)">
       <div style="font-family:var(--display);font-size:14px;font-weight:700;color:var(--text);margin-bottom:20px">Frequently asked questions</div>
       <div style="display:flex;flex-direction:column;gap:16px">
-        <div><div style="font-family:var(--display);font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px">How is this different from asking ChatGPT?</div><div style="font-family:var(--body);font-size:13px;color:var(--text-3);line-height:1.6">Project Elevate uses 32 domain-specific expert profiles, pulls live data from FDA.gov, ClinicalTrials.gov, CDC, and PubMed at report time, and validates every claim with an independent AI critic. ChatGPT gives generic answers with no citations and can't access current regulatory data.</div></div>
+        <div><div style="font-family:var(--display);font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px">How is this different from asking ChatGPT?</div><div style="font-family:var(--body);font-size:13px;color:var(--text-3);line-height:1.6">Medlevate uses 32 domain-specific expert profiles, pulls live data from FDA.gov, ClinicalTrials.gov, CDC, and PubMed at report time, and validates every claim with an independent AI critic. ChatGPT gives generic answers with no citations and can't access current regulatory data.</div></div>
         <div><div style="font-family:var(--display);font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px">Can I cancel anytime?</div><div style="font-family:var(--body);font-size:13px;color:var(--text-3);line-height:1.6">Yes. Cancel from your profile page and you keep access until the end of your billing period.</div></div>
         <div><div style="font-family:var(--display);font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px">What counts as an "analysis"?</div><div style="font-family:var(--body);font-size:13px;color:var(--text-3);line-height:1.6">Each market analysis run counts as one use. Saved reports don't count - only new runs.</div></div>
         <div><div style="font-family:var(--display);font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px">Do I need a credit card to try it?</div><div style="font-family:var(--body);font-size:13px;color:var(--text-3);line-height:1.6">You can create a free account and run 1 report without a credit card. A subscription is required for additional reports.</div></div>
@@ -1140,7 +1140,7 @@ function setEx(i) {
   document.getElementById('pathogen-row').style.display = ex.type === 'drug_small_molecule' ? '' : 'none';
 }
 
-const DEV_EMAILS = ['test@projectelevate.io', 'isaac@rebuttal.ai', 'admin@projectelevate.io', 'ijw91021@gmail.com'];
+const DEV_EMAILS = ['test@medlevate.io', 'isaac@rebuttal.ai', 'admin@medlevate.io', 'ijw91021@gmail.com'];
 
 const LOCKED_TABS = ['trials', 'portfolio', 'grant', 'watchlists'];
 
@@ -1194,7 +1194,7 @@ async function runAnalysis() {
   if (!idea || idea.length < 30) { alert('Please describe your product in at least 30 characters.'); return; }
 
   // Show pricing first, then sign in after — no free reports
-  const _devEmails = ['test@projectelevate.io','ijw91021@gmail.com','admin@projectelevate.io','oneonesie100@gmail.com'];
+  const _devEmails = ['test@medlevate.io','ijw91021@gmail.com','admin@medlevate.io','oneonesie100@gmail.com'];
   const _isDev = currentUser && _devEmails.includes(currentUser.email);
   if (!_isDev && !window._earlyAccessGranted) {
     (window.showPaywall || function(){ document.getElementById('paywall-overlay').style.display='flex'; })();
@@ -3263,7 +3263,7 @@ document.getElementById('pathogen-row').style.display = '';
 <div id="paywall-overlay" class="paywall-overlay" style="display:none" onclick="if(event.target===this)closePaywall()">
   <div class="paywall-modal">
     <div class="paywall-header">
-      <div class="paywall-badge">Project Elevate — Early Access</div>
+      <div class="paywall-badge">Medlevate — Early Access</div>
       <div class="paywall-title">Choose your plan</div>
       <div class="paywall-sub">Online billing coming soon. Request early access and we'll set up your account manually — no credit card needed yet.</div>
     </div>
@@ -3476,7 +3476,7 @@ function _showEarlyAccessModal(plan) {
         </select>
       </div>
       <div style="margin-bottom:18px">
-        <label style="font-size:11px;font-weight:600;color:var(--text-3);display:block;margin-bottom:4px">What will you use Project Elevate for? <span style="font-weight:400">(optional)</span></label>
+        <label style="font-size:11px;font-weight:600;color:var(--text-3);display:block;margin-bottom:4px">What will you use Medlevate for? <span style="font-weight:400">(optional)</span></label>
         <textarea id="ea-message" rows="2" placeholder="e.g. Evaluating commercialization potential of lab inventions for our TTO…"
           style="width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:13px;border-radius:3px;resize:vertical;font-family:inherit"></textarea>
       </div>
@@ -4559,13 +4559,13 @@ async function downloadPDF() {
     pdf.rect(0, 0, 4, 22, 'F');
     pdf.setTextColor(255, 255, 255);
     pdf.setFontSize(14); pdf.setFont('helvetica', 'bold');
-    pdf.text('Project Elevate', 10, 9);
+    pdf.text('Medlevate', 10, 9);
     pdf.setFontSize(8); pdf.setFont('helvetica', 'normal');
     pdf.setTextColor(148, 163, 184);
     pdf.text('Medical Market Intelligence Report', 10, 15);
     pdf.setTextColor(148, 163, 184);
     pdf.text(new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'}), pageW - margin, 9, {align:'right'});
-    pdf.text('project-elevate-staging.netlify.app', pageW - margin, 15, {align:'right'});
+    pdf.text('medlevate-staging.netlify.app', pageW - margin, 15, {align:'right'});
 
     // Capture report content
     if (btn) btn.textContent = 'Capturing report...';
@@ -4613,7 +4613,7 @@ async function downloadPDF() {
         pdf.rect(0, 0, 4, 12, 'F');
         pdf.setTextColor(255,255,255);
         pdf.setFontSize(9); pdf.setFont('helvetica','bold');
-        pdf.text('Project Elevate', 10, 8);
+        pdf.text('Medlevate', 10, 8);
         yPos = 15;
       }
     }
@@ -4621,11 +4621,11 @@ async function downloadPDF() {
     // Footer on last page
     pdf.setTextColor(148, 163, 184);
     pdf.setFontSize(7);
-    pdf.text('Generated by Project Elevate · project-elevate-staging.netlify.app · Confidence range ±35% per IQVIA forecast error methodology', pageW/2, pageH - 5, {align:'center'});
+    pdf.text('Generated by Medlevate · medlevate-staging.netlify.app · Confidence range ±35% per IQVIA forecast error methodology', pageW/2, pageH - 5, {align:'center'});
 
     // Get report title for filename
     const titleEl = document.querySelector('.rpt-name, .disease-name, .report-title');
-    const title = titleEl ? titleEl.textContent.trim().replace(/[^a-zA-Z0-9 ]/g,'').trim() : 'ProjectElevate';
+    const title = titleEl ? titleEl.textContent.trim().replace(/[^a-zA-Z0-9 ]/g,'').trim() : 'Medlevate';
     const filename = title.replace(/\s+/g,'-').slice(0,50) + '-' + new Date().toISOString().slice(0,10) + '.pdf';
 
     pdf.save(filename);
@@ -4685,7 +4685,7 @@ async function startAnalysisFlow() {
   }
 
   // Step 1: Show pricing / early access FIRST (for everyone not already granted access)
-  const _devEmails2 = ['test@projectelevate.io','ijw91021@gmail.com','admin@projectelevate.io','oneonesie100@gmail.com'];
+  const _devEmails2 = ['test@medlevate.io','ijw91021@gmail.com','admin@medlevate.io','oneonesie100@gmail.com'];
   const _isDev2 = currentUser && _devEmails2.includes(currentUser.email);
   if (!_isDev2 && !window._earlyAccessGranted) {
     (window.showPaywall || function(){ document.getElementById('paywall-overlay').style.display='flex'; })();
@@ -5116,7 +5116,7 @@ async function exportICal() {
 </script>
 
 <footer style="border-top:1px solid rgba(255,255,255,.06);background:#070c1a;padding:24px 40px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;font-size:13px;color:#475569;">
-  <span>© 2026 Project Elevate · Medical market intelligence for tech transfer offices &amp; health innovators</span>
+  <span>© 2026 Medlevate · Medical market intelligence for tech transfer offices &amp; health innovators</span>
   <span style="display:flex;gap:20px;">
     <a href="/terms.html" style="color:#3b82f6;text-decoration:none;" target="_blank">Terms of Service</a>
     <a href="/privacy.html" style="color:#3b82f6;text-decoration:none;" target="_blank">Privacy Policy</a>
