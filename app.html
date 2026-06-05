@@ -3869,7 +3869,7 @@ window.tab = function(name) {
             <div id="build-markets-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px">
               <!-- Populated by JS from discovery data -->
               <div style="text-align:center;padding:20px;color:var(--text-3);grid-column:1/-1">
-                <div class="dot-loader"><span></span><span></span><span></span></div>
+                
                 <div style="font-size:11px;margin-top:8px">Loading top markets…</div>
               </div>
             </div>
@@ -3965,7 +3965,7 @@ window.tab = function(name) {
               </svg>
               <div style="font-family:var(--display);font-size:14px;font-weight:700;color:var(--text-2);margin-bottom:6px">Matching your profile to markets</div>
               <div style="font-size:12px;color:var(--text-3);margin-bottom:14px">Generating refined idea statements…</div>
-              <div class="dot-loader" style="justify-content:center"><span></span><span></span><span></span></div>
+              
             </div>
             <div id="build-results" style="display:none">
               <!-- Populated by JS -->
@@ -4103,7 +4103,7 @@ async function loadDiscoveryForBuilder() {
           fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
       <div style="font-size:12px;margin-bottom:8px">Loading top opportunities…</div>
-      <div class="dot-loader" style="justify-content:center"><span></span><span></span><span></span></div>
+      
     </div>`;
     try {
       await loadDiscovery();
@@ -4364,7 +4364,7 @@ async function loadDiscovery() {
     </svg>
     <div style="font-family:var(--display);font-size:15px;font-weight:700;color:var(--text-2);margin-bottom:6px">Analyzing biomedical markets</div>
     <div style="font-size:12px;color:var(--text-3);margin-bottom:18px">Scoring unmet need, clinical success probability, and commercial potential</div>
-    <div class="dot-loader" style="justify-content:center"><span></span><span></span><span></span></div>
+    
   </div>`;
   try {
     const token = localStorage.getItem('pe_token');
@@ -5021,7 +5021,7 @@ async function generateTimeline() {
     <div style="text-align:center;padding:40px;color:var(--text-3)">
       <div class="loading-pulse" style="font-size:28px;margin-bottom:10px">📅</div>
       <div style="font-size:14px;margin-bottom:14px">Building your development schedule…</div>
-      <div class="dot-loader" style="justify-content:center"><span></span><span></span><span></span></div>
+      
     </div>`;
 
   try {
