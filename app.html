@@ -38,6 +38,16 @@
     .sig-badge{display:flex;align-items:center;gap:6px;background:var(--blue-pale);border:1px solid #d0d9f5;padding:5px 12px}
     .sig-dot{width:6px;height:6px;border-radius:50%;background:var(--blue);animation:pulse 2.5s ease-in-out infinite}
     @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+    @keyframes dotBounce{0%,80%,100%{transform:scale(0);opacity:.3}40%{transform:scale(1);opacity:1}}
+    @keyframes spinOrbit{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+    @keyframes loadingPulse{0%,100%{transform:scale(1);opacity:.7}50%{transform:scale(1.15);opacity:1}}
+    .dot-loader{display:inline-flex;gap:6px;align-items:center}
+    .dot-loader span{width:7px;height:7px;border-radius:50%;background:var(--blue);animation:dotBounce 1.4s ease-in-out infinite}
+    .dot-loader span:nth-child(1){animation-delay:0s}
+    .dot-loader span:nth-child(2){animation-delay:.16s}
+    .dot-loader span:nth-child(3){animation-delay:.32s}
+    .loading-pulse{animation:loadingPulse 1.8s ease-in-out infinite;display:inline-block}
+    .spin-ring{width:32px;height:32px;border:3px solid rgba(26,79,214,.15);border-top-color:var(--blue);border-radius:50%;animation:spinOrbit .8s linear infinite;display:inline-block}
     .sig-txt{font-family:var(--body);font-size:12px;font-weight:500;color:var(--blue)}
     .clock{font-family:var(--body);font-size:11px;color:var(--text-4);font-variant-numeric:tabular-nums}
 
@@ -3762,9 +3772,10 @@ window.tab = function(name) {
 
         <!-- Results -->
         <div id="discovery-list">
-          <div style="text-align:center;padding:40px;color:var(--text-3)">
-            <div style="font-size:28px;margin-bottom:8px">🔭</div>
-            <div>Click Refresh to score opportunities</div>
+          <div style="text-align:center;padding:60px 20px;color:var(--text-3)">
+            <div style="font-size:36px;margin-bottom:14px">🔭</div>
+            <div style="font-family:var(--display);font-size:15px;font-weight:600;color:var(--text-2);margin-bottom:6px">Ready to score</div>
+            <div style="font-size:13px">Click <strong>Refresh</strong> to rank biomedical markets by opportunity</div>
           </div>
         </div>
 
@@ -3802,14 +3813,19 @@ window.tab = function(name) {
             <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:14px">
               These are the highest-opportunity markets right now — select up to 3 that interest you:
             </div>
+            <div style="font-size:11px;color:var(--text-3);margin-bottom:10px">Select up to 3 markets that relate to your work — or skip to see all opportunities matched to your profile.</div>
             <div id="build-markets-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px">
               <!-- Populated by JS from discovery data -->
               <div style="text-align:center;padding:20px;color:var(--text-3);grid-column:1/-1">
-                <div style="font-size:11px">Loading top markets… <button onclick="loadDiscoveryForBuilder()" style="color:var(--blue);background:none;border:none;cursor:pointer;font-weight:600">Load now</button></div>
+                <div class="dot-loader"><span></span><span></span><span></span></div>
+                <div style="font-size:11px;margin-top:8px">Loading top markets…</div>
               </div>
             </div>
-            <button onclick="buildStep(2)" style="padding:11px 28px;background:var(--blue);color:#fff;border:none;font-family:var(--display);font-size:13px;font-weight:700;cursor:pointer;border-radius:3px">
-              Continue → Profile
+            <button id="build-continue-btn" onclick="buildStep(2)" style="padding:11px 28px;background:var(--blue);color:#fff;border:none;font-family:var(--display);font-size:13px;font-weight:700;cursor:pointer;border-radius:3px">
+              Continue → Answer 4 Questions
+            </button>
+            <button onclick="buildStep(2)" style="margin-left:10px;padding:11px 18px;background:none;border:1px solid var(--border);color:var(--text-3);font-size:12px;font-weight:600;cursor:pointer;border-radius:3px">
+              Skip — show all matches
             </button>
           </div>
 
@@ -3995,11 +4011,18 @@ async function loadDiscoveryForBuilder() {
     .slice(0, 9);
 
   if (!top.length) {
-    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:12px;font-size:12px;color:var(--text-3)">Loading… <button onclick="loadDiscovery().then(loadDiscoveryForBuilder)" style="color:var(--blue);background:none;border:none;cursor:pointer;font-weight:600">fetch markets</button></div>';
+    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:24px;color:var(--text-3)">
+      <div class="loading-pulse" style="font-size:28px;margin-bottom:10px">🔭</div>
+      <div style="font-size:13px;margin-bottom:12px">Scoring opportunities across biomedical markets…</div>
+      <div class="dot-loader"><span></span><span></span><span></span></div>
+    </div>`;
     try {
       await loadDiscovery();
-      top = (window._discoveryData || []).sort((a,b) => b.score - a.score).slice(0, 9);
-    } catch(e) { return; }
+      top = (window._discoveryData || []).filter(o => o && o.score).sort((a,b) => b.score - a.score).slice(0, 9);
+    } catch(e) {
+      grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:20px;font-size:12px;color:var(--text-3)">Could not load market data. <button onclick="loadDiscoveryForBuilder()" style="color:var(--blue);background:none;border:none;cursor:pointer;font-weight:600">Try again</button></div>';
+      return;
+    }
   }
 
   const _TA_ICONS = {
@@ -4230,7 +4253,12 @@ function copyIdea(encodedIdea) {
 async function loadDiscovery() {
   const listEl = document.getElementById('discovery-list');
   if (!listEl) return;
-  listEl.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-3)"><div style="font-size:28px;margin-bottom:8px">⏳</div><div style="font-size:14px">Scoring opportunities from ClinicalTrials.gov, NIH Reporter, and GBD data...</div></div>';
+  listEl.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--text-3)">
+    <div class="loading-pulse" style="font-size:36px;margin-bottom:16px">🔭</div>
+    <div style="font-family:var(--display);font-size:15px;font-weight:700;color:var(--text-2);margin-bottom:8px">Scoring biomedical markets</div>
+    <div style="font-size:12px;color:var(--text-3);margin-bottom:20px">Ranking opportunities by unmet need, clinical success probability, and commercial potential</div>
+    <div class="dot-loader" style="justify-content:center"><span></span><span></span><span></span></div>
+  </div>`;
   try {
     const token = localStorage.getItem('pe_token');
     const res = await fetch(`${API}/alignment/discovery/opportunities?top_n=100`, {
@@ -4854,8 +4882,9 @@ async function generateTimeline() {
   btn.disabled = true; btn.textContent = 'Generating…';
   document.getElementById('tl-results').innerHTML = `
     <div style="text-align:center;padding:40px;color:var(--text-3)">
-      <div style="font-size:28px;margin-bottom:8px">⏳</div>
-      <div style="font-size:14px">Building your development schedule…</div>
+      <div class="loading-pulse" style="font-size:28px;margin-bottom:10px">📅</div>
+      <div style="font-size:14px;margin-bottom:14px">Building your development schedule…</div>
+      <div class="dot-loader" style="justify-content:center"><span></span><span></span><span></span></div>
     </div>`;
 
   try {
