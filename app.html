@@ -3680,9 +3680,37 @@ window.tab = function(name) {
 
         <!-- ── BROWSE MODE (existing) ─────────────────────────────────────── -->
         <div id="disco-browse-panel">
-        <div style="margin-bottom:20px">
-          <div style="font-family:var(--display);font-size:22px;font-weight:700;color:var(--text);margin-bottom:6px">Opportunity Discovery</div>
-          <div style="font-size:13px;color:var(--text-3)">Ranked biomedical markets scored by unmet need, disease burden, pipeline competition, and risk-adjusted commercial potential. Click any opportunity to run a full report.</div>
+        <div style="margin-bottom:18px">
+          <div style="font-family:var(--display);font-size:22px;font-weight:700;color:var(--text);margin-bottom:10px">Opportunity Discovery</div>
+
+          <!-- Metric explainer — plain English, no jargon -->
+          <div style="background:var(--bg-2);border:1px solid var(--border);border-radius:6px;padding:14px 18px;margin-bottom:4px">
+            <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-3);margin-bottom:10px">What these numbers mean</div>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
+              <div>
+                <div style="font-size:12px;font-weight:700;color:var(--blue);margin-bottom:3px">SAM — Serviceable Addressable Market</div>
+                <div style="font-size:11px;color:var(--text-3);line-height:1.5">What a company can <em>realistically earn</em> at Year 5 post-launch. Already adjusted for payer formulary access, patient adherence, Bass diffusion adoption curve, and FDA regulatory success probability. <strong style="color:var(--text-2)">This is the most important number.</strong></div>
+              </div>
+              <div>
+                <div style="font-size:12px;font-weight:700;color:var(--text-2);margin-bottom:3px">TAM — Total Addressable Market</div>
+                <div style="font-size:11px;color:var(--text-3);line-height:1.5">The theoretical ceiling if 100% of eligible patients were treated at full price — before insurance restrictions, adherence drop-off, or competitive share. Shows market size potential but overstates reality.</div>
+              </div>
+              <div>
+                <div style="font-size:12px;font-weight:700;color:var(--text-2);margin-bottom:3px">PTRS — Probability of Technical &amp; Regulatory Success</div>
+                <div style="font-size:11px;color:var(--text-3);line-height:1.5">Cumulative likelihood the drug/device reaches FDA approval from current phase. Sourced from BIO/Informa 2021 (14,656 programs) and FDA CDRH data. Oncology: 5.3%, hematology: 23.9%, devices: 54%+.</div>
+              </div>
+            </div>
+            <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(2,1fr);gap:12px">
+              <div>
+                <div style="font-size:12px;font-weight:700;color:var(--text-2);margin-bottom:3px">Opportunity / Probability / Value bars</div>
+                <div style="font-size:11px;color:var(--text-3);line-height:1.5">Sub-scores (0–100) feeding the composite ranking signal. <strong>Opportunity</strong> = unmet need × disease burden × competitive white space. <strong>Probability</strong> = PTRS adjusted for biomarkers + crowding. <strong>Value</strong> = SAM normalized to the $35B Keytruda-scale ceiling.</div>
+              </div>
+              <div>
+                <div style="font-size:12px;font-weight:700;color:var(--text-2);margin-bottom:3px">Commercial Tractability badge</div>
+                <div style="font-size:11px;color:var(--text-3);line-height:1.5"><span style="color:#059669">● Validated</span> = ≥3 approved therapies + active pipeline. <span style="color:#d97706">● Emerging</span> = 0 approved but growing trial interest. <span style="color:#dc2626">● Speculative</span> = 0 approved + very thin pipeline — scientifically interesting but no validated commercial path yet.</div>
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- Algorithm explainer -->
@@ -4460,48 +4488,44 @@ function renderDiscovery(opps) {
     const tractLabel   = {VALIDATED_CROWDED:'Validated market', VIABLE:'Viable path', EMERGING:'Emerging', SPECULATIVE:'Speculative'}[tractability] || tractability;
 
     return `<div style="border:1px solid var(--border);margin-bottom:10px;background:var(--bg)">
-      <div style="padding:14px 16px;display:grid;grid-template-columns:36px 1fr 100px;gap:12px;align-items:start">
+      <div style="padding:14px 16px;display:grid;grid-template-columns:36px 1fr 110px;gap:12px;align-items:start">
+
+        <!-- Rank -->
         <div style="font-size:16px;font-weight:800;color:var(--text-4);padding-top:2px">#${i+1}</div>
+
+        <!-- Main content -->
         <div>
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap">
             <div style="font-size:14px;font-weight:700;color:var(--text)">${o.disease}</div>
-            <span style="font-size:10px;font-weight:700;padding:2px 7px;background:${c}22;color:${c};border:1px solid ${c}44">${o.tier}</span>
             <span style="font-size:10px;color:var(--text-4);background:var(--bg-2);padding:2px 6px;border:1px solid var(--border)">${ta}</span>
             <span style="font-size:10px;font-weight:600;color:${tractColor}">● ${tractLabel}</span>
           </div>
           <div style="font-size:11px;color:var(--text-3);margin-bottom:8px">${o.notes||''}</div>
 
-          <!-- SAM is the hero metric -->
-          <div style="display:flex;gap:20px;margin-bottom:8px;align-items:baseline">
-            <div>
-              <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-4);margin-bottom:2px">SAM (Year 5)</div>
-              <div style="font-size:18px;font-weight:800;color:var(--blue);line-height:1">${sam}</div>
-              <div style="font-size:9px;color:var(--text-4)">serviceable, risk-adjusted</div>
-            </div>
-            <div style="border-left:1px solid var(--border);padding-left:16px">
-              <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-4);margin-bottom:2px">TAM (theoretical)</div>
-              <div style="font-size:13px;font-weight:600;color:var(--text-3)">${tam}</div>
-              <div style="font-size:9px;color:var(--text-4)">before access adjustments</div>
-            </div>
-            <div style="border-left:1px solid var(--border);padding-left:16px">
-              <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-4);margin-bottom:2px">PTRS</div>
-              <div style="font-size:13px;font-weight:600;color:var(--text-3)">${o.ptrs||'—'}%</div>
-              <div style="font-size:9px;color:var(--text-4)">approval probability</div>
-            </div>
+          <!-- TAM + PTRS secondary row -->
+          <div style="display:flex;gap:16px;margin-bottom:7px;font-size:11px;align-items:center">
+            <span style="color:var(--text-4)">TAM <strong style="color:var(--text-3)">${tam}</strong></span>
+            <span style="color:var(--border)">·</span>
+            <span style="color:var(--text-4)">PTRS <strong style="color:var(--text-3)">${o.ptrs||'—'}%</strong></span>
+            <span style="color:var(--border)">·</span>
+            <span style="font-size:10px;font-weight:700;padding:1px 6px;background:${c}22;color:${c};border:1px solid ${c}44">${o.tier}</span>
           </div>
 
+          <!-- Sub-score bars -->
           <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:5px">
             ${bars.map(([label,val])=>`<div><div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-4);margin-bottom:2px"><span>${label}</span><span>${Math.round(val||0)}</span></div><div style="height:3px;background:var(--border);border-radius:2px"><div style="height:3px;background:${c};border-radius:2px;width:${Math.round(val||0)}%"></div></div></div>`).join('')}
           </div>
           ${o.tractability_note ? `<div style="margin-top:5px;font-size:10px;color:${tractColor};opacity:.8">⚠ ${o.tractability_note}</div>` : ''}
-          <div style="margin-top:4px;font-size:10px;color:var(--text-4)">Score: ${o.score}/100 · Confidence: ${o.confidence_low}–${o.confidence_high}</div>
+          <div style="margin-top:4px;font-size:10px;color:var(--text-4)">Opportunity score: ${o.score}/100 · Confidence: ${o.confidence_low}–${o.confidence_high}</div>
         </div>
-        <div style="text-align:center">
-          <div style="font-size:11px;color:var(--text-4);margin-bottom:2px">Opportunity</div>
-          <div style="font-size:28px;font-weight:800;color:${c};line-height:1">${o.score}</div>
-          <div style="font-size:10px;color:var(--text-4)">/100</div>
+
+        <!-- SAM: the hero metric on the right -->
+        <div style="text-align:center;border-left:1px solid var(--border);padding-left:12px">
+          <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-4);margin-bottom:4px">SAM (Yr 5)</div>
+          <div style="font-size:22px;font-weight:800;color:var(--blue);line-height:1;margin-bottom:2px">${sam}</div>
+          <div style="font-size:9px;color:var(--text-4);margin-bottom:8px">risk-adjusted</div>
           <button onclick="prefillFromDiscovery('${(o.disease||'').replace(/'/g,"\\'")}')"
-            style="margin-top:8px;padding:5px 8px;background:var(--blue);color:#fff;border:none;border-radius:4px;font-size:10px;font-weight:600;cursor:pointer;width:100%">
+            style="padding:6px 8px;background:var(--blue);color:#fff;border:none;border-radius:4px;font-size:10px;font-weight:600;cursor:pointer;width:100%">
             Run Report →
           </button>
         </div>
