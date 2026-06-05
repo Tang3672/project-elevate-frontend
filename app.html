@@ -1164,7 +1164,16 @@ function tab(name) {
 
   // Lazy-load tab content
   if (name === 'index')      loadIndex();
-  if (name === 'discovery')  { if (!window._discoveryLoaded) { loadDiscovery(); window._discoveryLoaded = true; } }
+  if (name === 'discovery')  {
+    if (window._discoveryData && window._discoveryData.length > 0) {
+      // Already pre-loaded in background — render instantly
+      filterDiscovery();
+      window._discoveryLoaded = true;
+    } else if (!window._discoveryLoaded) {
+      loadDiscovery();
+      window._discoveryLoaded = true;
+    }
+  }
   if (name === 'needs')      loadNeeds();
   if (name === 'reports')    loadReports();
   if (name === 'profile')    loadProfile();
@@ -2556,6 +2565,55 @@ async function deleteReport(reportId, btn) {
 // Init auth on page load
 loadAuthState();
 
+// ── DISCOVERY PRE-LOAD ────────────────────────────────────────────────────
+// Start fetching discovery data immediately in the background so by the time
+// the user clicks "Market Discovery" the data is already loaded.
+// Uses localStorage cache (24h TTL) — returning visitors see results instantly.
+(function _preloadDiscovery() {
+  const CACHE_KEY = 'medlevate_discovery_v3';
+  const CACHE_TTL = 86_400_000;  // 24 hours in ms
+
+  // Check localStorage for fresh cached results
+  try {
+    const cached = localStorage.getItem(CACHE_KEY);
+    if (cached) {
+      const { data, ts } = JSON.parse(cached);
+      if (Date.now() - ts < CACHE_TTL && data?.length > 0) {
+        window._discoveryData = data;
+        window._universeSize  = data.length;
+        window._discoveryLoaded = true;
+        console.log('[Medlevate] Discovery served from cache:', data.length, 'diseases');
+        return;  // Already fresh — no fetch needed
+      }
+    }
+  } catch(e) {}
+
+  // No fresh cache — fetch in background after a short delay
+  // Delay lets auth state resolve so the request can include the token
+  setTimeout(async () => {
+    try {
+      const token = localStorage.getItem('pe_token');
+      if (!token) return;  // Not logged in — don't pre-fetch
+      const res = await fetch(`${API}/alignment/discovery/opportunities?top_n=309`, {
+        headers: {'Authorization': `Bearer ${token}`}
+      });
+      if (!res.ok) return;
+      const json = await res.json();
+      const opps = json.opportunities || [];
+      if (opps.length > 0) {
+        window._discoveryData   = opps;
+        window._universeSize    = json.universe_size || opps.length;
+        window._discoveryLoaded = true;
+        // Cache for 24 hours
+        try {
+          localStorage.setItem(CACHE_KEY, JSON.stringify({ data: opps, ts: Date.now() }));
+        } catch(e) {}  // localStorage full — ignore
+        console.log('[Medlevate] Discovery pre-loaded in background:', opps.length, 'diseases');
+      }
+    } catch(e) {}  // Silent — background pre-load failures don't surface to user
+  }, 1500);  // 1.5s delay — lets auth resolve first
+})();
+
 
 
 // TRIAL SITES
@@ -3842,47 +3900,24 @@ window.tab = function(name) {
             <div style="font-size:13px;color:var(--text-3)">Tell us about your capability and we'll match you to the highest-opportunity markets, then generate a refined idea statement you can take into Market Analysis.</div>
           </div>
 
-          <!-- Step indicators -->
+          <!-- Step indicators — now just 2 steps -->
           <div style="display:flex;align-items:center;gap:0;margin-bottom:28px">
             <div id="build-step-1-ind" style="display:flex;align-items:center;gap:8px">
               <div style="width:24px;height:24px;border-radius:50%;background:var(--blue);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center">1</div>
-              <span style="font-size:12px;font-weight:600;color:var(--blue)">Top Markets</span>
-            </div>
-            <div style="width:32px;height:1px;background:var(--border);margin:0 6px"></div>
-            <div id="build-step-2-ind" style="display:flex;align-items:center;gap:8px;opacity:0.4">
-              <div style="width:24px;height:24px;border-radius:50%;background:var(--border);color:var(--text-3);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center">2</div>
-              <span style="font-size:12px;font-weight:600;color:var(--text-3)">Your Profile</span>
+              <span style="font-size:12px;font-weight:600;color:var(--blue)">Your Profile</span>
             </div>
             <div style="width:32px;height:1px;background:var(--border);margin:0 6px"></div>
             <div id="build-step-3-ind" style="display:flex;align-items:center;gap:8px;opacity:0.4">
-              <div style="width:24px;height:24px;border-radius:50%;background:var(--border);color:var(--text-3);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center">3</div>
+              <div style="width:24px;height:24px;border-radius:50%;background:var(--border);color:var(--text-3);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center">2</div>
               <span style="font-size:12px;font-weight:600;color:var(--text-3)">Matched Ideas</span>
             </div>
           </div>
 
-          <!-- STEP 1: Top market hotspots -->
+          <!-- STEP 1: Profile quiz (NOW FIRST — market browsing removed as mandatory) -->
           <div id="build-step-1">
-            <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:14px">
-              These are the highest-opportunity markets right now — select up to 3 that interest you:
-            </div>
-            <div style="font-size:11px;color:var(--text-3);margin-bottom:10px">Select up to 3 markets that relate to your work — or skip to see all opportunities matched to your profile.</div>
-            <div id="build-markets-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px">
-              <!-- Populated by JS from discovery data -->
-              <div style="text-align:center;padding:20px;color:var(--text-3);grid-column:1/-1">
-                
-                <div style="font-size:11px;margin-top:8px">Loading top markets…</div>
-              </div>
-            </div>
-            <button id="build-continue-btn" onclick="buildStep(2)" style="padding:11px 28px;background:var(--blue);color:#fff;border:none;font-family:var(--display);font-size:13px;font-weight:700;cursor:pointer;border-radius:3px">
-              Continue → Answer 4 Questions
-            </button>
-            <button onclick="buildStep(2)" style="margin-left:10px;padding:11px 18px;background:none;border:1px solid var(--border);color:var(--text-3);font-size:12px;font-weight:600;cursor:pointer;border-radius:3px">
-              Skip — show all matches
-            </button>
-          </div>
-
-          <!-- STEP 2: Quick profile quiz -->
-          <div id="build-step-2" style="display:none">
+          <!-- hidden markets grid still populated in background for auto-matching -->
+          <div id="build-markets-grid" style="display:none"></div>
+          <div id="build-step-2" style="display:block">
             <div style="max-width:600px">
 
               <!-- Q1: Innovation type -->
@@ -3971,7 +4006,7 @@ window.tab = function(name) {
               <!-- Populated by JS -->
             </div>
             <div style="margin-top:20px">
-              <button onclick="buildStep(2)" style="padding:10px 20px;background:none;border:1px solid var(--border);color:var(--text-3);font-size:13px;font-weight:600;cursor:pointer;border-radius:3px">← Refine answers</button>
+              <button onclick="buildStep(1)" style="padding:10px 20px;background:none;border:1px solid var(--border);color:var(--text-3);font-size:13px;font-weight:600;cursor:pointer;border-radius:3px">← Refine answers</button>
             </div>
           </div>
 
@@ -4069,20 +4104,35 @@ function setDiscoMode(mode) {
 }
 
 function buildStep(n) {
-  [1,2,3].forEach(i => {
-    const panel = document.getElementById('build-step-' + i);
-    const ind   = document.getElementById('build-step-' + i + '-ind');
-    if (panel) panel.style.display = i === n ? '' : 'none';
-    if (ind) {
-      const dot = ind.querySelector('div');
-      ind.style.opacity = i <= n ? '1' : '0.4';
-      if (dot) {
-        dot.style.background = i < n ? 'var(--green)' : i === n ? 'var(--blue)' : 'var(--border)';
-        dot.style.color = i <= n ? '#fff' : 'var(--text-3)';
-        if (i < n) dot.textContent = '✓';
-      }
+  // New 2-step flow: step 1 = profile quiz, step 3 = results
+  // (step 2 eliminated as mandatory — markets auto-matched)
+  const showStep1 = n === 1;
+  const showStep3 = n === 3;
+  const step1panel = document.getElementById('build-step-1');
+  const step3panel = document.getElementById('build-step-3');
+  if (step1panel) step1panel.style.display = showStep1 ? '' : 'none';
+  if (step3panel) step3panel.style.display = showStep3 ? '' : 'none';
+
+  // Update step indicators (1 and 3 only now)
+  const ind1 = document.getElementById('build-step-1-ind');
+  const ind3 = document.getElementById('build-step-3-ind');
+  if (ind1) {
+    const dot = ind1.querySelector('div');
+    ind1.style.opacity = '1';
+    if (dot) {
+      dot.style.background = n >= 3 ? 'var(--green)' : 'var(--blue)';
+      dot.style.color = '#fff';
+      if (n >= 3) dot.textContent = '✓';
     }
-  });
+  }
+  if (ind3) {
+    ind3.style.opacity = n >= 3 ? '1' : '0.4';
+    const dot = ind3.querySelector('div');
+    if (dot) {
+      dot.style.background = n >= 3 ? 'var(--blue)' : 'var(--border)';
+      dot.style.color = n >= 3 ? '#fff' : 'var(--text-3)';
+    }
+  }
   window._currentBuildStep = n;
 }
 
@@ -4183,26 +4233,35 @@ async function generateIdeas() {
   if (resultsEl) resultsEl.style.display = 'none';
   if (loadingEl) loadingEl.style.display = '';
 
-  // Gather selected markets
-  const selectedCards = [...document.querySelectorAll('.build-market-card.selected')];
-  const selectedMarkets = selectedCards.map(c => ({
-    disease: c.dataset.disease,
-    ta: c.dataset.ta,
-    score: parseFloat(c.dataset.score),
-    tam: c.dataset.tam,   // This is actually SAM in the updated card
-  }));
+  // Auto-match markets from the PI's profile — no manual selection needed.
+  // Filter discovery universe by modality relevance, then take top 3 by SAM.
+  const modality = (window._builderSelections.q1 || '').toLowerCase();
+  const _MODALITY_TA_MAP = {
+    'small molecule': ['amr_infectious','oncology','cns','metabolic','cardiovascular','immunology'],
+    'biologic':       ['oncology','immunology','hematology','rare_disease','cardiovascular'],
+    'gene':           ['gene_therapy','rare_disease','hematology','cns'],
+    'cell therapy':   ['gene_therapy','oncology','hematology'],
+    'medical device': ['cardiovascular','device','metabolic','ophthalmology'],
+    'diagnostic':     ['oncology','amr_infectious','device'],
+    'digital':        ['metabolic','cardiovascular','cns'],
+  };
+  const matchKey = Object.keys(_MODALITY_TA_MAP).find(k => modality.includes(k));
+  const relevantTAs = matchKey ? _MODALITY_TA_MAP[matchKey] : null;
 
-  // If no markets selected, take top 3 from discovery data or fallback
-  const markets = selectedMarkets.length
-    ? selectedMarkets
-    : (window._discoveryData || []).length > 0
-      ? (window._discoveryData).sort((a,b) => (b.sam_usd||b.peak_revenue_usd||0) - (a.sam_usd||a.peak_revenue_usd||0)).slice(0,3).map(o => ({
-          disease: o.disease, ta: o.therapeutic_area, score: o.score,
-          tam: o.sam_fmt || o.peak_revenue_fmt || '—',
-        }))
-      : _BUILDER_FALLBACK_MARKETS.slice(0, 3).map(m => ({
-          disease: m.disease, ta: m.ta, score: m.score, tam: m.sam || m.tam,
-        }));
+  let candidates = (window._discoveryData || []);
+  if (relevantTAs && candidates.length > 0) {
+    const filtered = candidates.filter(o => relevantTAs.includes(o.therapeutic_area));
+    if (filtered.length >= 3) candidates = filtered;
+  }
+
+  const markets = candidates.length > 0
+    ? candidates.sort((a,b) => (b.sam_usd||0) - (a.sam_usd||0)).slice(0,3).map(o => ({
+        disease: o.disease, ta: o.therapeutic_area, score: o.score,
+        tam: o.sam_fmt || o.peak_revenue_fmt || '—',
+      }))
+    : _BUILDER_FALLBACK_MARKETS.filter(m => !relevantTAs || relevantTAs.includes(m.ta)).slice(0,3).map(m => ({
+        disease: m.disease, ta: m.ta, score: m.score, tam: m.sam || m.tam,
+      }));
 
   const profile = window._builderSelections;
 
