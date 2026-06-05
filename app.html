@@ -4446,7 +4446,19 @@ async function loadDiscovery() {
   } catch(e) {
     console.error('Discovery error:', e);
     const listEl = document.getElementById('discovery-list');
-    if (listEl) listEl.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-3)">Failed to load. <button onclick="loadDiscovery()" style="color:var(--blue);background:none;border:none;cursor:pointer;font-weight:600">Retry</button></div>';
+    const isAuthError = e.message?.includes('401') || e.message?.includes('403') || !localStorage.getItem('pe_token');
+    if (listEl) listEl.innerHTML = isAuthError
+      ? `<div style="text-align:center;padding:60px 20px;color:var(--text-3)">
+           <div style="font-size:32px;margin-bottom:14px">🔒</div>
+           <div style="font-family:var(--display);font-size:16px;font-weight:700;color:var(--text-2);margin-bottom:8px">Sign in to unlock Market Discovery</div>
+           <div style="font-size:13px;margin-bottom:20px">Create a free account to access ranked biomedical markets, SAM analysis, and the Idea Builder.</div>
+           <button onclick="openAuth('register')" style="padding:10px 24px;background:var(--blue);color:#fff;border:none;border-radius:4px;font-family:var(--display);font-size:13px;font-weight:700;cursor:pointer;margin-right:8px">Create free account</button>
+           <button onclick="openAuth('login')" style="padding:10px 20px;background:none;border:1px solid var(--border);color:var(--text-2);border-radius:4px;font-size:13px;font-weight:600;cursor:pointer">Sign in</button>
+         </div>`
+      : `<div style="text-align:center;padding:40px;color:var(--text-3)">
+           <div style="font-size:13px;margin-bottom:12px">Something went wrong loading market data.</div>
+           <button onclick="loadDiscovery()" style="color:var(--blue);background:none;border:1px solid var(--border);padding:6px 14px;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer">Try again</button>
+         </div>`;
   }
 }
 
