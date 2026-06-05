@@ -3913,9 +3913,9 @@ window.tab = function(name) {
             </div>
           </div>
 
-          <!-- STEP 1: Profile quiz (NOW FIRST — market browsing removed as mandatory) -->
-          <div id="build-step-1">
-          <!-- hidden markets grid still populated in background for auto-matching -->
+          <!-- STEP 1: Profile quiz -->
+          <div id="build-step-1" style="display:block">
+          <!-- markets grid hidden — populated in background for auto-matching -->
           <div id="build-markets-grid" style="display:none"></div>
           <div id="build-step-2" style="display:block">
             <div style="max-width:600px">
@@ -4098,7 +4098,9 @@ function setDiscoMode(mode) {
     btnBrowse.style.color = 'var(--text-3)';
     btnBuild.style.background = 'var(--blue)';
     btnBuild.style.color = '#fff';
-    // Auto-load top markets from existing discovery data or fetch
+    // Always reset to step 1 (profile quiz) when opening Build My Idea
+    // Without this, returning after a previous run leaves step 1 hidden
+    buildStep(1);
     loadDiscoveryForBuilder();
   }
 }
