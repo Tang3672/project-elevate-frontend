@@ -4395,6 +4395,7 @@ function filterDiscovery() {
   const ta   = document.getElementById('disco-filter-ta')?.value || '';
   const tier = document.getElementById('disco-filter-tier')?.value || '';
   const q    = (document.getElementById('disco-search')?.value || '').toLowerCase().trim();
+  const isFiltered = ta || tier || q;
   const filtered = _discoveryData.filter(o => {
     if (ta   && o.therapeutic_area !== ta) return false;
     if (tier && o.tier !== tier)           return false;
@@ -4403,7 +4404,7 @@ function filterDiscovery() {
                 !(o.therapeutic_area || '').toLowerCase().includes(q)) return false;
     return true;
   });
-  renderDiscovery(filtered);
+  renderDiscovery(filtered, isFiltered);
   // If search returns nothing and we haven't loaded all 309, offer to load more
   if (q && filtered.length === 0 && _discoveryData.length < 200) {
     const listEl = document.getElementById('discovery-list');
@@ -4466,17 +4467,23 @@ async function loadAllDiscovery(searchAfter) {
   }
 }
 
-function renderDiscovery(opps) {
+function renderDiscovery(opps, isFiltered) {
   const listEl = document.getElementById('discovery-list');
   if (!listEl) return;
   if (!opps || !opps.length) {
     listEl.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-3)">No opportunities match the current filters.</div>';
     return;
   }
+  // Show filter context banner when results are filtered
+  const filterBanner = isFiltered
+    ? `<div style="font-size:11px;color:var(--text-4);margin-bottom:10px;padding:7px 12px;background:var(--bg-2);border:1px solid var(--border);border-radius:4px">
+        Showing ${opps.length} of ${_discoveryData.length} diseases · <strong style="color:var(--text-3)">Ranks are from the full universe</strong> — #${opps[0]?.rank||'?'} means this disease ranks #${opps[0]?.rank||'?'} globally by SAM
+       </div>`
+    : '';
   const taLabels = {oncology:'Oncology',rare_disease:'Rare Disease',amr_infectious:'AMR/Infectious',cns:'CNS/Neurology',cardiovascular:'Cardiovascular',metabolic:'Metabolic',gene_therapy:'Gene Therapy',device:'Device',ophthalmology:'Ophthalmology',vaccine:'Vaccine',immunology:'Immunology'};
   const tractColors = {VALIDATED_CROWDED:'#059669', VIABLE:'#0891b2', EMERGING:'#d97706', SPECULATIVE:'#dc2626'};
 
-  listEl.innerHTML = opps.map((o, i) => {
+  listEl.innerHTML = filterBanner + opps.map((o, i) => {
     const comp = o.components || {};
     const c = o.tier_color || '#0891b2';
     const ta = taLabels[o.therapeutic_area] || (o.therapeutic_area||'').replace(/_/g,' ');
@@ -4490,8 +4497,8 @@ function renderDiscovery(opps) {
     return `<div style="border:1px solid var(--border);margin-bottom:10px;background:var(--bg)">
       <div style="padding:14px 16px;display:grid;grid-template-columns:36px 1fr 110px;gap:12px;align-items:start">
 
-        <!-- Rank -->
-        <div style="font-size:16px;font-weight:800;color:var(--text-4);padding-top:2px">#${i+1}</div>
+        <!-- Rank: use original rank from full universe, not filtered position -->
+        <div style="font-size:16px;font-weight:800;color:var(--text-4);padding-top:2px">#${o.rank || i+1}</div>
 
         <!-- Main content -->
         <div>
