@@ -3741,31 +3741,35 @@ window.tab = function(name) {
         <div style="margin-bottom:18px">
           <div style="font-family:var(--display);font-size:22px;font-weight:700;color:var(--text);margin-bottom:10px">Opportunity Discovery</div>
 
-          <!-- Metric explainer — plain English, no jargon -->
+          <!-- Metric explainer — plain English -->
           <div style="background:var(--bg-2);border:1px solid var(--border);border-radius:6px;padding:14px 18px;margin-bottom:4px">
             <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-3);margin-bottom:10px">What these numbers mean</div>
             <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
               <div>
                 <div style="font-size:12px;font-weight:700;color:var(--blue);margin-bottom:3px">SAM — Serviceable Addressable Market</div>
-                <div style="font-size:11px;color:var(--text-3);line-height:1.5">What a company can <em>realistically earn</em> at Year 5 post-launch. Already adjusted for payer formulary access, patient adherence, Bass diffusion adoption curve, and FDA regulatory success probability. <strong style="color:var(--text-2)">This is the most important number.</strong></div>
+                <div style="font-size:11px;color:var(--text-3);line-height:1.5">What a company can <em>realistically earn</em> at Year 5 after launch — after accounting for insurance coverage restrictions, real-world patient adherence, market adoption speed, and approval probability. <strong style="color:var(--text-2)">This is the most important number — used to rank diseases.</strong></div>
               </div>
               <div>
                 <div style="font-size:12px;font-weight:700;color:var(--text-2);margin-bottom:3px">TAM — Total Addressable Market</div>
-                <div style="font-size:11px;color:var(--text-3);line-height:1.5">The theoretical ceiling if 100% of eligible patients were treated at full price — before insurance restrictions, adherence drop-off, or competitive share. Shows market size potential but overstates reality.</div>
+                <div style="font-size:11px;color:var(--text-3);line-height:1.5">The theoretical maximum — if every eligible patient paid full list price simultaneously. This number is always larger than what you can actually earn, because it ignores insurance restrictions, patients who never fill prescriptions, and competition. Think of it as the ceiling, not the target.</div>
               </div>
               <div>
-                <div style="font-size:12px;font-weight:700;color:var(--text-2);margin-bottom:3px">PTRS — Probability of Technical &amp; Regulatory Success</div>
-                <div style="font-size:11px;color:var(--text-3);line-height:1.5">Cumulative likelihood the drug/device reaches FDA approval from current phase. Sourced from BIO/Informa 2021 (14,656 programs) and FDA CDRH data. Oncology: 5.3%, hematology: 23.9%, devices: 54%+.</div>
+                <div style="font-size:12px;font-weight:700;color:var(--text-2);margin-bottom:3px">PTRS — Approval Probability</div>
+                <div style="font-size:11px;color:var(--text-3);line-height:1.5">The historical odds of a drug or device reaching FDA approval from its current stage, based on tracking 14,656 programs from 2011–2020. Example: only 1 in 20 cancer drugs that enter human trials ever get approved. Hematology drugs succeed ~1 in 4 times. Medical devices clear ~54% of the time — their bar is lower.</div>
               </div>
             </div>
-            <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(2,1fr);gap:12px">
+            <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
               <div>
                 <div style="font-size:12px;font-weight:700;color:var(--text-2);margin-bottom:3px">Opportunity / Probability / Value bars</div>
-                <div style="font-size:11px;color:var(--text-3);line-height:1.5">Sub-scores (0–100) feeding the composite ranking signal. <strong>Opportunity</strong> = unmet need × disease burden × competitive white space. <strong>Probability</strong> = PTRS adjusted for biomarkers + crowding. <strong>Value</strong> = SAM normalized to the $35B Keytruda-scale ceiling.</div>
+                <div style="font-size:11px;color:var(--text-3);line-height:1.5"><strong>Opportunity</strong> — how badly medicine needs a solution here (no treatments = high; crowded market = low). <strong>Probability</strong> — how likely a drug actually makes it through trials and gets approved. <strong>Value</strong> — how large the realistic revenue is relative to blockbuster drugs. All three are 0–100.</div>
               </div>
               <div>
-                <div style="font-size:12px;font-weight:700;color:var(--text-2);margin-bottom:3px">Commercial Tractability badge</div>
-                <div style="font-size:11px;color:var(--text-3);line-height:1.5"><span style="color:#059669">● Validated</span> = ≥3 approved therapies + active pipeline. <span style="color:#d97706">● Emerging</span> = 0 approved but growing trial interest. <span style="color:#dc2626">● Speculative</span> = 0 approved + very thin pipeline — scientifically interesting but no validated commercial path yet.</div>
+                <div style="font-size:12px;font-weight:700;color:var(--text-2);margin-bottom:3px">Tier labels (Exceptional / High / Moderate / Low)</div>
+                <div style="font-size:11px;color:var(--text-3);line-height:1.5">A convenience rating combining all three bars into one label. <strong>Exceptional</strong> means all three factors are strong simultaneously — rare. <strong>High</strong> means strong but with one meaningful limitation. <strong>Moderate</strong> is worth exploring but has clear challenges. <strong>Low</strong> has significant barriers in at least two dimensions.</div>
+              </div>
+              <div>
+                <div style="font-size:12px;font-weight:700;color:var(--text-2);margin-bottom:3px">Commercial path badge</div>
+                <div style="font-size:11px;color:var(--text-3);line-height:1.5"><span style="color:#059669">● Validated market</span> — at least 3 drugs already approved here; the commercial path is proven. <span style="color:#0891b2">● Viable path</span> — emerging clinical interest with some approvals. <span style="color:#d97706">● Emerging</span> — 0 approved therapies but active trial interest. <span style="color:#dc2626">● Speculative</span> — 0 approved, very few trials; scientifically interesting but no one has successfully built a commercial business here yet.</div>
               </div>
             </div>
           </div>
