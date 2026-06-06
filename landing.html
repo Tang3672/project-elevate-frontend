@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+
+<html class="scroll-smooth" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Elevate | Biomedical Research Intelligence</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-primary": "#ffffff",
+                    "on-primary-fixed": "#101c2e",
+                    "background": "#fbf8fa",
+                    "on-tertiary-fixed-variant": "#38485d",
+                    "surface-container-low": "#f5f3f5",
+                    "surface-bright": "#fbf8fa",
+                    "tertiary": "#000000",
+                    "on-secondary": "#ffffff",
+                    "primary": "#000000",
+                    "tertiary-fixed-dim": "#b7c8e1",
+                    "secondary-container": "#3e6af0",
+                    "error-container": "#ffdad6",
+                    "on-background": "#1b1b1d",
+                    "surface": "#fbf8fa",
+                    "surface-container-high": "#eae7e9",
+                    "surface-variant": "#e4e2e3",
+                    "on-primary-fixed-variant": "#3c475b",
+                    "on-error": "#ffffff",
+                    "surface-tint": "#535f74",
+                    "primary-fixed-dim": "#bbc7df",
+                    "on-surface": "#1b1b1d",
+                    "outline": "#75777d",
+                    "primary-fixed": "#d7e3fc",
+                    "on-surface-variant": "#45474c",
+                    "tertiary-fixed": "#d3e4fe",
+                    "surface-container": "#f0edef",
+                    "primary-container": "#101c2e",
+                    "on-secondary-container": "#fffbff",
+                    "on-tertiary-fixed": "#0b1c30",
+                    "on-primary-container": "#79849b",
+                    "on-secondary-fixed-variant": "#003ab1",
+                    "inverse-surface": "#303032",
+                    "on-tertiary": "#ffffff",
+                    "secondary": "#1a4fd6",
+                    "surface-container-lowest": "#ffffff",
+                    "inverse-on-surface": "#f3f0f2",
+                    "error": "#ba1a1a",
+                    "secondary-fixed": "#dce1ff",
+                    "surface-dim": "#dcd9db",
+                    "inverse-primary": "#bbc7df",
+                    "secondary-fixed-dim": "#b6c4ff",
+                    "on-secondary-fixed": "#001550",
+                    "surface-container-highest": "#e4e2e3",
+                    "on-tertiary-container": "#75859d",
+                    "on-error-container": "#93000a",
+                    "outline-variant": "#c5c6cd",
+                    "tertiary-container": "#0b1c30"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "section-gap": "120px",
+                    "gutter": "24px",
+                    "margin-desktop": "80px",
+                    "base": "8px",
+                    "margin-mobile": "20px"
+            },
+            "fontFamily": {
+                    "display-lg-mobile": ["Plus Jakarta Sans"],
+                    "body-md": ["Plus Jakarta Sans"],
+                    "display-lg": ["Plus Jakarta Sans"],
+                    "label-sm": ["Plus Jakarta Sans"],
+                    "headline-md": ["Plus Jakarta Sans"],
+                    "body-lg": ["Plus Jakarta Sans"]
+            },
+            "fontSize": {
+                    "display-lg-mobile": ["40px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "body-md": ["16px", {"lineHeight": "1.5", "letterSpacing": "0em", "fontWeight": "400"}],
+                    "display-lg": ["64px", {"lineHeight": "1.1", "letterSpacing": "-0.04em", "fontWeight": "700"}],
+                    "label-sm": ["12px", {"lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "headline-md": ["32px", {"lineHeight": "1.3", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                    "body-lg": ["18px", {"lineHeight": "1.6", "letterSpacing": "0em", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .hero-gradient {
+            background: radial-gradient(circle at 50% 50%, #101c2e 0%, #000000 100%);
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md antialiased">
+<!-- TopNavBar -->
+<nav class="fixed top-0 w-full z-50 bg-surface/80 dark:bg-surface/80 backdrop-blur-md border-b border-outline-variant/30 transition-all duration-300 ease-in-out">
+<div class="max-w-7xl mx-auto px-margin-desktop flex justify-between items-center h-20">
+<div class="flex items-center gap-12">
+<a class="font-headline-md text-headline-md font-bold text-primary dark:text-on-primary-fixed tracking-tight" href="#">Elevate</a>
+<div class="hidden md:flex items-center gap-8">
+<a class="font-body-md text-body-md text-secondary dark:text-secondary-fixed font-semibold hover:text-secondary transition-colors duration-200" href="#">Product</a>
+<a class="font-body-md text-body-md text-on-surface-variant dark:text-on-surface-variant hover:text-secondary transition-colors duration-200" href="#">Pricing</a>
+<a class="font-body-md text-body-md text-on-surface-variant dark:text-on-surface-variant hover:text-secondary transition-colors duration-200" href="#">Resources</a>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="font-body-md text-body-md text-on-surface hover:text-secondary transition-colors duration-200 px-4">Login</button>
+<button class="bg-primary-container text-on-primary font-semibold px-6 py-2.5 rounded-lg hover:opacity-90 transition-all">Get Started</button>
+</div>
+</div>
+</nav>
+<!-- (1) Hero Section -->
+<header class="hero-gradient min-h-screen flex items-center pt-20 relative overflow-hidden">
+<!-- Abstract light leak for Stripe-like feel -->
+<div class="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-secondary/10 blur-[120px] rounded-full"></div>
+<div class="max-w-7xl mx-auto px-margin-desktop w-full grid md:grid-cols-2 gap-16 items-center relative z-10">
+<div class="text-left">
+<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-secondary-container/20 border border-secondary-container/30 mb-8">
+<span class="text-secondary-fixed text-[10px] font-bold uppercase tracking-widest">Biomedical Intelligence v4.0</span>
+</div>
+<h1 class="font-display-lg text-display-lg text-white mb-6 leading-[1.1]">
+                    From lab bench to market strategy <span class="text-secondary-fixed">in 90 seconds.</span>
+</h1>
+<p class="font-body-lg text-body-lg text-on-primary-container/80 mb-10 max-w-xl">
+                    FDA regulatory pathway, market sizing, and competitive landscape for any drug, device, or diagnostic. Sourced from live FDA, CDC, and PubMed data.
+                </p>
+<div class="flex flex-col sm:flex-row gap-4">
+<button class="bg-secondary text-white font-semibold px-8 py-4 rounded-lg text-lg hover:shadow-xl hover:shadow-secondary/20 transition-all">Get Your Free Report</button>
+<button class="border border-white/20 text-white font-semibold px-8 py-4 rounded-lg text-lg hover:bg-white/5 transition-all">See Pricing</button>
+</div>
+</div>
+<div class="relative hidden md:block">
+<div class="glass-card p-base rounded-xl">
+<img alt="Advanced Biotech Analytics" class="rounded-lg shadow-2xl grayscale-[0.2] opacity-90" data-alt="A high-tech biomedical laboratory visualization showing clean glass surfaces and blue-tinted laboratory equipment. Soft glowing interfaces display complex data visualizations of molecular structures and regulatory progress bars. The lighting is clinical yet sophisticated, evoking a sense of high-precision scientific advancement in a dark navy and electric blue aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB_9UyICguB8NVQL04f8pnR4GDkfvhy2qyd609H6tq8atf8RbqCXOPLYAJnLMdqI6fhcUpuvatRz7LGVlI3E-DtTCmsY4eRNPLt4bI8pUuAWQgjGOTG7GTE8wAfXRFEFhMkNbg_9fnkV8aWJtrCJ-UXTTk0ZdgYXVjVhXa4VdZzj5PGJCe43zKZwE8MinmpF9c7we5R5T4tUVMyMePNuABu_3X74eAo1BPutmR5yciRbZ212qy3-WznVBMiLgMPO-LXntNfP_xe1kc"/>
+<div class="absolute -bottom-6 -left-6 glass-card p-6 rounded-xl shadow-2xl">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-full bg-secondary-container/40 flex items-center justify-center">
+<span class="material-symbols-outlined text-white">analytics</span>
+</div>
+<div>
+<p class="text-white font-bold text-sm">Market Indexing</p>
+<p class="text-secondary-fixed text-xs font-semibold">98.4% Accuracy Rate</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</header>
+<!-- (2) Trust Section -->
+<section class="py-24 bg-white border-b border-outline-variant/20">
+<div class="max-w-7xl mx-auto px-margin-desktop">
+<div class="grid grid-cols-1 md:grid-cols-3 gap-12 text-center md:text-left">
+<div class="flex flex-col gap-2 group">
+<span class="text-display-lg text-primary font-bold">19+</span>
+<p class="text-on-surface-variant font-semibold tracking-wide border-l-2 border-secondary pl-4 group-hover:border-primary transition-all">Cited sources per report</p>
+</div>
+<div class="flex flex-col gap-2 group">
+<span class="text-display-lg text-primary font-bold">12,788</span>
+<p class="text-on-surface-variant font-semibold tracking-wide border-l-2 border-secondary pl-4 group-hover:border-primary transition-all">Federal demand signals indexed</p>
+</div>
+<div class="flex flex-col gap-2 group">
+<span class="text-display-lg text-primary font-bold">32</span>
+<p class="text-on-surface-variant font-semibold tracking-wide border-l-2 border-secondary pl-4 group-hover:border-primary transition-all">Biomedical sub-expert profiles</p>
+</div>
+</div>
+</div>
+</section>
+<!-- (3) Features Section -->
+<section class="py-section-gap bg-surface">
+<div class="max-w-7xl mx-auto px-margin-desktop">
+<div class="mb-20">
+<h2 class="font-headline-md text-headline-md text-primary mb-4">Precision Intelligence</h2>
+<p class="text-on-surface-variant max-w-2xl">Leveraging multi-layered data verification to provide the industry's most reliable biomedical market forecasts.</p>
+</div>
+<div class="grid md:grid-cols-3 gap-gutter">
+<!-- Card 1 -->
+<div class="bg-white p-10 rounded-xl border border-outline-variant/30 hover:shadow-lg transition-shadow duration-300">
+<div class="w-14 h-14 bg-secondary-fixed/30 rounded-lg flex items-center justify-center mb-8">
+<span class="material-symbols-outlined text-secondary text-3xl">verified</span>
+</div>
+<h3 class="font-headline-md text-2xl text-primary mb-4">FDA Regulatory Intelligence</h3>
+<p class="text-on-surface-variant font-body-md leading-relaxed">
+                        32 domain-specific expert profiles analyzing classification pathways, 510(k) precedents, and PMA requirements automatically.
+                    </p>
+</div>
+<!-- Card 2 -->
+<div class="bg-white p-10 rounded-xl border border-outline-variant/30 hover:shadow-lg transition-shadow duration-300">
+<div class="w-14 h-14 bg-secondary-fixed/30 rounded-lg flex items-center justify-center mb-8">
+<span class="material-symbols-outlined text-secondary text-3xl">database</span>
+</div>
+<h3 class="font-headline-md text-2xl text-primary mb-4">Live Market Data</h3>
+<p class="text-on-surface-variant font-body-md leading-relaxed">
+                        Continuous integration with CDC datasets, ClinicalTrials.gov, and openFDA repositories updated every 24 hours.
+                    </p>
+</div>
+<!-- Card 3 -->
+<div class="bg-white p-10 rounded-xl border border-outline-variant/30 hover:shadow-lg transition-shadow duration-300">
+<div class="w-14 h-14 bg-secondary-fixed/30 rounded-lg flex items-center justify-center mb-8">
+<span class="material-symbols-outlined text-secondary text-3xl">menu_book</span>
+</div>
+<h3 class="font-headline-md text-2xl text-primary mb-4">PubMed Literature</h3>
+<p class="text-on-surface-variant font-body-md leading-relaxed">
+                        Deep indexing of landmark papers, clinical outcomes, and academic citations integrated into every strategy report.
+                    </p>
+</div>
+</div>
+</div>
+</section>
+<!-- (4) How it Works Section -->
+<section class="py-section-gap bg-primary-container relative">
+<div class="max-w-7xl mx-auto px-margin-desktop text-white">
+<h2 class="font-display-lg text-[48px] text-center mb-20">The 90-Second Workflow</h2>
+<div class="grid md:grid-cols-3 gap-16 relative">
+<!-- Step 1 -->
+<div class="flex flex-col items-center text-center relative">
+<div class="w-16 h-16 rounded-full border border-secondary text-secondary flex items-center justify-center text-2xl font-bold mb-6 bg-primary-container z-10">1</div>
+<h4 class="text-xl font-bold mb-3">Describe Product</h4>
+<p class="text-on-primary-container">Enter your mechanism of action, intended use, and target clinical outcome.</p>
+</div>
+<!-- Step 2 -->
+<div class="flex flex-col items-center text-center relative">
+<div class="w-16 h-16 rounded-full border border-secondary text-secondary flex items-center justify-center text-2xl font-bold mb-6 bg-primary-container z-10">2</div>
+<h4 class="text-xl font-bold mb-3">Select Category</h4>
+<p class="text-on-primary-container">Specify drug class, device category, or diagnostic type for localized analysis.</p>
+</div>
+<!-- Step 3 -->
+<div class="flex flex-col items-center text-center relative">
+<div class="w-16 h-16 rounded-full bg-secondary text-white flex items-center justify-center text-2xl font-bold mb-6 z-10">3</div>
+<h4 class="text-xl font-bold mb-3">Instant Insights</h4>
+<p class="text-on-primary-container">Download your comprehensive FDA strategy and market sizing report in seconds.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- (5) Pricing Section -->
+<section class="py-section-gap bg-white">
+<div class="max-w-7xl mx-auto px-margin-desktop">
+<div class="text-center mb-16">
+<h2 class="font-display-lg text-[48px] text-primary mb-4">Strategic Investment</h2>
+<p class="text-on-surface-variant">Scalable intelligence for researchers, startups, and global enterprises.</p>
+</div>
+<div class="grid md:grid-cols-3 gap-gutter items-end">
+<!-- Basic -->
+<div class="border border-outline-variant/30 rounded-xl p-10 flex flex-col h-full">
+<span class="font-bold text-on-surface-variant uppercase tracking-widest text-xs mb-4">Researcher</span>
+<div class="mb-8">
+<span class="text-4xl font-bold text-primary">$20</span>
+<span class="text-on-surface-variant">/month</span>
+</div>
+<ul class="space-y-4 mb-10 flex-grow">
+<li class="flex items-center gap-3 text-on-surface-variant">
+<span class="material-symbols-outlined text-secondary text-lg">check_circle</span>
+                            3 Reports per month
+                        </li>
+<li class="flex items-center gap-3 text-on-surface-variant">
+<span class="material-symbols-outlined text-secondary text-lg">check_circle</span>
+                            Standard Data Latency
+                        </li>
+<li class="flex items-center gap-3 text-on-surface-variant">
+<span class="material-symbols-outlined text-secondary text-lg">check_circle</span>
+                            Email Support
+                        </li>
+</ul>
+<button class="w-full py-4 border border-primary text-primary font-bold rounded-lg hover:bg-primary hover:text-white transition-all">Start Basic</button>
+</div>
+<!-- Starter -->
+<div class="border-2 border-secondary rounded-xl p-10 flex flex-col h-full relative bg-surface shadow-2xl">
+<div class="absolute -top-4 left-1/2 -translate-x-1/2 bg-secondary text-white text-[10px] font-bold uppercase tracking-widest px-4 py-1.5 rounded-full">
+                        Most Popular
+                    </div>
+<span class="font-bold text-secondary uppercase tracking-widest text-xs mb-4">Professional</span>
+<div class="mb-8">
+<span class="text-5xl font-bold text-primary">$79</span>
+<span class="text-on-surface-variant">/month</span>
+</div>
+<ul class="space-y-4 mb-10 flex-grow">
+<li class="flex items-center gap-3 text-on-surface">
+<span class="material-symbols-outlined text-secondary text-lg">check_circle</span>
+                            15 Reports per month
+                        </li>
+<li class="flex items-center gap-3 text-on-surface">
+<span class="material-symbols-outlined text-secondary text-lg">check_circle</span>
+                            Real-time Data Updates
+                        </li>
+<li class="flex items-center gap-3 text-on-surface">
+<span class="material-symbols-outlined text-secondary text-lg">check_circle</span>
+                            Advanced Competitive Tracking
+                        </li>
+<li class="flex items-center gap-3 text-on-surface">
+<span class="material-symbols-outlined text-secondary text-lg">check_circle</span>
+                            Priority Support
+                        </li>
+</ul>
+<button class="w-full py-4 bg-secondary text-white font-bold rounded-lg hover:opacity-90 transition-all">Start 14-Day Trial</button>
+</div>
+<!-- Professional -->
+<div class="border border-outline-variant/30 rounded-xl p-10 flex flex-col h-full">
+<span class="font-bold text-on-surface-variant uppercase tracking-widest text-xs mb-4">Enterprise</span>
+<div class="mb-8">
+<span class="text-4xl font-bold text-primary">$299</span>
+<span class="text-on-surface-variant">/month</span>
+</div>
+<ul class="space-y-4 mb-10 flex-grow">
+<li class="flex items-center gap-3 text-on-surface-variant">
+<span class="material-symbols-outlined text-secondary text-lg">check_circle</span>
+                            Unlimited Reports
+                        </li>
+<li class="flex items-center gap-3 text-on-surface-variant">
+<span class="material-symbols-outlined text-secondary text-lg">check_circle</span>
+                            API Access &amp; Integrations
+                        </li>
+<li class="flex items-center gap-3 text-on-surface-variant">
+<span class="material-symbols-outlined text-secondary text-lg">check_circle</span>
+                            White-labeling Options
+                        </li>
+<li class="flex items-center gap-3 text-on-surface-variant">
+<span class="material-symbols-outlined text-secondary text-lg">check_circle</span>
+                            Dedicated Account Manager
+                        </li>
+</ul>
+<button class="w-full py-4 border border-primary text-primary font-bold rounded-lg hover:bg-primary hover:text-white transition-all">Contact Sales</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Footer -->
+<footer class="bg-surface dark:bg-surface-container-lowest border-t border-outline-variant/20">
+<div class="max-w-7xl mx-auto px-margin-desktop py-section-gap flex flex-col md:flex-row justify-between gap-12">
+<div class="max-w-sm">
+<a class="font-headline-md text-headline-md font-bold text-primary dark:text-on-primary-fixed tracking-tight block mb-6" href="#">Elevate</a>
+<p class="text-on-surface-variant text-body-md">Precision data for global biotech strategy. Accelerating the transition from discovery to market delivery through intelligent automated research.</p>
+</div>
+<div class="grid grid-cols-2 sm:grid-cols-3 gap-12">
+<div class="flex flex-col gap-4">
+<p class="font-bold text-primary">Platform</p>
+<a class="text-on-surface-variant hover:text-secondary transition-colors" href="#">Product</a>
+<a class="text-on-surface-variant hover:text-secondary transition-colors" href="#">Pricing</a>
+<a class="text-on-surface-variant hover:text-secondary transition-colors" href="#">Case Studies</a>
+</div>
+<div class="flex flex-col gap-4">
+<p class="font-bold text-primary">Company</p>
+<a class="text-on-surface-variant hover:text-secondary transition-colors" href="#">Documentation</a>
+<a class="text-on-surface-variant hover:text-secondary transition-colors" href="#">About Us</a>
+<a class="text-on-surface-variant hover:text-secondary transition-colors" href="#">Careers</a>
+</div>
+<div class="flex flex-col gap-4">
+<p class="font-bold text-primary">Legal</p>
+<a class="text-on-surface-variant hover:text-secondary transition-colors" href="#">Privacy Policy</a>
+<a class="text-on-surface-variant hover:text-secondary transition-colors" href="#">Terms of Service</a>
+</div>
+</div>
+</div>
+<div class="max-w-7xl mx-auto px-margin-desktop py-8 border-t border-outline-variant/10 text-center md:text-left">
+<p class="text-on-surface-variant text-sm">© 2024 Elevate Biomedical. All rights reserved. Precision data for global biotech strategy.</p>
+</div>
+</footer>
+</body></html>
