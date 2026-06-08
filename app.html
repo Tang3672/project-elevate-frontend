@@ -4443,7 +4443,7 @@ async function loadDiscovery() {
   // User-scoped localStorage cache (6hr TTL)
   const CACHE_TTL = 6 * 60 * 60 * 1000;
   const userKey   = currentUser?.email || 'anon';
-  const CACHE_KEY = `medlevate_discovery_v5_${userKey}`; // v5: ASD/22q11/AATD data corrections
+  const CACHE_KEY = `medlevate_discovery_v6_${userKey}`; // v6: full derivation, all diseases served
   try {
     const cached = localStorage.getItem(CACHE_KEY);
     if (cached) {
@@ -4469,7 +4469,7 @@ async function loadDiscovery() {
 
   try {
     const token = localStorage.getItem('pe_token');
-    const res = await fetch(`${API}/alignment/discovery/opportunities?top_n=309`, {
+    const res = await fetch(`${API}/alignment/discovery/opportunities?top_n=1500`, {
       headers: { 'Authorization': `Bearer ${token}` },
       signal: _discoveryAbort.signal,
     });
@@ -4567,7 +4567,7 @@ async function loadAllDiscovery(searchAfter) {
   try {
     const token = localStorage.getItem('pe_token');
     // If searching, pass search param so backend queries all diseases in DB
-    const params = new URLSearchParams({top_n: 500});
+    const params = new URLSearchParams({top_n: 5000});
     if (q) params.set('search', q);
     const res = await fetch(`${API}/alignment/discovery/opportunities?${params}`, {
       headers: {'Authorization': `Bearer ${token}`}
@@ -4606,8 +4606,8 @@ function renderDiscovery(opps, isFiltered) {
 
   listEl.innerHTML = filterBanner + opps.map((o, i) => {
     const comp = o.components || {};
-    const c = o.tier_color || '#0891b2';
-    const ta = taLabels[o.therapeutic_area] || (o.therapeutic_area||'').replace(/_/g,' ');
+    const c    = o.tier_color || '#0891b2';
+    const ta   = taLabels[o.therapeutic_area] || (o.therapeutic_area||'').replace(/_/g,' ');
     const bars = [['Opportunity',comp.opportunity],['Probability',comp.probability],['Value',comp.value]];
     const sam  = o.sam_fmt || o.peak_revenue_fmt || '—';
     const tam  = o.us_tam_fmt || '—';
@@ -4615,13 +4615,71 @@ function renderDiscovery(opps, isFiltered) {
     const tractColor   = tractColors[tractability] || '#0891b2';
     const tractLabel   = {VALIDATED_CROWDED:'Validated market', VIABLE:'Viable path', EMERGING:'Emerging', SPECULATIVE:'Speculative'}[tractability] || tractability;
 
+    // Build derivation rows from every field the API returns
+    const ms  = o.market_sizing || {};
+    const enr = o.enrichment    || {};
+    const pop   = (o.us_patient_population || 0).toLocaleString();
+    const price = o.annual_cost_usd ? '$' + o.annual_cost_usd.toLocaleString() : '—';
+    const tamRaw = o.us_tam_usd ? (o.us_tam_usd >= 1e9 ? `$${(o.us_tam_usd/1e9).toFixed(1)}B` : `$${(o.us_tam_usd/1e6).toFixed(0)}M`) : tam;
+    const eligible   = ms.eligible_patients ? ms.eligible_patients.toLocaleString() : '—';
+    const diagYield  = ms.diagnostic_yield  ? (ms.diagnostic_yield * 100).toFixed(0) + '%' : '—';
+    const treatElig  = (o.us_patient_population && ms.eligible_patients && ms.diagnostic_yield)
+                       ? ((ms.eligible_patients / (o.us_patient_population * ms.diagnostic_yield)) * 100).toFixed(0) + '%' : '—';
+    const bassY5     = ms.bass_penetration_y5 ? (ms.bass_penetration_y5 * 100).toFixed(1) + '%' : '—';
+    const dotYrs     = ms.dot_years ? ms.dot_years.toFixed(1) + ' yr' : '—';
+    const netPct     = ms.net_price_pct_wac ? (ms.net_price_pct_wac * 100).toFixed(0) + '%' : '—';
+    const biaDamp    = ms.bia_dampening && ms.bia_dampening < 1 ? (ms.bia_dampening * 100).toFixed(0) + '% (affordability concern)' : '1.0× (no concern)';
+    const formulary  = enr.formulary_coverage ? (enr.formulary_coverage * 100).toFixed(0) + '%' : '—';
+    const paRate     = enr.pa_approval_rate   ? (enr.pa_approval_rate * 100).toFixed(0) + '%' : '—';
+    const mepsFill   = enr.meps_fill_rate     ? (enr.meps_fill_rate * 100).toFixed(0) + '%' : '—';
+    const mepsAdh    = enr.meps_adherence     ? (enr.meps_adherence * 100).toFixed(0) + '%' : '—';
+    const realFactor = enr.realized_tam_factor ? (enr.realized_tam_factor * 100).toFixed(0) + '%' : '—';
+    const popSrc     = enr.population_source || (o.data_source === 'db' ? 'MONDO / ICD-10 extended universe (TA defaults)' : '—');
+    const priceSrc   = enr.pricing_source    || (o.data_source === 'db' ? 'TA-level default pricing' : '—');
+
+    const hasDerivation = o.us_patient_population || ms.eligible_patients || ms.bass_penetration_y5;
+    const derivationRow = hasDerivation ? `
+      <details style="margin-top:8px">
+        <summary style="font-size:10px;color:var(--blue);cursor:pointer;font-weight:600;list-style:none;display:flex;align-items:center;gap:4px">
+          <span>▸ Show exact TAM/SAM calculation</span>
+        </summary>
+        <div style="margin-top:8px;background:var(--bg-2);border:1px solid var(--border);padding:10px 12px;font-size:10px;line-height:1.7">
+          <table style="width:100%;border-collapse:collapse">
+            <tr><td colspan="3" style="font-weight:700;color:var(--text-2);padding-bottom:4px;border-bottom:1px solid var(--border)">STEP 1 — Inputs</td></tr>
+            <tr><td style="color:var(--text-4);padding:2px 8px 2px 0;width:160px">US patient population</td><td style="font-weight:600;color:var(--text-2)">${pop}</td><td style="color:var(--text-4);padding-left:12px">${popSrc}</td></tr>
+            <tr><td style="color:var(--text-4)">Annual treatment price (WAC)</td><td style="font-weight:600;color:var(--text-2)">${price} / yr</td><td style="color:var(--text-4);padding-left:12px">${priceSrc}</td></tr>
+            <tr><td style="color:var(--text-4)">Duration of therapy</td><td style="font-weight:600;color:var(--text-2)">${dotYrs}</td><td style="color:var(--text-4);padding-left:12px">${ms.dot_category || ''}</td></tr>
+
+            <tr><td colspan="3" style="font-weight:700;color:var(--text-2);padding:8px 0 4px;border-bottom:1px solid var(--border)">STEP 2 — Theoretical TAM (100% capture)</td></tr>
+            <tr><td style="color:var(--text-4)">Raw TAM = pop × price</td><td style="font-weight:600;color:var(--text-2)">${tamRaw}</td><td style="color:var(--text-4);padding-left:12px">theoretical ceiling before access adjustments</td></tr>
+
+            <tr><td colspan="3" style="font-weight:700;color:var(--text-2);padding:8px 0 4px;border-bottom:1px solid var(--border)">STEP 3 — Population Cascade (DisMod)</td></tr>
+            <tr><td style="color:var(--text-4)">Diagnostic yield</td><td style="font-weight:600;color:var(--text-2)">${diagYield}</td><td style="color:var(--text-4);padding-left:12px">fraction receiving correct diagnosis</td></tr>
+            <tr><td style="color:var(--text-4)">Treatment eligibility</td><td style="font-weight:600;color:var(--text-2)">${treatElig}</td><td style="color:var(--text-4);padding-left:12px">of diagnosed, fraction meeting treatment criteria</td></tr>
+            <tr><td style="color:var(--text-4)">Eligible patients</td><td style="font-weight:600;color:var(--text)">${eligible}</td><td style="color:var(--text-4);padding-left:12px">candidates for the therapy</td></tr>
+
+            <tr><td colspan="3" style="font-weight:700;color:var(--text-2);padding:8px 0 4px;border-bottom:1px solid var(--border)">STEP 4 — Bass Diffusion + Market Competition</td></tr>
+            <tr><td style="color:var(--text-4)">Year 5 adoption (Bass)</td><td style="font-weight:600;color:var(--text-2)">${bassY5}</td><td style="color:var(--text-4);padding-left:12px">of eligible patients using therapy by Yr 5</td></tr>
+            <tr><td style="color:var(--text-4)">Gross-to-net pricing</td><td style="font-weight:600;color:var(--text-2)">${netPct} of WAC</td><td style="color:var(--text-4);padding-left:12px">rebates + discounts to payer (IQVIA GTN data)</td></tr>
+            <tr><td style="color:var(--text-4)">BIA dampening</td><td style="font-weight:600;color:var(--text-2)">${biaDamp}</td><td style="color:var(--text-4);padding-left:12px">budget impact affordability gate</td></tr>
+
+            <tr><td colspan="3" style="font-weight:700;color:var(--text-2);padding:8px 0 4px;border-bottom:1px solid var(--border)">STEP 5 — Payer Access Adjustments (CMS MEPS)</td></tr>
+            <tr><td style="color:var(--text-4)">Formulary coverage</td><td style="font-weight:600;color:var(--text-2)">${formulary}</td><td style="color:var(--text-4);padding-left:12px">plans that include this drug class on formulary</td></tr>
+            <tr><td style="color:var(--text-4)">Prior auth approval rate</td><td style="font-weight:600;color:var(--text-2)">${paRate}</td><td style="color:var(--text-4);padding-left:12px">of PA requests that are approved (CMS data)</td></tr>
+            <tr><td style="color:var(--text-4)">MEPS fill rate</td><td style="font-weight:600;color:var(--text-2)">${mepsFill}</td><td style="color:var(--text-4);padding-left:12px">patients who actually fill the prescription</td></tr>
+            <tr><td style="color:var(--text-4)">MEPS adherence rate</td><td style="font-weight:600;color:var(--text-2)">${mepsAdh}</td><td style="color:var(--text-4);padding-left:12px">patients still on therapy at 12 months</td></tr>
+            <tr><td style="color:var(--text-4)">Combined realized factor</td><td style="font-weight:700;color:var(--blue)">${realFactor}</td><td style="color:var(--text-4);padding-left:12px">formulary × PA × fill × adherence</td></tr>
+
+            <tr><td colspan="3" style="border-top:2px solid var(--border);padding-top:6px;margin-top:4px"></td></tr>
+            <tr><td style="font-weight:700;color:var(--text-2);padding-top:4px">TAM (theoretical ceiling)</td><td style="font-weight:700;color:var(--text)">${tam}</td><td style="color:var(--text-4);padding-left:12px">100% capture, full WAC price</td></tr>
+            <tr><td style="font-weight:700;color:var(--blue)">SAM (Yr 5, risk-adjusted)</td><td style="font-weight:800;color:var(--blue)">${sam}</td><td style="color:var(--text-4);padding-left:12px">Bass × GTN × BIA × payer access × PTRS ${o.ptrs||'?'}%</td></tr>
+          </table>
+        </div>
+      </details>` : '';
+
     return `<div style="border:1px solid var(--border);margin-bottom:10px;background:var(--bg)">
       <div style="padding:14px 16px;display:grid;grid-template-columns:36px 1fr 110px;gap:12px;align-items:start">
-
-        <!-- Rank: use original rank from full universe, not filtered position -->
         <div style="font-size:16px;font-weight:800;color:var(--text-4);padding-top:2px">#${o.rank || i+1}</div>
-
-        <!-- Main content -->
         <div>
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap">
             <div style="font-size:14px;font-weight:700;color:var(--text)">${o.disease}</div>
@@ -4629,8 +4687,6 @@ function renderDiscovery(opps, isFiltered) {
             <span style="font-size:10px;font-weight:600;color:${tractColor}">● ${tractLabel}</span>
           </div>
           <div style="font-size:11px;color:var(--text-3);margin-bottom:8px">${o.notes||''}</div>
-
-          <!-- TAM + PTRS secondary row -->
           <div style="display:flex;gap:16px;margin-bottom:7px;font-size:11px;align-items:center">
             <span style="color:var(--text-4)">TAM <strong style="color:var(--text-3)">${tam}</strong></span>
             <span style="color:var(--border)">·</span>
@@ -4638,16 +4694,13 @@ function renderDiscovery(opps, isFiltered) {
             <span style="color:var(--border)">·</span>
             <span style="font-size:10px;font-weight:700;padding:1px 6px;background:${c}22;color:${c};border:1px solid ${c}44">${o.tier}</span>
           </div>
-
-          <!-- Sub-score bars -->
           <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:5px">
             ${bars.map(([label,val])=>`<div><div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-4);margin-bottom:2px"><span>${label}</span><span>${Math.round(val||0)}</span></div><div style="height:3px;background:var(--border);border-radius:2px"><div style="height:3px;background:${c};border-radius:2px;width:${Math.round(val||0)}%"></div></div></div>`).join('')}
           </div>
           ${o.tractability_note ? `<div style="margin-top:5px;font-size:10px;color:${tractColor};opacity:.8">⚠ ${o.tractability_note}</div>` : ''}
           <div style="margin-top:4px;font-size:10px;color:var(--text-4)">Opportunity score: ${o.score}/100 · Confidence: ${o.confidence_low}–${o.confidence_high}</div>
+          ${derivationRow}
         </div>
-
-        <!-- SAM: the hero metric on the right -->
         <div style="text-align:center;border-left:1px solid var(--border);padding-left:12px">
           <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-4);margin-bottom:4px">SAM (Yr 5)</div>
           <div style="font-size:22px;font-weight:800;color:var(--blue);line-height:1;margin-bottom:2px">${sam}</div>
