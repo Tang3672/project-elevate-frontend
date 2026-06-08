@@ -875,10 +875,6 @@
               </div>
             </div>
 
-            <div style="margin-bottom:6px">
-              <span id="free-report-badge" style="display:none;font-family:var(--body);font-size:11px;font-weight:600;color:#fff;padding:3px 10px;border-radius:2px"></span>
-            </div>
-            
             <button class="btn-primary" id="run-btn" onclick="startAnalysisFlow()" style="width:100%">Refine &amp; Analyze →</button>
             <div id="clarify-panel" style="display:none;margin-top:14px"></div>
           <div style="margin-top:8px;text-align:center">
@@ -1207,15 +1203,13 @@ async function runAnalysis() {
   const idea = document.getElementById('idea').value.trim();
   if (!idea || idea.length < 30) { alert('Please describe your product in at least 30 characters.'); return; }
 
-  // Show pricing first, then sign in after — no free reports
   const _devEmails = ['test@medlevate.io','ijw91021@gmail.com','admin@medlevate.io','oneonesie100@gmail.com'];
   const _isDev = currentUser && _devEmails.includes(currentUser.email);
-  if (!_isDev && !window._earlyAccessGranted) {
+  if (!currentUser) { openAuth('login'); return; }
+  if (!_isDev && !(billingStatus && billingStatus.is_active)) {
     (window.showPaywall || function(){ document.getElementById('paywall-overlay').style.display='flex'; })();
     return;
   }
-  // Require login (after they've seen pricing and requested access)
-  if (!currentUser) { openAuth('login'); return; }
 
   const btn = document.getElementById('run-btn');
   btn.disabled = true; btn.textContent = 'Analyzing…';
@@ -3387,7 +3381,6 @@ document.getElementById('pathogen-row').style.display = '';
           <button class="paywall-cta" onclick="startCheckout('starter')">Request early access →</button>
           <button class="paywall-cta-secondary" title="Online billing coming soon">Buy now — coming soon</button>
         </div>
-        <button class="paywall-dismiss" onclick="window._earlyAccessGranted=true;closePaywall();if(!currentUser)openAuth('register');">Sign up &amp; continue →</button>
       </div>
       <!-- Institution -->
       <div style="border:2px solid #7c3aed;padding:16px;margin-top:12px;position:relative">
@@ -3649,13 +3642,9 @@ window._submitEarlyAccess = async function _submitEarlyAccess(plan) {
         <br><br>
         Create a free account now to start exploring — we'll upgrade you manually when your access is confirmed.
       </div>
-      <button onclick="window._earlyAccessGranted=true;document.getElementById('early-access-modal').remove();closePaywall();if(!currentUser)openAuth('register');"
+      <button onclick="document.getElementById('early-access-modal').remove();if(!currentUser)openAuth('register');"
         style="width:100%;padding:14px;background:var(--blue);color:#fff;border:none;font-size:14px;font-weight:700;cursor:pointer;border-radius:3px;margin-bottom:8px">
-        Create account &amp; start exploring →
-      </button>
-      <button onclick="window._earlyAccessGranted=true;document.getElementById('early-access-modal').remove();closePaywall();"
-        style="width:100%;padding:10px;background:none;border:1px solid var(--border);color:var(--text-3);font-size:13px;cursor:pointer;border-radius:3px">
-        I'm already signed in — continue
+        Create account →
       </button>
     </div>`;
 };
@@ -4853,16 +4842,13 @@ async function startAnalysisFlow() {
     return;
   }
 
-  // Step 1: Show pricing / early access FIRST (for everyone not already granted access)
   const _devEmails2 = ['test@medlevate.io','ijw91021@gmail.com','admin@medlevate.io','oneonesie100@gmail.com'];
   const _isDev2 = currentUser && _devEmails2.includes(currentUser.email);
-  if (!_isDev2 && !window._earlyAccessGranted) {
+  if (!currentUser) { openAuth('login'); return; }
+  if (!_isDev2 && !(billingStatus && billingStatus.is_active)) {
     (window.showPaywall || function(){ document.getElementById('paywall-overlay').style.display='flex'; })();
     return;
   }
-
-  // Step 2: After pricing/early-access, require login
-  if (!currentUser) { openAuth('login'); return; }
 
   // Step 3: Questions → report
   if (window._questionsShown && Object.keys(window.clarifyAnswers).length >= 1) {
