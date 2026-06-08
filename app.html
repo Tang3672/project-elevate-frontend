@@ -3941,64 +3941,95 @@ window.tab = function(name) {
           <div id="build-markets-grid" style="display:none"></div>
             <div style="max-width:600px">
 
-              <!-- Q1: Innovation type -->
+              <!-- Q1: Innovation platform -->
               <div style="margin-bottom:22px">
-                <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:10px">1 · What type of innovation do you have?</div>
-                <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px" id="q1-grid">
-                  <button class="build-opt" data-q="q1" data-v="Small Molecule Drug" onclick="selectBuildOpt(this)">💊 Small Molecule Drug</button>
+                <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">1 · What is your innovation platform?</div>
+                <div style="font-size:11px;color:var(--text-3);margin-bottom:10px">The technology or drug type you're developing</div>
+                <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+                  <button class="build-opt" data-q="q1" data-v="Small Molecule Drug" onclick="selectBuildOpt(this)">💊 Small Molecule</button>
                   <button class="build-opt" data-q="q1" data-v="Biologic / Antibody" onclick="selectBuildOpt(this)">🧫 Biologic / Antibody</button>
-                  <button class="build-opt" data-q="q1" data-v="Gene or Cell Therapy" onclick="selectBuildOpt(this)">🧬 Gene / Cell Therapy</button>
-                  <button class="build-opt" data-q="q1" data-v="Medical Device" onclick="selectBuildOpt(this)">🔬 Medical Device</button>
-                  <button class="build-opt" data-q="q1" data-v="Diagnostic Test" onclick="selectBuildOpt(this)">🧪 Diagnostic / IVD</button>
-                  <button class="build-opt" data-q="q1" data-v="Digital Health / AI" onclick="selectBuildOpt(this)">💻 Digital / AI</button>
+                  <button class="build-opt" data-q="q1" data-v="Gene Therapy (AAV/viral vector)" onclick="selectBuildOpt(this)">🧬 Gene Therapy</button>
+                  <button class="build-opt" data-q="q1" data-v="RNA Therapeutic (siRNA/mRNA/ASO)" onclick="selectBuildOpt(this)">🔗 RNA Therapeutic</button>
+                  <button class="build-opt" data-q="q1" data-v="Cell Therapy (CAR-T/stem cell)" onclick="selectBuildOpt(this)">🔴 Cell Therapy</button>
+                  <button class="build-opt" data-q="q1" data-v="Medical Device / Implant" onclick="selectBuildOpt(this)">🔬 Medical Device</button>
+                  <button class="build-opt" data-q="q1" data-v="Diagnostic Test / Biomarker" onclick="selectBuildOpt(this)">🧪 Diagnostic / IVD</button>
+                  <button class="build-opt" data-q="q1" data-v="Digital Health / AI Software" onclick="selectBuildOpt(this)">💻 Digital / AI</button>
+                  <button class="build-opt" data-q="q1" data-v="Vaccine or Immunotherapy" onclick="selectBuildOpt(this)">💉 Vaccine / Immuno</button>
                   <div style="grid-column:1/-1;display:flex;align-items:center;gap:8px;margin-top:2px">
                     <span style="font-size:11px;color:var(--text-3)">Other:</span>
-                    <input type="text" placeholder="describe your innovation type…" oninput="window._builderSelections.q1=this.value;document.querySelectorAll('.build-opt[data-q=q1]').forEach(b=>b.classList.remove('selected'))" style="flex:1;padding:7px 10px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:12px;border-radius:4px;outline:none"/>
+                    <input type="text" placeholder="e.g. peptide, PROTAC, radiopharmaceutical…" oninput="window._builderSelections.q1=this.value;document.querySelectorAll('.build-opt[data-q=q1]').forEach(b=>b.classList.remove('selected'))" style="flex:1;padding:7px 10px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:12px;border-radius:4px;outline:none"/>
                   </div>
                 </div>
               </div>
 
-              <!-- Q2: Development stage -->
+              <!-- Q2: Biological mechanism — the key discriminator for market matching -->
               <div style="margin-bottom:22px">
-                <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:10px">2 · Where is your work right now?</div>
+                <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">2 · What biological mechanism or pathway does it target?</div>
+                <div style="font-size:11px;color:var(--text-3);margin-bottom:10px">This is the most important question — it determines which diseases your innovation is most likely to work in</div>
                 <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px">
-                  <button class="build-opt" data-q="q2" data-v="Just an idea — no lab work yet" onclick="selectBuildOpt(this)">💭 Just an idea</button>
-                  <button class="build-opt" data-q="q2" data-v="Early-stage research / preclinical data" onclick="selectBuildOpt(this)">🔬 Preclinical research</button>
-                  <button class="build-opt" data-q="q2" data-v="Phase 1 / early clinical" onclick="selectBuildOpt(this)">🏥 Phase 1 / early clinical</button>
-                  <button class="build-opt" data-q="q2" data-v="Existing technology looking for new indication" onclick="selectBuildOpt(this)">🔄 Repurposing / new indication</button>
+                  <button class="build-opt" data-q="q2" data-v="Gene mutation / correction (single-gene defect)" onclick="selectBuildOpt(this)">🧬 Gene mutation / correction</button>
+                  <button class="build-opt" data-q="q2" data-v="RNA silencing or splicing modulation" onclick="selectBuildOpt(this)">🔗 RNA silencing / splicing</button>
+                  <button class="build-opt" data-q="q2" data-v="Protein aggregation or misfolding (tau, amyloid, synuclein)" onclick="selectBuildOpt(this)">🧩 Protein aggregation / misfolding</button>
+                  <button class="build-opt" data-q="q2" data-v="Immune activation or suppression (T-cell, cytokine, complement)" onclick="selectBuildOpt(this)">🛡️ Immune modulation</button>
+                  <button class="build-opt" data-q="q2" data-v="Metabolic enzyme or receptor (lipid, glucose, amino acid)" onclick="selectBuildOpt(this)">⚗️ Metabolic enzyme / receptor</button>
+                  <button class="build-opt" data-q="q2" data-v="Cancer cell signaling or proliferation (kinase, checkpoint, oncogene)" onclick="selectBuildOpt(this)">🎗️ Cancer cell signaling</button>
+                  <button class="build-opt" data-q="q2" data-v="Pathogen or microbial target (bacteria, virus, fungus)" onclick="selectBuildOpt(this)">🦠 Pathogen / antimicrobial</button>
+                  <button class="build-opt" data-q="q2" data-v="Cardiovascular or hemodynamic (ion channel, coagulation, vascular)" onclick="selectBuildOpt(this)">❤️ Cardiovascular / hemodynamic</button>
+                  <button class="build-opt" data-q="q2" data-v="Fibrosis or inflammation (TGF-β, IL pathway, NF-κB)" onclick="selectBuildOpt(this)">🔥 Fibrosis / inflammation</button>
+                  <button class="build-opt" data-q="q2" data-v="Biomarker detection or imaging (sensor, assay, AI-read)" onclick="selectBuildOpt(this)">🔍 Biomarker / detection</button>
                   <div style="grid-column:1/-1;display:flex;align-items:center;gap:8px;margin-top:2px">
                     <span style="font-size:11px;color:var(--text-3)">Other:</span>
-                    <input type="text" placeholder="describe your stage…" oninput="window._builderSelections.q2=this.value;document.querySelectorAll('.build-opt[data-q=q2]').forEach(b=>b.classList.remove('selected'))" style="flex:1;padding:7px 10px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:12px;border-radius:4px;outline:none"/>
+                    <input type="text" placeholder="e.g. epigenetic modification, microbiome, mechanosensing…" oninput="window._builderSelections.q2=this.value;document.querySelectorAll('.build-opt[data-q=q2]').forEach(b=>b.classList.remove('selected'))" style="flex:1;padding:7px 10px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:12px;border-radius:4px;outline:none"/>
                   </div>
                 </div>
               </div>
 
-              <!-- Q3: Primary constraint -->
+              <!-- Q3: Patient population -->
               <div style="margin-bottom:22px">
-                <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:10px">3 · What is your biggest constraint?</div>
+                <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">3 · What patient population does your work address?</div>
+                <div style="font-size:11px;color:var(--text-3);margin-bottom:10px">Determines whether rare/orphan or large-market diseases match better</div>
                 <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px">
-                  <button class="build-opt" data-q="q3" data-v="Time to market — need faster path to approval" onclick="selectBuildOpt(this)">⚡ Speed / regulatory path</button>
-                  <button class="build-opt" data-q="q3" data-v="Capital — limited funding, need non-dilutive grants" onclick="selectBuildOpt(this)">💰 Capital / funding</button>
-                  <button class="build-opt" data-q="q3" data-v="Team size — small academic or startup team" onclick="selectBuildOpt(this)">👥 Team / resources</button>
-                  <button class="build-opt" data-q="q3" data-v="Freedom to operate — IP landscape concerns" onclick="selectBuildOpt(this)">🔒 IP / freedom to operate</button>
+                  <button class="build-opt" data-q="q3" data-v="Rare / orphan disease (fewer than 200,000 US patients)" onclick="selectBuildOpt(this)">🧬 Rare / orphan disease</button>
+                  <button class="build-opt" data-q="q3" data-v="Large chronic disease (millions of patients, long-term treatment)" onclick="selectBuildOpt(this)">📊 Large chronic disease</button>
+                  <button class="build-opt" data-q="q3" data-v="Cancer — any type or stage" onclick="selectBuildOpt(this)">🎗️ Cancer patients</button>
+                  <button class="build-opt" data-q="q3" data-v="Pediatric patients or early-onset genetic disease" onclick="selectBuildOpt(this)">👶 Pediatric / early-onset</button>
+                  <button class="build-opt" data-q="q3" data-v="Hospital / acute care setting (sepsis, surgical, ICU)" onclick="selectBuildOpt(this)">🏥 Hospital / acute care</button>
+                  <button class="build-opt" data-q="q3" data-v="Any population — looking for the best indication fit" onclick="selectBuildOpt(this)">🔎 Best indication (open)</button>
                   <div style="grid-column:1/-1;display:flex;align-items:center;gap:8px;margin-top:2px">
                     <span style="font-size:11px;color:var(--text-3)">Other:</span>
-                    <input type="text" placeholder="describe your constraint…" oninput="window._builderSelections.q3=this.value;document.querySelectorAll('.build-opt[data-q=q3]').forEach(b=>b.classList.remove('selected'))" style="flex:1;padding:7px 10px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:12px;border-radius:4px;outline:none"/>
+                    <input type="text" placeholder="e.g. elderly, women's health, metabolic syndrome…" oninput="window._builderSelections.q3=this.value;document.querySelectorAll('.build-opt[data-q=q3]').forEach(b=>b.classList.remove('selected'))" style="flex:1;padding:7px 10px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:12px;border-radius:4px;outline:none"/>
                   </div>
                 </div>
               </div>
 
-              <!-- Q4: Key differentiator -->
+              <!-- Q4: Development stage -->
+              <div style="margin-bottom:22px">
+                <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">4 · Where is your work right now?</div>
+                <div style="font-size:11px;color:var(--text-3);margin-bottom:10px">Affects which market tractability level is most appropriate for you</div>
+                <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px">
+                  <button class="build-opt" data-q="q4" data-v="Concept / hypothesis — no experimental data yet" onclick="selectBuildOpt(this)">💭 Concept / hypothesis</button>
+                  <button class="build-opt" data-q="q4" data-v="Preclinical — in vitro or animal model data" onclick="selectBuildOpt(this)">🔬 Preclinical data</button>
+                  <button class="build-opt" data-q="q4" data-v="Phase 1 / IND-enabling studies" onclick="selectBuildOpt(this)">🏥 Phase 1 / IND-enabling</button>
+                  <button class="build-opt" data-q="q4" data-v="Validated platform — seeking new indications" onclick="selectBuildOpt(this)">🔄 Platform seeking new indications</button>
+                  <div style="grid-column:1/-1;display:flex;align-items:center;gap:8px;margin-top:2px">
+                    <span style="font-size:11px;color:var(--text-3)">Other:</span>
+                    <input type="text" placeholder="describe your stage…" oninput="window._builderSelections.q4=this.value;document.querySelectorAll('.build-opt[data-q=q4]').forEach(b=>b.classList.remove('selected'))" style="flex:1;padding:7px 10px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:12px;border-radius:4px;outline:none"/>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Q5: Differentiator — used for idea generation, not matching -->
               <div style="margin-bottom:28px">
-                <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:10px">4 · What makes your approach different?</div>
+                <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">5 · What makes your approach unique?</div>
+                <div style="font-size:11px;color:var(--text-3);margin-bottom:10px">Used to write your idea statement — not for disease matching</div>
                 <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px">
-                  <button class="build-opt" data-q="q4" data-v="Novel target or mechanism of action" onclick="selectBuildOpt(this)">🎯 Novel target / mechanism</button>
-                  <button class="build-opt" data-q="q4" data-v="Better delivery or formulation" onclick="selectBuildOpt(this)">🚀 Better delivery / formulation</button>
-                  <button class="build-opt" data-q="q4" data-v="Biomarker-selected patient population" onclick="selectBuildOpt(this)">🧬 Biomarker-selected patients</button>
-                  <button class="build-opt" data-q="q4" data-v="Lower cost or improved access" onclick="selectBuildOpt(this)">♿ Cost / access improvement</button>
+                  <button class="build-opt" data-q="q5" data-v="Novel target or first-in-class mechanism" onclick="selectBuildOpt(this)">🎯 Novel target / mechanism</button>
+                  <button class="build-opt" data-q="q5" data-v="Superior delivery or formulation" onclick="selectBuildOpt(this)">🚀 Better delivery</button>
+                  <button class="build-opt" data-q="q5" data-v="Biomarker-guided patient selection" onclick="selectBuildOpt(this)">🧬 Biomarker selection</button>
+                  <button class="build-opt" data-q="q5" data-v="Lower cost, simpler administration, or improved access" onclick="selectBuildOpt(this)">♿ Accessibility / cost</button>
                   <div style="grid-column:1/-1;display:flex;align-items:center;gap:8px;margin-top:2px">
                     <span style="font-size:11px;color:var(--text-3)">Other:</span>
-                    <input type="text" placeholder="describe your differentiator…" oninput="window._builderSelections.q4=this.value;document.querySelectorAll('.build-opt[data-q=q4]').forEach(b=>b.classList.remove('selected'))" style="flex:1;padding:7px 10px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:12px;border-radius:4px;outline:none"/>
+                    <input type="text" placeholder="e.g. once-monthly dosing, oral formulation…" oninput="window._builderSelections.q5=this.value;document.querySelectorAll('.build-opt[data-q=q5]').forEach(b=>b.classList.remove('selected'))" style="flex:1;padding:7px 10px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:12px;border-radius:4px;outline:none"/>
                   </div>
                 </div>
               </div>
@@ -4238,11 +4269,86 @@ function selectBuildOpt(btn) {
   window._builderSelections[q] = btn.dataset.v;
 }
 
+// Biology → TA mapping: which therapeutic areas best match each mechanism
+const _BIOLOGY_TA_SCORES = {
+  'gene mutation':     {gene_therapy:1.0, rare_disease:0.9, hematology:0.8, cns:0.4},
+  'rna silencing':     {rare_disease:0.9, gene_therapy:0.8, metabolic:0.7, cns:0.5, cardiovascular:0.4},
+  'protein aggregation':{cns:1.0, rare_disease:0.6},
+  'immune':            {immunology:1.0, hematology:0.8, oncology:0.7, cns:0.4, rare_disease:0.5},
+  'metabolic enzyme':  {metabolic:1.0, rare_disease:0.7, cardiovascular:0.5, gi_hepatology:0.6},
+  'cancer cell':       {oncology:1.0, hematology:0.8},
+  'pathogen':          {amr_infectious:1.0, vaccine:0.7},
+  'cardiovascular':    {cardiovascular:1.0, metabolic:0.4},
+  'fibrosis':          {immunology:0.7, metabolic:0.6, respiratory:0.7, gi_hepatology:0.8, rare_disease:0.5},
+  'biomarker':         {oncology:0.8, amr_infectious:0.7, cardiovascular:0.6, metabolic:0.6, cns:0.5},
+};
+
+// Patient population → TA preference
+const _PATIENT_TA_SCORES = {
+  'rare':    {rare_disease:1.0, gene_therapy:0.9, hematology:0.7},
+  'large chronic': {metabolic:1.0, cardiovascular:0.9, cns:0.8, immunology:0.7, respiratory:0.7},
+  'cancer':  {oncology:1.0, hematology:0.8},
+  'pediatric':{rare_disease:1.0, gene_therapy:0.9, hematology:0.6},
+  'hospital': {amr_infectious:1.0, cardiovascular:0.7, cns:0.4},
+  'open':    {},  // no filter — all TAs equal
+};
+
+// Stage → tractability preference (which disease maturity fits your stage)
+const _STAGE_TRACTABILITY = {
+  'concept':    {EMERGING:1.0, SPECULATIVE:0.7, VIABLE:0.5, VALIDATED_CROWDED:0.3},
+  'preclinical':{EMERGING:1.0, VIABLE:0.8, SPECULATIVE:0.6, VALIDATED_CROWDED:0.5},
+  'phase 1':    {VIABLE:1.0, EMERGING:0.7, VALIDATED_CROWDED:0.7, SPECULATIVE:0.3},
+  'platform':   {VALIDATED_CROWDED:1.0, VIABLE:0.9, EMERGING:0.6, SPECULATIVE:0.4},
+};
+
+function _scoreDiseaseFit(disease, biology, patients, stage) {
+  let score = 0;
+  const ta = disease.therapeutic_area || 'other';
+  const notes = (disease.notes || '').toLowerCase();
+  const tractability = disease.commercial_tractability || 'VIABLE';
+
+  // Biology match (50% weight) — most important signal
+  const bioKey = Object.keys(_BIOLOGY_TA_SCORES).find(k => biology.toLowerCase().includes(k));
+  if (bioKey) {
+    const taScores = _BIOLOGY_TA_SCORES[bioKey];
+    score += 50 * (taScores[ta] || 0.1);
+    // Bonus for keyword match in disease notes
+    const bioKeywords = {
+      'gene mutation': ['gene','mutation','genetic','hereditary','monogenic'],
+      'rna silencing': ['rna','sirna','antisense','splicing','rnai'],
+      'protein aggregation': ['aggregat','misfolded','amyloid','tau','synuclein','prion'],
+      'immune': ['immune','autoimmune','cytokine','t-cell','b-cell','complement','inflammation'],
+      'metabolic enzyme': ['enzyme','metabolic','substrate','cofactor','lipid','glucose'],
+      'cancer cell': ['tumor','carcinoma','oncogen','kinase','checkpoint','proliferat'],
+      'pathogen': ['bacteria','virus','fungal','microbial','resist','antibiotic'],
+      'cardiovascular': ['cardiac','arterial','ventricular','arrhyth','coagulat','vascular'],
+      'fibrosis': ['fibrosis','fibrotic','tgf','collagen','scar'],
+      'biomarker': ['biomarker','diagnostic','detect','screening','assay'],
+    };
+    if ((bioKeywords[bioKey] || []).some(kw => notes.includes(kw))) score += 15;
+  }
+
+  // Patient population match (25% weight)
+  const patKey = Object.keys(_PATIENT_TA_SCORES).find(k => patients.toLowerCase().includes(k)) || 'open';
+  const patScores = _PATIENT_TA_SCORES[patKey] || {};
+  if (Object.keys(patScores).length === 0) {
+    score += 25; // 'open' — all diseases equally valid
+  } else {
+    score += 25 * (patScores[ta] || 0.1);
+  }
+
+  // Stage / tractability match (25% weight)
+  const stgKey = Object.keys(_STAGE_TRACTABILITY).find(k => stage.toLowerCase().includes(k)) || 'preclinical';
+  const stgScores = _STAGE_TRACTABILITY[stgKey] || {};
+  score += 25 * (stgScores[tractability] || 0.5);
+
+  return score;
+}
+
 async function generateIdeas() {
-  // Validate answers
   const missing = ['q1','q2','q3','q4'].filter(q => !window._builderSelections[q]);
   if (missing.length) {
-    alert('Please answer all 4 questions before continuing.');
+    alert('Please answer all questions before continuing.');
     return;
   }
 
@@ -4252,37 +4358,38 @@ async function generateIdeas() {
   if (resultsEl) resultsEl.style.display = 'none';
   if (loadingEl) loadingEl.style.display = '';
 
-  // Auto-match markets from the PI's profile — no manual selection needed.
-  // Filter discovery universe by modality relevance, then take top 3 by SAM.
-  const modality = (window._builderSelections.q1 || '').toLowerCase();
-  const _MODALITY_TA_MAP = {
-    'small molecule': ['amr_infectious','oncology','cns','metabolic','cardiovascular','immunology'],
-    'biologic':       ['oncology','immunology','hematology','rare_disease','cardiovascular'],
-    'gene':           ['gene_therapy','rare_disease','hematology','cns'],
-    'cell therapy':   ['gene_therapy','oncology','hematology'],
-    'medical device': ['cardiovascular','device','metabolic','ophthalmology'],
-    'diagnostic':     ['oncology','amr_infectious','device'],
-    'digital':        ['metabolic','cardiovascular','cns'],
-  };
-  const matchKey = Object.keys(_MODALITY_TA_MAP).find(k => modality.includes(k));
-  const relevantTAs = matchKey ? _MODALITY_TA_MAP[matchKey] : null;
-
-  let candidates = _discoveryData;
-  if (relevantTAs && candidates.length > 0) {
-    const filtered = candidates.filter(o => relevantTAs.includes(o.therapeutic_area));
-    if (filtered.length >= 3) candidates = filtered;
-  }
-
-  const markets = candidates.length > 0
-    ? candidates.sort((a,b) => (b.sam_usd||0) - (a.sam_usd||0)).slice(0,3).map(o => ({
-        disease: o.disease, ta: o.therapeutic_area, score: o.score,
-        tam: o.sam_fmt || o.peak_revenue_fmt || '—',
-      }))
-    : _BUILDER_FALLBACK_MARKETS.filter(m => !relevantTAs || relevantTAs.includes(m.ta)).slice(0,3).map(m => ({
-        disease: m.disease, ta: m.ta, score: m.score, tam: m.sam || m.tam,
-      }));
-
   const profile = window._builderSelections;
+  const biology  = profile.q2 || '';
+  const patients = profile.q3 || '';
+  const stage    = profile.q4 || '';
+
+  // Score every disease by biology + patient + stage fit — SAM is only a scaling factor
+  let candidates = _discoveryData.filter(o => o && o.score);
+  if (candidates.length === 0) candidates = _BUILDER_FALLBACK_MARKETS.map(m => ({
+    disease: m.disease, therapeutic_area: m.ta, score: m.score,
+    sam_usd: m.sam_usd || 500_000_000, sam_fmt: m.sam, notes: '',
+    commercial_tractability: 'VIABLE',
+  }));
+
+  const scored = candidates.map(o => ({
+    ...o,
+    fit: _scoreDiseaseFit(o, biology, patients, stage),
+  }));
+
+  // Final rank = fit_score × SAM^0.25 (SAM scales up fit equally-good diseases, not overrides)
+  scored.sort((a, b) => {
+    const aFinal = a.fit * Math.pow(Math.max((a.sam_usd||0)/1e6, 1), 0.25);
+    const bFinal = b.fit * Math.pow(Math.max((b.sam_usd||0)/1e6, 1), 0.25);
+    return bFinal - aFinal;
+  });
+
+  const top3 = scored.slice(0, 3);
+  const markets = top3.map(o => ({
+    disease: o.disease, ta: o.therapeutic_area,
+    score: o.score, fit: Math.round(o.fit),
+    sam: o.sam_fmt || o.peak_revenue_fmt || '—',
+    sam_usd: o.sam_usd || 0,
+  }));
 
   try {
     const token = localStorage.getItem('pe_token');
@@ -4290,11 +4397,12 @@ async function generateIdeas() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
       body: JSON.stringify({
-        modality:      profile.q1,
-        stage:         profile.q2,
-        constraint:    profile.q3,
-        differentiator:profile.q4,
-        markets:       markets,
+        platform:      profile.q1,
+        biology:       profile.q2,
+        patients:      profile.q3,
+        stage:         profile.q4,
+        differentiator:profile.q5 || '',
+        markets,
       }),
     });
     if (!res.ok) throw new Error('HTTP ' + res.status);
@@ -4317,22 +4425,29 @@ function renderBuilderResults(apiData, markets, profile) {
 
   const html = `
     <div style="margin-bottom:16px">
-      <div style="font-family:var(--display);font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px">
-        Your matched opportunities
+      <div style="font-family:var(--display);font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px">Your matched opportunities</div>
+      <div style="font-size:12px;color:var(--text-3)">
+        Ranked by <strong>biology match</strong> (${(profile.q2||'').split(' ')[0]}) + <strong>patient fit</strong> (${(profile.q3||'').split('/')[0].split('(')[0].trim()}) + stage.
+        SAM used only as tiebreaker — not the primary sort.
       </div>
-      <div style="font-size:12px;color:var(--text-3)">Based on your ${profile.q1} background at ${profile.q2.split('—')[0].trim()} stage — ranked by fit with your profile.</div>
     </div>
 
-    ${ideas.map((idea, i) => `
+    ${ideas.map((idea, i) => {
+      const mkt = markets[i] || {};
+      const fitScore = mkt.fit || Math.round(idea.match_score || 75);
+      const fitPct   = Math.min(100, Math.round(fitScore));
+      const fitColor = fitPct >= 75 ? '#059669' : fitPct >= 50 ? '#0891b2' : '#d97706';
+      return `
     <div class="idea-card ${i===0?'idea-card-primary':''}">
-      ${i===0 ? '<div style="font-size:10px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">✨ Best match</div>' : ''}
+      ${i===0 ? '<div style="font-size:10px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">✨ Best biology + patient match</div>' : ''}
       <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:10px">
         <div>
           <div style="font-family:var(--display);font-size:14px;font-weight:700;color:var(--text);margin-bottom:2px">${idea.disease}</div>
-          <div style="font-size:11px;color:var(--text-3)">${idea.therapeutic_area?.replace(/_/g,' ')} · ${idea.tam || '—'} market</div>
+          <div style="font-size:11px;color:var(--text-3)">${(idea.therapeutic_area||mkt.ta||'').replace(/_/g,' ')} · SAM ${mkt.sam || idea.tam || '—'}</div>
         </div>
-        <div style="text-align:right">
-          <div style="font-size:18px;font-weight:700;color:var(--blue)">${Math.round(idea.match_score || 75)}<span style="font-size:11px;color:var(--text-3)">/100 fit</span></div>
+        <div style="text-align:right;min-width:80px">
+          <div style="font-size:18px;font-weight:700;color:${fitColor}">${fitPct}<span style="font-size:11px;color:var(--text-3)">/100</span></div>
+          <div style="font-size:9px;color:var(--text-4)">profile fit</div>
         </div>
       </div>
 
@@ -4357,8 +4472,8 @@ function renderBuilderResults(apiData, markets, profile) {
           📋 Copy idea
         </button>
       </div>
-    </div>
-    `).join('')}
+    </div>`;
+    }).join('')}
 
     <div style="margin-top:16px;padding:14px 16px;background:var(--bg-2);border:1px solid var(--border);border-radius:4px;font-size:12px;color:var(--text-3)">
       💡 <strong style="color:var(--text)">Next step:</strong> Click "Analyze in Market Analysis" to generate a full TAM derivation, regulatory pathway, and strategic playbook for your refined idea.
@@ -4369,11 +4484,11 @@ function renderBuilderResults(apiData, markets, profile) {
 }
 
 function _generateClientSideIdeas(markets, profile) {
-  // Client-side fallback when API unavailable — generates ideas from market data + profile answers
-  const modality = profile.q1 || 'intervention';
-  const differentiator = profile.q4 || 'novel approach';
-  const constraint = profile.q3 || '';
-  const stage = profile.q2 || '';
+  const modality      = profile.q1 || 'intervention';
+  const biology       = profile.q2 || 'targeting the underlying mechanism';
+  const patients      = profile.q3 || 'patients with unmet need';
+  const stage         = profile.q4 || '';
+  const differentiator = profile.q5 || profile.q4 || 'novel approach';
 
   const _FAST_PATH_MAP = {
     'Speed / regulatory path': 'Seek Breakthrough Therapy / QIDP designation early',
@@ -4388,8 +4503,7 @@ function _generateClientSideIdeas(markets, profile) {
     const disease = m.disease || 'target disease';
     const ta = (m.ta || 'therapeutic area').replace(/_/g,' ');
 
-    // Generate a plausible refined idea statement
-    const idea = `A ${modality.toLowerCase()} targeting ${disease} through ${differentiator.toLowerCase()}, designed for ${stage.split('—')[0].trim()} translation with a focus on ${constraint.split('—')[0].trim().toLowerCase()}.`;
+    const idea = `A ${modality.toLowerCase()} targeting ${biology.split('(')[0].trim().toLowerCase()} in ${disease} — addressing ${patients.split('(')[0].trim().toLowerCase()} with ${differentiator.toLowerCase()}.`;
 
     return {
       disease,
