@@ -4443,7 +4443,7 @@ async function loadDiscovery() {
   // User-scoped localStorage cache (6hr TTL)
   const CACHE_TTL = 6 * 60 * 60 * 1000;
   const userKey   = currentUser?.email || 'anon';
-  const CACHE_KEY = `medlevate_discovery_v4_${userKey}`;
+  const CACHE_KEY = `medlevate_discovery_v5_${userKey}`; // v5: ASD/22q11/AATD data corrections
   try {
     const cached = localStorage.getItem(CACHE_KEY);
     if (cached) {
