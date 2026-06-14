@@ -554,6 +554,7 @@
   <button class="ntab on" onclick="tab('pi')">Market Analysis</button>
   <button class="ntab" id="discovery-tab" onclick="tab('discovery')" style="display:inline-block">Market Discovery</button>
   <button class="ntab" id="reports-tab" onclick="tab('reports')" style="display:none">My Reports</button>
+  <button class="ntab" onclick="tab('tto')">TTO Dashboard</button>
   <button class="ntab" onclick="tab('pricing')">Pricing</button>
 </nav>
 
@@ -789,6 +790,30 @@
     <div class="ch"><span class="ct">Saved Reports</span><span class="cb-badge" id="reports-count">-</span></div>
     <div id="reports-list" class="cb">
       <div class="empty"><div class="empty-icon">📋</div><div class="empty-t">No saved reports yet</div><div class="empty-s">Run an analysis and click Save Report to save it here.</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- TTO REVIEW DASHBOARD (Sprint 5) -->
+<div id="t-tto" style="display:none;padding:24px 28px">
+  <div class="ph"><div class="ph-title">TTO Review Dashboard</div><div class="ph-desc">Triage queue for invention disclosures — scores, status, reviewer, and next action</div></div>
+  <div class="card">
+    <div class="ch" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+      <span class="ct">Invention Queue</span>
+      <span style="display:flex;gap:6px;align-items:center">
+        <select id="tto-status-filter" onchange="loadTTODashboard()" style="font-size:11px;padding:3px 6px;background:var(--bg-2);color:var(--text-2);border:1px solid var(--border);border-radius:3px">
+          <option value="">All statuses</option>
+          <option value="intake">Intake</option>
+          <option value="triaged">Triaged</option>
+          <option value="under_review">Under review</option>
+          <option value="decided">Decided</option>
+          <option value="deprioritized">Deprioritized</option>
+        </select>
+        <button onclick="loadTTODashboard()" style="font-size:11px;padding:4px 10px;border:1px solid var(--border);background:var(--bg-2);color:var(--text-2);border-radius:3px;cursor:pointer">↻ Refresh</button>
+      </span>
+    </div>
+    <div id="tto-queue" class="cb">
+      <div class="empty"><div class="empty-icon">🗂</div><div class="empty-t">Loading queue…</div></div>
     </div>
   </div>
 </div>
@@ -1155,12 +1180,12 @@ function tab(name) {
   // }
 
   // Use original tab switching with t- prefix IDs
-  ['pi','pricing','reports','profile','watchlists','trials','portfolio','grant','discovery','timeline','index','needs'].forEach(t => {
+  ['pi','pricing','reports','profile','watchlists','trials','portfolio','grant','discovery','timeline','index','needs','tto'].forEach(t => {
     const el = document.getElementById('t-'+t);
     if (el) el.style.display = t === name ? '' : 'none';
   });
   document.querySelectorAll('.ntab').forEach((el,i) => {
-    el.classList.toggle('on', ['pi','discovery','reports','pricing'][i] === name);
+    el.classList.toggle('on', ['pi','discovery','reports','tto','pricing'][i] === name);
   });
 
   // Lazy-load tab content
@@ -1179,6 +1204,7 @@ function tab(name) {
   if (name === 'reports')    loadReports();
   if (name === 'profile')    loadProfile();
   if (name === 'watchlists') { loadWatchlists(); loadGrantDeadlines(); }
+  if (name === 'tto')        loadTTODashboard();
   if (name === 'portfolio')  initPortfolio();
   if (name === 'timeline') {
     const inp = document.getElementById('tl-start');
@@ -1310,7 +1336,88 @@ async function runAnalysis() {
   } finally { btn.disabled = false; btn.textContent = 'Run Analysis'; }
 }
 
+// ── TTO Review Dashboard (Sprint 5) ──────────────────────────────────────────
+async function loadTTODashboard() {
+  const el = document.getElementById('tto-queue');
+  if (!el) return;
+  const status = (document.getElementById('tto-status-filter') || {}).value || '';
+  el.innerHTML = '<div class="empty"><div class="empty-icon">🗂</div><div class="empty-t">Loading queue…</div></div>';
+  try {
+    const res = await fetch(`${API}/alignment/review-queue${status ? '?status=' + status : ''}`);
+    const data = await res.json();
+    renderTTOQueue(data.inventions || []);
+  } catch (e) {
+    el.innerHTML = '<div class="empty"><div class="empty-icon">⚠</div><div class="empty-t">Could not load the review queue.</div></div>';
+  }
+}
+
+function _ttoPct(v) { return v == null ? '—' : Math.round(v * 100) + '%'; }
+function _ttoColor(v) { return v == null ? 'var(--text-3)' : (v >= 0.66 ? 'var(--green)' : (v >= 0.45 ? '#d97706' : '#dc2626')); }
+function _ttoUSD(v) { if (!v) return '—'; return v >= 1e9 ? '$' + (v/1e9).toFixed(1) + 'B' : (v >= 1e6 ? '$' + (v/1e6).toFixed(0) + 'M' : '$' + (v/1e3).toFixed(0) + 'K'); }
+
+function renderTTOQueue(items) {
+  const el = document.getElementById('tto-queue');
+  if (!items.length) {
+    el.innerHTML = '<div class="empty"><div class="empty-icon">🗂</div><div class="empty-t">No inventions in the queue yet</div><div class="empty-s">Generated reports appear here automatically for triage.</div></div>';
+    return;
+  }
+  const statuses = ['intake','triaged','under_review','decided','deprioritized'];
+  let h = '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:11px">';
+  h += '<thead><tr style="text-align:left;color:var(--text-3);border-bottom:1px solid var(--border)">'
+    + ['Invention','Priority','Market','Reg.','Whitespace','Funding','Licensing','Status','Reviewer','Next action'].map(c=>`<th style="padding:6px 8px;font-weight:700;white-space:nowrap">${c}</th>`).join('')
+    + '</tr></thead><tbody>';
+  items.forEach(it => {
+    const cell = v => `<td style="padding:6px 8px;color:${_ttoColor(v)};font-weight:700">${_ttoPct(v)}</td>`;
+    const opts = statuses.map(s=>`<option value="${s}"${s===it.status?' selected':''}>${s.replace('_',' ')}</option>`).join('');
+    h += `<tr style="border-bottom:1px solid var(--border);vertical-align:top">
+      <td style="padding:6px 8px;max-width:220px">
+        <div style="font-weight:600;color:var(--text-2)">${(it.idea||'').slice(0,70)}</div>
+        <div style="color:var(--text-4);font-size:10px">${it.disease_name||''} · ${it.modality||''}</div>
+      </td>
+      <td style="padding:6px 8px;font-weight:800;color:${_ttoColor(it.priority_score)}">${_ttoPct(it.priority_score)}</td>
+      <td style="padding:6px 8px;color:var(--text-2)">${_ttoUSD(it.market_opportunity_usd)}</td>
+      ${cell(it.regulatory_feasibility)}${cell(it.competitive_whitespace)}${cell(it.funding_fit)}${cell(it.licensing_fit)}
+      <td style="padding:6px 8px"><select onchange="ttoUpdate('${it.report_id}','status',this.value)" style="font-size:10px;padding:2px 4px;background:var(--bg-2);color:var(--text-2);border:1px solid var(--border);border-radius:3px">${opts}</select></td>
+      <td style="padding:6px 8px"><input value="${it.assigned_reviewer||''}" placeholder="assign…" onchange="ttoUpdate('${it.report_id}','assigned_reviewer',this.value)" style="width:80px;font-size:10px;padding:2px 4px;background:var(--bg-2);color:var(--text-2);border:1px solid var(--border);border-radius:3px"></td>
+      <td style="padding:6px 8px;max-width:200px"><input value="${(it.next_action||'').replace(/"/g,'&quot;')}" placeholder="next action…" onchange="ttoUpdate('${it.report_id}','next_action',this.value)" style="width:180px;font-size:10px;padding:2px 4px;background:var(--bg-2);color:var(--text-2);border:1px solid var(--border);border-radius:3px"></td>
+    </tr>`;
+  });
+  h += '</tbody></table></div><div style="font-size:10px;color:var(--text-4);margin-top:8px">Reg. = regulatory feasibility · Whitespace = competitive whitespace · Funding = SBIR/STTR fit · Licensing = licensing likelihood. Changes save automatically.</div>';
+  el.innerHTML = h;
+}
+
+async function ttoUpdate(reportId, field, value) {
+  try {
+    const body = { report_id: reportId };
+    body[field] = value;
+    await fetch(`${API}/alignment/review-update`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+  } catch (e) { /* non-fatal */ }
+}
+
+// Outcome/feedback capture (P11) — posts what the user did with the report.
+async function submitMedlevateFeedback(action, outcome) {
+  const rid = window._currentReportId;
+  const statusEl = document.getElementById('feedback-status');
+  if (!rid) { if (statusEl) statusEl.textContent = 'No report id available.'; return; }
+  try {
+    const body = { report_id: rid };
+    if (action) body.user_action = action;
+    if (outcome) body.outcome = outcome;
+    const res = await fetch(`${API}/alignment/feedback`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    if (statusEl) statusEl.textContent = res.ok ? '✓ Thanks — recorded.' : 'Could not record feedback.';
+  } catch (e) {
+    if (statusEl) statusEl.textContent = 'Could not record feedback.';
+  }
+}
+
 function renderPIReport(r) {
+  window._currentReportId = r.report_id || null;
   document.getElementById('sig-badge').textContent = fmt(r.signals_searched) + ' signals searched';
 
   let html = '<div class="sg">';
@@ -1331,13 +1438,149 @@ function renderPIReport(r) {
       </div>`
     : '';
 
+  // TRUST LAYER scorecard (P2) — claim-level citation support, contradictions, abstention
+  const _trust = r.trust || {};
+  const _tpct  = v => (v == null ? '—' : Math.round(v * 100) + '%');
+  const _trustColor = {HIGH:'#059669', MODERATE:'#d97706', LOW:'#dc2626', INSUFFICIENT_EVIDENCE:'#6b7280'}[_trust.trust_grade] || '#6366f1';
+  const _trustBadge = _trust.trust_grade ? `
+    <div style="margin-top:8px;padding:9px 12px;background:${_trustColor}0d;border:1px solid ${_trustColor}33;border-radius:3px">
+      <div style="display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap">
+        <span style="font-size:11px;font-weight:700;color:${_trustColor}">🛡 Trust Layer — ${(_trust.trust_grade||'').replace(/_/g,' ')}</span>
+        <span style="display:flex;gap:14px;font-size:10px;color:var(--text-2)">
+          <span><strong style="color:${_trustColor}">${_tpct(_trust.citation_support_score)}</strong> claims sourced</span>
+          <span><strong>${_tpct(_trust.retrieval_coverage)}</strong> coverage</span>
+          <span><strong>${_trust.unsupported_claim_count||0}</strong> unsupported</span>
+          <span><strong>${_trust.contradiction_count||0}</strong> conflicts</span>
+        </span>
+      </div>
+      ${_trust.summary ? `<div style="font-size:11px;color:var(--text-2);margin-top:5px;line-height:1.6">${_trust.summary}</div>` : ''}
+      ${_trust.abstention_required
+        ? `<div style="font-size:10px;color:#dc2626;font-weight:700;margin-top:5px">⚠ INSUFFICIENT EVIDENCE — human review required before relying on this report.</div>`
+        : (_trust.human_review_recommended ? `<div style="font-size:10px;color:#d97706;font-weight:700;margin-top:5px">⚠ Human review recommended.</div>` : '')}
+      ${(_trust.unsupported_claims||[]).length ? `<details style="margin-top:6px"><summary style="font-size:10px;color:var(--text-3);cursor:pointer">View ${_trust.unsupported_claims.length} unsupported claim(s)</summary><ul style="margin:4px 0 0 16px;padding:0;font-size:10px;color:var(--text-3);line-height:1.6">${_trust.unsupported_claims.map(c=>`<li>${c}</li>`).join('')}</ul></details>` : ''}
+      ${(_trust.contradictions||[]).length ? `<details style="margin-top:4px"><summary style="font-size:10px;color:#d97706;cursor:pointer">View ${_trust.contradictions.length} contradiction(s)</summary><ul style="margin:4px 0 0 16px;padding:0;font-size:10px;color:var(--text-3);line-height:1.6">${_trust.contradictions.map(c=>`<li>${c.explanation||''} <em style="color:var(--text-4)">(${c.claim_a||''} ↔ ${c.claim_b_or_evidence||''})</em></li>`).join('')}</ul></details>` : ''}
+    </div>` : '';
+
   html += `
     <div style="border-left:4px solid var(--blue);padding:16px 20px;background:var(--bg-2);margin-bottom:28px">
       <div style="font-family:var(--display);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--blue);margin-bottom:6px">Medical Market Intelligence Report</div>
       <div style="font-family:var(--display);font-size:20px;font-weight:700;color:var(--text);margin-bottom:8px">${r.disease_intelligence ? r.disease_intelligence.condition : 'Analysis'}</div>
       <div style="font-family:var(--body);font-size:13px;color:var(--text-2);line-height:1.7">${r.executive_summary}</div>
       ${_valBadge}
+      ${_trustBadge}
     </div>`;
+
+  // COMMERCIALIZATION SCORECARD (P5) — probabilistic decision engine
+  const _cs = r.commercialization_scores;
+  if (_cs && _cs.commercialization_scores) {
+    const sc = _cs.commercialization_scores;
+    const _scoreColor = v => v >= 0.66 ? 'var(--green)' : (v >= 0.45 ? '#d97706' : '#dc2626');
+    const _scoreLabels = {
+      patentability:'Patentability', licensing_likelihood:'Licensing', spinout_likelihood:'Spinout',
+      sbir_fit:'SBIR/STTR Fit', investor_attractiveness:'Investor Appeal', regulatory_feasibility:'Regulatory Feasibility',
+      reimbursement_feasibility:'Reimbursement', acquisition_potential:'Acquisition Potential', competitive_whitespace:'Competitive Whitespace'
+    };
+    const overall = sc.overall_priority;
+    let bars = '';
+    Object.keys(_scoreLabels).forEach(k => {
+      if (sc[k] == null) return;
+      const pct = Math.round(sc[k] * 100);
+      bars += `<div style="margin-bottom:7px">
+        <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-2);margin-bottom:2px">
+          <span>${_scoreLabels[k]}</span><span style="font-weight:700;color:${_scoreColor(sc[k])}">${pct}%</span>
+        </div>
+        <div style="height:5px;background:var(--border);border-radius:3px;overflow:hidden">
+          <div style="height:100%;width:${pct}%;background:${_scoreColor(sc[k])}"></div>
+        </div>
+      </div>`;
+    });
+    html += `<div style="border:1px solid var(--border);border-radius:4px;padding:18px 20px;margin-bottom:28px;background:var(--bg)">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:14px">
+        <div style="font-family:var(--display);font-size:13px;font-weight:700;color:var(--text);text-transform:uppercase;letter-spacing:.05em">Commercialization Scorecard</div>
+        <div style="text-align:right">
+          <div style="font-size:9px;color:var(--text-3);text-transform:uppercase;letter-spacing:.05em">Overall Priority</div>
+          <div style="font-family:var(--display);font-size:24px;font-weight:800;color:${_scoreColor(overall)}">${Math.round(overall*100)}%</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 24px">${bars}</div>
+      ${(_cs.top_drivers||[]).length ? `<div style="margin-top:14px"><div style="font-size:10px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px">Key Drivers</div><div style="display:flex;flex-wrap:wrap;gap:6px">${_cs.top_drivers.map(d=>`<span style="font-size:10px;background:var(--bg-2);border:1px solid var(--border);padding:2px 8px;border-radius:10px;color:var(--text-2)">${d}</span>`).join('')}</div></div>` : ''}
+      ${_cs.recommendation ? `<div class="callout-box callout-blue" style="margin-top:14px"><div class="callout-label">→ Recommended Next Action</div><div class="callout-text">${_cs.recommendation}</div></div>` : ''}
+      <div style="font-size:9px;color:var(--text-4);margin-top:10px">Deterministic rules + calibrated tables (PTRS approval odds, competitive moat, IP whitespace, TRL, SBIR readiness, market size). Not investment advice.</div>
+    </div>`;
+  }
+
+  // PORTFOLIO BENCHMARK (P7) — institution-level percentile + comparables
+  const _pb = r.portfolio_benchmark;
+  if (_pb && (_pb.portfolio_percentile != null || (_pb.similar_internal_projects||[]).length)) {
+    const pct = _pb.portfolio_percentile;
+    const pctColor = pct == null ? 'var(--text-3)' : (pct >= 60 ? 'var(--green)' : (pct >= 40 ? '#d97706' : '#dc2626'));
+    let cols = '';
+    if ((_pb.why_this_is_above_average||[]).length) {
+      cols += `<div><div style="font-size:10px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px">Why above average</div><ul style="margin:0 0 0 16px;padding:0;font-size:11px;color:var(--text-2);line-height:1.6">${_pb.why_this_is_above_average.map(w=>`<li>${w}</li>`).join('')}</ul></div>`;
+    }
+    if ((_pb.why_this_may_fail||[]).length) {
+      cols += `<div><div style="font-size:10px;font-weight:700;color:#dc2626;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px">Why this may fail</div><ul style="margin:0 0 0 16px;padding:0;font-size:11px;color:var(--text-2);line-height:1.6">${_pb.why_this_may_fail.map(w=>`<li>${w}</li>`).join('')}</ul></div>`;
+    }
+    let comps = '';
+    (_pb.similar_internal_projects||[]).slice(0,6).forEach(p => {
+      comps += `<div style="display:flex;justify-content:space-between;gap:8px;padding:5px 0;border-bottom:1px solid var(--border);font-size:11px">
+        <span style="color:var(--text-2)">${(p.idea||'').slice(0,60)}</span>
+        <span style="color:var(--text-3);white-space:nowrap">${p.overall_priority!=null?Math.round(p.overall_priority*100)+'%':'—'} · ${p.tam||'—'}</span></div>`;
+    });
+    html += `<div style="border:1px solid var(--border);border-radius:4px;padding:16px 20px;margin-bottom:28px;background:var(--bg)">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:12px">
+        <div style="font-family:var(--display);font-size:13px;font-weight:700;color:var(--text);text-transform:uppercase;letter-spacing:.05em">Portfolio Rank</div>
+        <div style="text-align:right"><div style="font-size:9px;color:var(--text-3);text-transform:uppercase;letter-spacing:.05em">Percentile vs ${_pb.peer_count||0} prior disclosures</div>
+        <div style="font-family:var(--display);font-size:24px;font-weight:800;color:${pctColor}">${pct==null?'N/A':'P'+pct}</div></div>
+      </div>
+      ${cols ? `<div style="display:grid;grid-template-columns:1fr 1fr;gap:0 24px;margin-bottom:${comps?'14px':'0'}">${cols}</div>` : ''}
+      ${comps ? `<div><div style="font-size:10px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">Comparable Internal Opportunities</div>${comps}</div>` : ''}
+      ${_pb.portfolio_percentile==null && !comps ? `<div style="font-size:11px;color:var(--text-3)">No prior comparable disclosures yet — this is the first in its area on file.</div>` : ''}
+    </div>`;
+  }
+
+  // EXPERT PANEL VISIBILITY (Sprint 2) — show the 3 independent MoE sub-analyses
+  if (r.expert_panel && (r.expert_panel.panels||[]).length) {
+    html += `<div style="margin-bottom:28px">
+      <div style="font-family:var(--display);font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--text-3);margin-bottom:4px">Expert Panel — Independent Mixture-of-Experts Analysis</div>
+      <div style="font-size:11px;color:var(--text-3);margin-bottom:10px">Three specialist models each ran a separate, independently-grounded analysis before the report was synthesized.</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1px;background:var(--border)">`;
+    r.expert_panel.panels.forEach(p => {
+      let fields = '';
+      Object.keys(p.fields||{}).forEach(k => { if (p.fields[k]) fields += `<div style="font-size:10px;color:var(--text-2);margin-top:3px"><span style="color:var(--text-3)">${k}:</span> ${p.fields[k]}</div>`; });
+      const risks = (p.risks||[]).filter(Boolean);
+      html += `<div style="background:var(--bg-2);padding:12px 14px">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;gap:6px">
+          <span style="font-size:11px;font-weight:700;color:var(--text)">${p.icon||''} ${p.name}</span>
+          ${p.confidence!=null?`<span style="font-size:9px;color:var(--text-4)">conf ${Math.round(p.confidence*100)}%</span>`:''}
+        </div>
+        <div style="font-size:9px;color:var(--text-3);text-transform:uppercase;letter-spacing:.04em;margin-top:6px">${p.headline_metric||''}</div>
+        <div style="font-family:var(--display);font-size:18px;font-weight:800;color:var(--blue)">${p.headline_value||''}</div>
+        ${fields}
+        ${risks.length?`<div style="font-size:10px;color:#d97706;margin-top:6px"><strong>Risk:</strong> ${risks.join('; ')}</div>`:''}
+      </div>`;
+    });
+    html += `</div></div>`;
+  }
+
+  // COST-AWARE ROUTING (P3) — show the specialist routing + model-tier decision
+  if (r.routing_plan && r.routing_plan.model_plan) {
+    const rpn = r.routing_plan, mp = rpn.model_plan, tp = rpn.task_profile || {}, est = rpn.estimate || {};
+    const tierColor = est.cost_tier === 'premium' ? '#7c3aed' : 'var(--green)';
+    const chip = (t) => `<span style="font-size:10px;background:var(--bg);border:1px solid var(--border);padding:1px 7px;border-radius:10px;color:var(--text-2)">${t}</span>`;
+    html += `<div style="border:1px solid var(--border);border-left:3px solid ${tierColor};border-radius:4px;padding:14px 16px;margin-bottom:28px;background:var(--bg-2)">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:8px">
+        <span style="font-size:11px;font-weight:700;color:var(--text-2);text-transform:uppercase;letter-spacing:.05em">⚙ Cost-Aware Routing</span>
+        <span style="font-size:10px;color:var(--text-3)">complexity <strong style="color:var(--text-2)">${Math.round((rpn.complexity_score||0)*100)}%</strong> · <strong style="color:${tierColor}">${(est.cost_tier||'').toUpperCase()}</strong> tier · ~${est.estimated_latency_s||'?'}s</span>
+      </div>
+      <div style="font-size:11px;color:var(--text-2);margin-bottom:6px"><strong>Synthesis model:</strong> ${mp.synthesis_model} — ${mp.escalation_reason||''}</div>
+      <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px">
+        ${chip(tp.modality||'')}${chip('reg risk: '+(tp.regulatory_risk||''))}${chip('evidence: '+(tp.evidence_availability||''))}${chip('novelty: '+(tp.novelty||''))}
+      </div>
+      ${(rpn.source_plan&&rpn.source_plan.prioritized_sources)?`<div style="font-size:10px;color:var(--text-3)"><span style="text-transform:uppercase;letter-spacing:.04em;font-weight:700">Source plan:</span> ${rpn.source_plan.prioritized_sources.join(' · ')}${rpn.source_plan.escalate_to_slow_tiers?' <span style="color:#d97706">(escalating to slower tiers — thin evidence)</span>':''}</div>`:''}
+      <div style="font-size:9px;color:var(--text-4);margin-top:8px">Small models handle routing, extraction, the 3-panel analysis, and verification; the frontier model is used only when complexity or uncertainty is high.</div>
+    </div>`;
+  }
 
   // CHAPTER 1: THE OPPORTUNITY
   if (r.disease_intelligence) {
@@ -1454,6 +1697,50 @@ function renderPIReport(r) {
     html += '</div>';
     html += `<div class="ms-note">Methodology: ${ms.methodology_note}</div>`;
 
+    // PROVENANCE (P1): conservative/base/aggressive scenarios + typed, source-backed waterfall
+    const _prov = r.market_sizing_provenance;
+    if (_prov) {
+      const _wval = (v, unit) => {
+        if (v == null) return '—';
+        if ((unit||'').toLowerCase() === 'usd') return fmtUSD(v);
+        if (Math.abs(v) < 1) return (v*100).toFixed(0) + '%';
+        return fmt(v);
+      };
+      if (_prov.scenarios && _prov.scenarios.length) {
+        html += `<div style="margin-top:20px"><div class="ms-total-lbl" style="margin-bottom:8px">Scenario Analysis — adoption-adjusted (TAM is fixed; SAM/SOM vary)</div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border)">`;
+        _prov.scenarios.forEach(sc => {
+          const isBase = sc.scenario === 'base';
+          html += `<div style="background:var(--bg-2);padding:12px 14px;${isBase?'box-shadow:inset 0 0 0 2px var(--green)':''}">
+            <div style="font-family:var(--display);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:${isBase?'var(--green)':'var(--text-3)'}">${sc.scenario}${isBase?' ·  base case':''}</div>
+            <div style="font-family:var(--display);font-size:19px;font-weight:800;color:var(--text);margin-top:4px">${sc.som_fmt}</div>
+            <div style="font-size:10px;color:var(--text-3)">SOM · SAM ${sc.sam_fmt} · TAM ${sc.tam_fmt}</div>
+            <div style="font-size:10px;color:var(--text-2);margin-top:6px;line-height:1.5">${sc.narrative}</div>
+          </div>`;
+        });
+        html += `</div></div>`;
+      }
+      if (_prov.waterfall && _prov.waterfall.length) {
+        html += `<div style="margin-top:16px"><div class="ms-total-lbl" style="margin-bottom:8px">Provenance Waterfall — every input typed, scored, and source-linked</div><div class="ms-steps">`;
+        _prov.waterfall.forEach(w => {
+          const rc = {TAM:'#6366f1', SAM:'#0891b2', SOM:'#059669'}[w.used_in_formula] || '#6b7280';
+          const src = w.source_url
+            ? `<a href="${w.source_url}" target="_blank">${w.source_name}</a>`
+            : `<span style="color:var(--text-4)">${w.source_name || 'No source'}</span>`;
+          const conf = (w.confidence == null) ? '' : ` · <span style="color:var(--text-4)">confidence ${Math.round(w.confidence*100)}%</span>`;
+          html += `<div class="ms-step"${w.is_aggregate?' style="background:var(--bg-2)"':''}>
+            <div>
+              <div class="ms-step-label">${w.label} <span style="background:${rc}1a;color:${rc};font-size:9px;font-weight:700;padding:1px 5px;border-radius:2px;margin-left:4px">${w.used_in_formula}</span></div>
+              <div class="ms-step-source">Source: ${src}${conf}</div>
+            </div>
+            <div class="ms-step-value">${_wval(w.value, w.unit)}</div>
+            <div class="ms-step-unit">${w.unit || ''}</div>
+          </div>`;
+        });
+        html += `</div></div>`;
+      }
+    }
+
     // Anchor for the derivation panel — inserted here by _renderDerivationPanel
     html += `<div id="derivation-anchor" style="margin-top:4px"></div>`;
 
@@ -1493,6 +1780,23 @@ function renderPIReport(r) {
         <div style="font-family:var(--display);font-size:14px;font-weight:700;color:var(--text)">${rp.total_cost_estimate}</div>
       </div>
     </div>`;
+
+    // REGULATORY DECISION TREE (Sprint 2) — pathway → designations → trial phases
+    {
+      const _phases = rp.clinical_trial_requirements || [];
+      const _branch = (label, sub, color) => `<div style="display:flex;align-items:flex-start;gap:8px;margin-top:6px">
+        <div style="width:14px;flex-shrink:0;color:var(--text-4);font-family:var(--display)">└─</div>
+        <div style="flex:1"><span style="font-size:11px;font-weight:700;color:${color||'var(--text-2)'}">${label}</span>${sub?`<span style="font-size:10px;color:var(--text-3)"> — ${sub}</span>`:''}</div>
+      </div>`;
+      let tree = `<div style="border:1px solid var(--border);border-left:3px solid var(--blue);padding:12px 14px;margin-bottom:20px;background:var(--bg-2)">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-3);margin-bottom:6px">Regulatory Decision Tree</div>
+        <div style="font-size:12px;font-weight:700;color:var(--text)">◆ ${rp.recommended_pathway}</div>`;
+      (rp.designations||[]).forEach(d => { tree += _branch(d.name, (d.priority||'')+(d.timeline?` · ${d.timeline}`:''), 'var(--green)'); });
+      _phases.forEach(ph => { tree += _branch(ph.phase, [ph.patient_count, ph.duration, ph.estimated_cost].filter(Boolean).join(' · '), 'var(--blue)'); });
+      tree += _branch('FDA decision', `${rp.total_timeline_estimate||''}${rp.total_cost_estimate?` · ${rp.total_cost_estimate}`:''}`, 'var(--text)');
+      tree += `</div>`;
+      html += tree;
+    }
 
     // Designations
     if (rp.designations && rp.designations.length) {
@@ -1731,6 +2035,43 @@ function renderPIReport(r) {
   // Renumber sequentially
   allSources.forEach(function(s, i) { s.number = i + 1; });
 
+  // SOURCE GRAPH (Sprint 2) — evidence grouped by source category
+  if (allSources.length) {
+    var _catOf = function(url) {
+      var u = (url || '').toLowerCase();
+      if (/fda\.gov|accessdata\.fda|federalregister/.test(u)) return 'Regulatory (FDA)';
+      if (/clinicaltrials\.gov/.test(u)) return 'Clinical Trials';
+      if (/cdc\.gov|seer\.cancer|who\.int|ahrq|census\.gov/.test(u)) return 'Epidemiology';
+      if (/pubmed|ncbi\.nlm|doi\.org|nejm|thelancet|jamanetwork|semanticscholar|biorxiv|medrxiv|openalex/.test(u)) return 'Literature';
+      if (/cms\.gov|medicaid|medicare/.test(u)) return 'Reimbursement (CMS)';
+      if (/sec\.gov|reporter\.nih|grants\.gov|usaspending|nih\.gov/.test(u)) return 'Funding / Financial';
+      if (/patents\.google|uspto|lens\.org/.test(u)) return 'Patents / IP';
+      return 'Other';
+    };
+    var _catColor = {
+      'Regulatory (FDA)':'#dc2626','Clinical Trials':'#0891b2','Epidemiology':'#059669',
+      'Literature':'#6366f1','Reimbursement (CMS)':'#d97706','Funding / Financial':'#0d9488',
+      'Patents / IP':'#7c3aed','Other':'#6b7280'
+    };
+    var _groups = {};
+    allSources.forEach(function(s) { var c = _catOf(s.url); (_groups[c] = _groups[c] || []).push(s); });
+    html += '<div class="sdiv"><span class="sdiv-lbl">Source Graph — evidence by category</span><div class="sdiv-line"></div></div>';
+    html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;margin-bottom:16px">';
+    Object.keys(_groups).sort(function(a,b){return _groups[b].length-_groups[a].length;}).forEach(function(cat) {
+      var col = _catColor[cat] || 'var(--blue)';
+      var items = _groups[cat].slice(0,4).map(function(s) {
+        var label = '• ' + (s.name || '').slice(0,42);
+        return s.url ? '<a href="' + s.url + '" target="_blank" style="color:var(--text-2);text-decoration:none;display:block">' + label + '</a>' : '<span style="display:block">' + label + '</span>';
+      }).join('');
+      var more = _groups[cat].length > 4 ? '<span style="color:var(--text-4)">+' + (_groups[cat].length-4) + ' more</span>' : '';
+      html += '<div style="border:1px solid var(--border);border-top:3px solid ' + col + ';padding:10px 12px;background:var(--bg-2)">'
+        + '<div style="font-size:11px;font-weight:700;color:' + col + '">' + cat + '</div>'
+        + '<div style="font-family:var(--display);font-size:18px;font-weight:800;color:var(--text)">' + _groups[cat].length + '</div>'
+        + '<div style="font-size:10px;color:var(--text-3);line-height:1.6;margin-top:4px">' + items + more + '</div></div>';
+    });
+    html += '</div>';
+  }
+
   if (allSources.length) {
     html += '<div class="sdiv"><span class="sdiv-lbl">Sources & Citations (' + allSources.length + ')</span><div class="sdiv-line"></div></div>';
     html += '<div style="background:var(--bg-3);border:1px solid var(--border);padding:14px 16px;margin-bottom:16px">';
@@ -1760,6 +2101,25 @@ function renderPIReport(r) {
         </div>
       </div>
     </div>`;
+
+  // OUTCOME / FEEDBACK CAPTURE (P11) — close the loop on what the TTO/PI decided
+  if (r.report_id) {
+    const _btn = 'font-size:11px;padding:4px 10px;border:1px solid var(--border);background:var(--bg-2);color:var(--text-2);border-radius:3px;cursor:pointer';
+    html += `<div style="border:1px dashed var(--border);border-radius:4px;padding:14px 16px;margin:20px 0;background:var(--bg-2)">
+      <div style="font-size:11px;font-weight:700;color:var(--text-2);margin-bottom:8px">Was the recommendation useful? What did you decide?</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center">
+        <button style="${_btn}" onclick="submitMedlevateFeedback('accepted',null)">👍 Accepted</button>
+        <button style="${_btn}" onclick="submitMedlevateFeedback('rejected',null)">👎 Rejected</button>
+        <span style="width:1px;height:18px;background:var(--border);margin:0 4px"></span>
+        <button style="${_btn}" onclick="submitMedlevateFeedback(null,'patented')">Patented</button>
+        <button style="${_btn}" onclick="submitMedlevateFeedback(null,'licensed')">Licensed</button>
+        <button style="${_btn}" onclick="submitMedlevateFeedback(null,'grant_funded')">Grant funded</button>
+        <button style="${_btn}" onclick="submitMedlevateFeedback(null,'spun_out')">Spun out</button>
+        <button style="${_btn}" onclick="submitMedlevateFeedback(null,'deprioritized')">Deprioritized</button>
+        <span id="feedback-status" style="font-size:11px;color:var(--green);margin-left:6px"></span>
+      </div>
+    </div>`;
+  }
 
   html += '<div class="rmeta">Generated ' + new Date(r.generated_at).toLocaleString() + ' · ' + fmt(r.signals_searched) + ' signals searched · Model v' + r.model_version + '</div>';
   html += '</div>';
