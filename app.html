@@ -2567,11 +2567,16 @@ async function _loadCompetitiveSweep(disease, ta, tickInterval, bar) {
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
     const panel = document.getElementById('comp-sweep-panel');
-    if (panel) panel.outerHTML = renderCompetitiveLandscape(data);
+    if (!panel) return;
+    if (data && data.available === false) {
+      panel.innerHTML = `<div style="font-size:12px;color:var(--text-3)">${data.note || 'Live competitor sweep unavailable — see the competitive pipeline in the Opportunity section above.'}</div>`;
+    } else {
+      panel.outerHTML = renderCompetitiveLandscape(data);
+    }
   } catch(e) {
     clearInterval(tickInterval);
     const panel = document.getElementById('comp-sweep-panel');
-    if (panel) panel.innerHTML = `<div style="font-size:12px;color:var(--text-3)">Competitive sweep unavailable: ${e.message}</div>`;
+    if (panel) panel.innerHTML = `<div style="font-size:12px;color:var(--text-3)">Live competitor sweep unavailable — see the competitive pipeline summarized in the Opportunity section above.</div>`;
   }
 }
 
