@@ -1349,7 +1349,7 @@ async function runAnalysis() {
 async function _pollReport(jobId) {
   if (!jobId) throw new Error('No job id returned');
   const startedAt = Date.now();
-  const MAX_MS = 5 * 60 * 1000;   // give up after 5 minutes
+  const MAX_MS = 8 * 60 * 1000;   // give up after 8 minutes (covers verification + self-correction)
   const token = localStorage.getItem('pe_token');
   while (true) {
     await new Promise(r => setTimeout(r, 3000));
