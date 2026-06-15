@@ -1474,27 +1474,22 @@ function renderPIReport(r) {
       </div>`
     : '';
 
-  // TRUST LAYER scorecard (P2) — claim-level citation support, contradictions, abstention
+  // SOURCE COVERAGE (P2) — transparency, not a verdict. Show how many factual
+  // claims link to a retrieved source, and list the ones that don't so the PI can
+  // judge them. No opaque HIGH/MODERATE/LOW grade.
   const _trust = r.trust || {};
   const _tpct  = v => (v == null ? '—' : Math.round(v * 100) + '%');
-  const _trustColor = {HIGH:'#059669', MODERATE:'#d97706', LOW:'#dc2626', INSUFFICIENT_EVIDENCE:'#6b7280'}[_trust.trust_grade] || '#6366f1';
-  const _trustBadge = _trust.trust_grade ? `
-    <div style="margin-top:8px;padding:9px 12px;background:${_trustColor}0d;border:1px solid ${_trustColor}33;border-radius:3px">
+  const _sup   = _trust.citation_support_score;
+  const _tcol  = _trust.abstention_required ? '#6b7280' : 'var(--blue)';
+  const _trustBadge = (_sup != null) ? `
+    <div style="margin-top:8px;padding:9px 12px;background:${_tcol}0d;border:1px solid ${_tcol}33;border-radius:3px">
       <div style="display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap">
-        <span style="font-size:11px;font-weight:700;color:${_trustColor}">🛡 Trust Layer — ${(_trust.trust_grade||'').replace(/_/g,' ')}</span>
-        <span style="display:flex;gap:14px;font-size:10px;color:var(--text-2)">
-          <span><strong style="color:${_trustColor}">${_tpct(_trust.citation_support_score)}</strong> claims sourced</span>
-          <span><strong>${_tpct(_trust.retrieval_coverage)}</strong> coverage</span>
-          <span><strong>${_trust.unsupported_claim_count||0}</strong> unsupported</span>
-          <span><strong>${_trust.contradiction_count||0}</strong> conflicts</span>
-        </span>
+        <span style="font-size:11px;font-weight:700;color:${_tcol}">🔗 Source coverage — <strong>${_tpct(_sup)}</strong> of factual claims link to a retrieved source</span>
+        <span style="font-size:10px;color:var(--text-3)">${_trust.checkable_claims||0} factual claims checked${_trust.contradiction_count?` · ${_trust.contradiction_count} possible conflict(s)`:''}</span>
       </div>
-      ${_trust.summary ? `<div style="font-size:11px;color:var(--text-2);margin-top:5px;line-height:1.6">${_trust.summary}</div>` : ''}
-      ${_trust.abstention_required
-        ? `<div style="font-size:10px;color:#dc2626;font-weight:700;margin-top:5px">⚠ INSUFFICIENT EVIDENCE — human review required before relying on this report.</div>`
-        : (_trust.human_review_recommended ? `<div style="font-size:10px;color:#d97706;font-weight:700;margin-top:5px">⚠ Human review recommended.</div>` : '')}
-      ${(_trust.unsupported_claims||[]).length ? `<details style="margin-top:6px"><summary style="font-size:10px;color:var(--text-3);cursor:pointer">View ${_trust.unsupported_claims.length} unsupported claim(s)</summary><ul style="margin:4px 0 0 16px;padding:0;font-size:10px;color:var(--text-3);line-height:1.6">${_trust.unsupported_claims.map(c=>`<li>${c}</li>`).join('')}</ul></details>` : ''}
-      ${(_trust.contradictions||[]).length ? `<details style="margin-top:4px"><summary style="font-size:10px;color:#d97706;cursor:pointer">View ${_trust.contradictions.length} contradiction(s)</summary><ul style="margin:4px 0 0 16px;padding:0;font-size:10px;color:var(--text-3);line-height:1.6">${_trust.contradictions.map(c=>`<li>${c.explanation||''} <em style="color:var(--text-4)">(${c.claim_a||''} ↔ ${c.claim_b_or_evidence||''})</em></li>`).join('')}</ul></details>` : ''}
+      <div style="font-size:11px;color:var(--text-3);margin-top:5px;line-height:1.6">Every factual claim is traced to a source so you can verify it instead of taking our word. ${(_trust.unsupported_claim_count ? `The ${_trust.unsupported_claim_count} claim(s) below couldn't be matched to a retrieved source — review them directly.` : 'All checkable claims matched a source.')}</div>
+      ${(_trust.unsupported_claims||[]).length ? `<details style="margin-top:6px"><summary style="font-size:10px;color:var(--text-3);cursor:pointer">View ${_trust.unsupported_claims.length} claim(s) without a matched source</summary><ul style="margin:4px 0 0 16px;padding:0;font-size:10px;color:var(--text-3);line-height:1.6">${_trust.unsupported_claims.map(c=>`<li>${c}</li>`).join('')}</ul></details>` : ''}
+      ${(_trust.contradictions||[]).length ? `<details style="margin-top:4px"><summary style="font-size:10px;color:#d97706;cursor:pointer">View ${_trust.contradictions.length} possible conflict(s)</summary><ul style="margin:4px 0 0 16px;padding:0;font-size:10px;color:var(--text-3);line-height:1.6">${_trust.contradictions.map(c=>`<li>${c.explanation||''}</li>`).join('')}</ul></details>` : ''}
     </div>` : '';
 
   html += `
@@ -1524,32 +1519,30 @@ function renderPIReport(r) {
     order.forEach(k => {
       if (sc[k] == null) return;
       const dim = _rat[k] || {};
-      const label = dim.label || (sc[k] >= 0.66 ? 'STRONG' : (sc[k] >= 0.45 ? 'MODERATE' : 'WEAK'));
-      const col = _bandColor(label);
       const drivers = dim.drivers || [];
       const driversHtml = drivers.length
-        ? drivers.map(d => `<div style="font-size:11px;color:var(--text-2);line-height:1.55;margin-top:3px">• ${d.fact} <span style="color:var(--text-4)">— ${d.source}</span></div>`).join('')
+        ? drivers.map(d => `<div style="font-size:12px;color:var(--text-2);line-height:1.6;margin-top:4px">• ${d.fact} <span style="color:var(--text-4)">— ${d.source}</span></div>`).join('')
         : '<div style="font-size:11px;color:var(--text-4);margin-top:3px">No specific retrieved signals for this dimension.</div>';
-      rows += `<div style="padding:10px 0;border-bottom:1px solid var(--border)">
+      // No STRONG/MODERATE/WEAK verdict — just the dimension and the sourced
+      // evidence behind it. The % is a faint, secondary internal weighting.
+      rows += `<div style="padding:11px 0;border-bottom:1px solid var(--border)">
         <div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px">
-          <div><span style="font-size:12px;font-weight:700;color:var(--text)">${_labels[k]||k}</span>
-            <span style="font-size:9px;font-weight:800;color:${col};background:${col}1a;padding:1px 6px;border-radius:3px;margin-left:6px;letter-spacing:.04em">${label}</span></div>
-          <span style="font-size:10px;color:var(--text-4)" title="internal weighting">${Math.round(sc[k]*100)}%</span>
+          <span style="font-size:12px;font-weight:700;color:var(--text)">${_labels[k]||k}</span>
+          <span style="font-size:9px;color:var(--text-4)" title="internal weighting only — secondary to the evidence">${Math.round(sc[k]*100)}%</span>
         </div>
         ${driversHtml}
       </div>`;
     });
     const overall = sc.overall_priority;
-    const oLabel = overall >= 0.66 ? 'STRONG' : (overall >= 0.45 ? 'MODERATE' : 'WEAK');
     html += `<div style="border:1px solid var(--border);border-radius:4px;padding:16px 20px;margin-bottom:28px;background:var(--bg)">
       <div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px;margin-bottom:4px">
         <div style="font-family:var(--display);font-size:13px;font-weight:700;color:var(--text);text-transform:uppercase;letter-spacing:.05em">Commercialization Assessment</div>
-        <div style="font-size:11px;color:var(--text-3)">Overall: <strong style="color:${_bandColor(oLabel)}">${oLabel}</strong> <span style="color:var(--text-4)">(${Math.round(overall*100)}%)</span></div>
+        <span style="font-size:9px;color:var(--text-4)" title="internal weighting only">overall ${Math.round(overall*100)}%</span>
       </div>
-      <div style="font-size:11px;color:var(--text-3);margin-bottom:8px">Each dimension is assessed from the specific retrieved signals shown — the percentage is a secondary internal weighting, not a standalone judgment.</div>
+      <div style="font-size:11px;color:var(--text-3);margin-bottom:8px">Each dimension is built from the specific retrieved signals below — read the evidence and judge for yourself. The faint percentages are an internal weighting only, not a verdict.</div>
       ${rows}
       ${_cs.recommendation ? `<div class="callout-box callout-blue" style="margin-top:14px"><div class="callout-label">→ Recommended Next Action</div><div class="callout-text">${_cs.recommendation}</div></div>` : ''}
-      <div style="font-size:9px;color:var(--text-4);margin-top:10px">Deterministic rules over calibrated tables (PTRS approval odds, deal-comp moat, IP whitespace, TRL, SBIR activity, bottom-up market size). Not investment advice.</div>
+      <div style="font-size:9px;color:var(--text-4);margin-top:10px">Built from PTRS approval odds, deal-comp moat, IP whitespace, TRL, SBIR activity, and bottom-up market size — sources shown per line. Not investment advice.</div>
     </div>`;
   }
 
@@ -1574,8 +1567,16 @@ function renderPIReport(r) {
     html += `<div style="border:1px solid var(--border);border-radius:4px;padding:16px 20px;margin-bottom:28px;background:var(--bg)">
       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:12px">
         <div style="font-family:var(--display);font-size:13px;font-weight:700;color:var(--text);text-transform:uppercase;letter-spacing:.05em">Portfolio Rank</div>
-        <div style="text-align:right"><div style="font-size:9px;color:var(--text-3);text-transform:uppercase;letter-spacing:.05em">Percentile vs ${_pb.peer_count||0} prior disclosures</div>
-        <div style="font-family:var(--display);font-size:24px;font-weight:800;color:${pctColor}">${pct==null?'N/A':'P'+pct}</div></div>
+        ${(() => {
+          const small = _pb.rank_total && _pb.rank_total <= 5;   // percentiles are meaningless on tiny pools
+          if (small) {
+            const c = _pb.rank === 1 ? 'var(--green)' : 'var(--text-2)';
+            return `<div style="text-align:right"><div style="font-size:9px;color:var(--text-3);text-transform:uppercase;letter-spacing:.05em">vs ${_pb.peer_count||0} prior disclosure(s)</div>
+              <div style="font-family:var(--display);font-size:22px;font-weight:800;color:${c}">#${_pb.rank} <span style="font-size:13px;color:var(--text-3)">of ${_pb.rank_total}</span></div></div>`;
+          }
+          return `<div style="text-align:right"><div style="font-size:9px;color:var(--text-3);text-transform:uppercase;letter-spacing:.05em">Percentile vs ${_pb.peer_count||0} prior disclosures</div>
+            <div style="font-family:var(--display);font-size:24px;font-weight:800;color:${pctColor}">${pct==null?'N/A':'P'+pct}</div></div>`;
+        })()}
       </div>
       ${cols ? `<div style="display:grid;grid-template-columns:1fr 1fr;gap:0 24px;margin-bottom:${comps?'14px':'0'}">${cols}</div>` : ''}
       ${comps ? `<div><div style="font-size:10px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">Comparable Internal Opportunities</div>${comps}</div>` : ''}
