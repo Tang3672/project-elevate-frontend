@@ -1515,9 +1515,24 @@ async function _pollVerification(jobId) {
     if (!vPending && !tPending) {
       const slot = document.getElementById('verification-slot');
       if (slot) slot.innerHTML = buildVerificationBadgesHTML(rep);
-      if (lastReport) { lastReport.validation = rep.validation; lastReport.trust = rep.trust; }
+      const cp = document.getElementById('comp-sweep-panel');
+      if (cp && rep.competitive_landscape) cp.innerHTML = _renderCompPanelInner(rep.competitive_landscape);
+      if (lastReport) { lastReport.validation = rep.validation; lastReport.trust = rep.trust; lastReport.competitive_landscape = rep.competitive_landscape; }
       return;
     }
+  }
+}
+
+// Inner HTML for the competitive-landscape panel, from the report's server-side sweep.
+function _renderCompPanelInner(cl) {
+  if (!cl) return `<div style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text-3)">Gathering named competitors from openFDA, ClinicalTrials.gov, and OpenAlex… <span style="color:var(--text-4)">(fills in shortly)</span></div>`;
+  if (cl.available === false) return `<div style="font-size:12px;color:var(--text-3)">${cl.note || 'Live competitor sweep unavailable — see the competitive pipeline in the Opportunity section above.'}</div>`;
+  try {
+    return renderCompetitiveLandscape(cl);
+  } catch (e) {
+    const comps = (cl.competitors || []).slice(0, 8).map(c =>
+      `<div style="padding:6px 0;border-bottom:1px solid var(--border);font-size:12px"><strong>${c.name||''}</strong>${c.brand_name?' ('+c.brand_name+')':''} <span style="color:var(--text-3)">— ${c.company||''} · ${c.stage||''}</span></div>`).join('');
+    return `<div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--text-3);margin-bottom:8px">Competitors (${(cl.competitors||[]).length})</div>${comps || '<div style="font-size:12px;color:var(--text-3)">No named competitors found.</div>'}`;
   }
 }
 
@@ -2174,17 +2189,11 @@ function renderPIReport(r) {
     html += '</div>';
   }
 
-  // CHAPTER 7: COMPETITIVE LANDSCAPE (loaded asynchronously after report renders)
+  // CHAPTER 7: COMPETITIVE LANDSCAPE — rendered from the report's server-side sweep
+  // (reliable). It arrives with the background verification, so it may show a brief
+  // "gathering…" state that the verification poll fills in.
   html += chapterHeader('7', 'Competitive Landscape', 'Named competitors, their key advantages, market white space, and your differentiation levers');
-  html += `
-    <div id="comp-sweep-panel" style="background:var(--bg-2);border:1px solid var(--border);padding:16px;margin-bottom:16px">
-      <div style="display:flex;align-items:center;justify-content:space-between">
-        <div style="font-size:13px;color:var(--text-3)">Sweeping openFDA, ClinicalTrials.gov, and OpenAlex for named competitors…</div>
-        <div style="width:120px;height:3px;background:var(--border);border-radius:2px;overflow:hidden">
-          <div style="height:100%;background:var(--blue);width:0%;transition:width .5s ease" id="comp-sweep-bar"></div>
-        </div>
-      </div>
-    </div>`;
+  html += `<div id="comp-sweep-panel" style="background:var(--bg-2);border:1px solid var(--border);padding:16px;margin-bottom:16px">${_renderCompPanelInner(r.competitive_landscape)}</div>`;
 
   // OUTCOME / FEEDBACK CAPTURE (P11) — close the loop on what the TTO/PI decided
   if (r.report_id) {
@@ -2210,16 +2219,8 @@ function renderPIReport(r) {
 
   document.getElementById('results').innerHTML = html;
   lastReport = r;
-
-  // Animate sweep bar then fetch competitive data
-  const bar = document.getElementById('comp-sweep-bar');
-  if (bar) {
-    let pct = 0;
-    const tick = setInterval(() => { pct = Math.min(pct + 3, 90); bar.style.width = pct + '%'; }, 200);
-    const disease = r.disease_intelligence ? r.disease_intelligence.condition : (r.idea_submitted || '').slice(0,60);
-    const ta = r.expert_domain || 'other';
-    _loadCompetitiveSweep(disease, ta, tick, bar);
-  }
+  // Competitive landscape now comes from the report (server-side sweep), patched in
+  // by the verification poll — no separate, flaky client fetch.
 
   // Integrated tools panel — appears after report renders
   _renderPostReportTools(r);
