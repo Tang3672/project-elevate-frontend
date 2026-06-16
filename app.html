@@ -1332,11 +1332,17 @@ async function runAnalysis() {
         throw new Error(typeof detail === 'string' ? detail : (detail.message || `HTTP ${startRes.status}`));
       }
       const startData = await startRes.json();
+      window._currentJobId = startData.job_id;
       data = await _pollReport(startData.job_id);   // resolves when status === 'done'
     }
     _completeProgress();
     await new Promise(r => setTimeout(r, 350));
     renderPIReport(data);
+    // Verification (validation + source coverage) runs in the background — poll for
+    // it and patch the badges in place when ready.
+    if (data && data.validation && data.validation.pending && !window._mockMode) {
+      _pollVerification(window._currentJobId);
+    }
     loadBillingStatus(); // refresh counter after each successful report
   } catch(e) {
     clearTimeout(_progTimer);
@@ -1455,35 +1461,29 @@ async function submitMedlevateFeedback(action, outcome) {
   }
 }
 
-function renderPIReport(r) {
-  window._currentReportId = r.report_id || null;
-  document.getElementById('sig-badge').textContent = fmt(r.signals_searched) + ' signals searched';
-
-  let html = '<div class="sg">';
-
-  // REPORT HEADER
+// Builds the validation + source-coverage badges. Shows a "verifying…" state
+// while verification runs in the background, then the real badges once it lands.
+function buildVerificationBadgesHTML(r) {
   const _val = r.validation || {};
-  const _valColor  = {ERROR:'#dc2626', FLAG:'#d97706', REVIEW:'#0891b2', PASS:'#059669'}[_val.status] || '#6366f1';
-  const _valIcon   = {ERROR:'✗', FLAG:'⚠', REVIEW:'ℹ', PASS:'✓'}[_val.status] || '…';
-  const _valBadge  = _val.status
+  const _trust = r.trust || {};
+  if (_val.pending || _trust.pending) {
+    return `<div style="margin-top:10px;padding:7px 12px;background:var(--bg);border:1px solid var(--border);border-radius:3px;font-size:11px;color:var(--text-3)">⏳ Verifying claims, FDA/market facts, and source coverage… <span style="color:var(--text-4)">— this fills in here in a few seconds</span></div>`;
+  }
+  const _valColor = {ERROR:'#dc2626', FLAG:'#d97706', REVIEW:'#0891b2', PASS:'#059669'}[_val.status] || '#6366f1';
+  const _valIcon  = {ERROR:'✗', FLAG:'⚠', REVIEW:'ℹ', PASS:'✓'}[_val.status] || '…';
+  const _valBadge = (_val.status && _val.status !== 'PENDING')
     ? `<div style="margin-top:10px;padding:7px 12px;background:${_valColor}11;border:1px solid ${_valColor}33;border-radius:3px;display:flex;gap:8px;align-items:flex-start">
         <span style="font-size:14px;color:${_valColor};font-weight:800;flex-shrink:0">${_valIcon}</span>
         <div>
-          <div style="font-size:11px;font-weight:700;color:${_valColor}">LangGraph Validation — ${_val.status}</div>
+          <div style="font-size:11px;font-weight:700;color:${_valColor}">Verification — ${_val.status}</div>
           <div style="font-size:11px;color:var(--text-2);margin-top:1px">${_val.summary || ''}</div>
           ${(_val.errors||[]).length ? `<div style="font-size:10px;color:#dc2626;margin-top:4px">${_val.errors.map(e=>`<strong>${e.agent}:</strong> ${e.issue}`).join('<br>')}</div>` : ''}
           ${(_val.warnings||[]).length && !(_val.errors||[]).length ? `<div style="font-size:10px;color:#d97706;margin-top:4px">${_val.warnings.slice(0,2).map(w=>`<strong>${w.agent}:</strong> ${w.issue}`).join('<br>')}</div>` : ''}
         </div>
-      </div>`
-    : '';
-
-  // SOURCE COVERAGE (P2) — transparency, not a verdict. Show how many factual
-  // claims link to a retrieved source, and list the ones that don't so the PI can
-  // judge them. No opaque HIGH/MODERATE/LOW grade.
-  const _trust = r.trust || {};
-  const _tpct  = v => (v == null ? '—' : Math.round(v * 100) + '%');
-  const _sup   = _trust.citation_support_score;
-  const _tcol  = _trust.abstention_required ? '#6b7280' : 'var(--blue)';
+      </div>` : '';
+  const _tpct = v => (v == null ? '—' : Math.round(v * 100) + '%');
+  const _sup = _trust.citation_support_score;
+  const _tcol = _trust.abstention_required ? '#6b7280' : 'var(--blue)';
   const _trustBadge = (_sup != null) ? `
     <div style="margin-top:8px;padding:9px 12px;background:${_tcol}0d;border:1px solid ${_tcol}33;border-radius:3px">
       <div style="display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap">
@@ -1494,14 +1494,50 @@ function renderPIReport(r) {
       ${(_trust.unsupported_claims||[]).length ? `<details style="margin-top:6px"><summary style="font-size:10px;color:var(--text-3);cursor:pointer">View ${_trust.unsupported_claims.length} claim(s) without a matched source</summary><ul style="margin:4px 0 0 16px;padding:0;font-size:10px;color:var(--text-3);line-height:1.6">${_trust.unsupported_claims.map(c=>`<li>${c}</li>`).join('')}</ul></details>` : ''}
       ${(_trust.contradictions||[]).length ? `<details style="margin-top:4px"><summary style="font-size:10px;color:#d97706;cursor:pointer">View ${_trust.contradictions.length} possible conflict(s)</summary><ul style="margin:4px 0 0 16px;padding:0;font-size:10px;color:var(--text-3);line-height:1.6">${_trust.contradictions.map(c=>`<li>${c.explanation||''}</li>`).join('')}</ul></details>` : ''}
     </div>` : '';
+  return _valBadge + _trustBadge;
+}
 
+// After the report renders, verification keeps running in the background; poll the
+// job and patch the badges in place when it's ready (no full re-render).
+async function _pollVerification(jobId) {
+  if (!jobId) return;
+  const token = localStorage.getItem('pe_token');
+  const deadline = Date.now() + 4 * 60 * 1000;
+  while (Date.now() < deadline) {
+    await new Promise(r => setTimeout(r, 4000));
+    let j;
+    try {
+      const res = await fetch(`${API}/alignment/pi-report/status/${jobId}`, { headers: { 'Authorization': `Bearer ${token}` } });
+      if (!res.ok) continue;
+      j = await res.json();
+    } catch (e) { continue; }
+    const rep = j && j.report;
+    if (!rep) continue;
+    const vPending = (rep.validation || {}).pending;
+    const tPending = (rep.trust || {}).pending;
+    if (!vPending && !tPending) {
+      const slot = document.getElementById('verification-slot');
+      if (slot) slot.innerHTML = buildVerificationBadgesHTML(rep);
+      if (lastReport) { lastReport.validation = rep.validation; lastReport.trust = rep.trust; }
+      return;
+    }
+  }
+}
+
+function renderPIReport(r) {
+  window._currentReportId = r.report_id || null;
+  document.getElementById('sig-badge').textContent = fmt(r.signals_searched) + ' signals searched';
+
+  let html = '<div class="sg">';
+
+  // REPORT HEADER — verification badges go in a slot so the background poll can
+  // patch them in place once verification completes.
   html += `
     <div style="border-left:4px solid var(--blue);padding:16px 20px;background:var(--bg-2);margin-bottom:28px">
       <div style="font-family:var(--display);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--blue);margin-bottom:6px">Medical Market Intelligence Report</div>
       <div style="font-family:var(--display);font-size:20px;font-weight:700;color:var(--text);margin-bottom:8px">${r.disease_intelligence ? r.disease_intelligence.condition : 'Analysis'}</div>
       <div style="font-family:var(--body);font-size:13px;color:var(--text-2);line-height:1.7">${r.executive_summary}</div>
-      ${_valBadge}
-      ${_trustBadge}
+      <div id="verification-slot">${buildVerificationBadgesHTML(r)}</div>
     </div>`;
 
   // COMMERCIALIZATION ASSESSMENT (P5) — evidence-led: each dimension shows the
