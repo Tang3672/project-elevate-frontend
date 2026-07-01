@@ -1231,7 +1231,7 @@ async function runAnalysis() {
   if (!idea || idea.length < 30) { alert('Please describe your product in at least 30 characters.'); return; }
 
   // Show pricing first, then sign in after — no free reports
-  const _devEmails = ['test@medlevate.io','ijw91021@gmail.com','admin@medlevate.io','oneonesie100@gmail.com'];
+  const _devEmails = ['test@medlevate.io','ijw91021@gmail.com','admin@medlevate.io','oneonesie100@gmail.com','lizpeek11@gmail.com','peek@wustl.edu'];
   const _isDev = currentUser && _devEmails.includes(currentUser.email);
   if (!_isDev && !window._earlyAccessGranted) {
     (window.showPaywall || function(){ document.getElementById('paywall-overlay').style.display='flex'; })();
@@ -3882,7 +3882,7 @@ let billingStatus = null;
 
 async function loadBillingStatus() {
   if (!currentUser) return;
-  const DEV_EMAILS_LOCAL = ['test@medlevate.io','ijw91021@gmail.com','admin@medlevate.io','oneonesie100@gmail.com'];
+  const DEV_EMAILS_LOCAL = ['test@medlevate.io','ijw91021@gmail.com','admin@medlevate.io','oneonesie100@gmail.com','lizpeek11@gmail.com','peek@wustl.edu'];
   if (DEV_EMAILS_LOCAL.includes(currentUser.email)) {
     billingStatus = {
       subscription_status:'active', is_active:true, plan:'institution',
@@ -5503,7 +5503,7 @@ async function startAnalysisFlow() {
   }
 
   // Step 1: Show pricing / early access FIRST (for everyone not already granted access)
-  const _devEmails2 = ['test@medlevate.io','ijw91021@gmail.com','admin@medlevate.io','oneonesie100@gmail.com'];
+  const _devEmails2 = ['test@medlevate.io','ijw91021@gmail.com','admin@medlevate.io','oneonesie100@gmail.com','lizpeek11@gmail.com','peek@wustl.edu'];
   const _isDev2 = currentUser && _devEmails2.includes(currentUser.email);
   if (!_isDev2 && !window._earlyAccessGranted) {
     (window.showPaywall || function(){ document.getElementById('paywall-overlay').style.display='flex'; })();
