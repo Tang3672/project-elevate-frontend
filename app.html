@@ -5597,48 +5597,50 @@ async function _showMandatoryQuestions(idea) {
 }
 
 function _fallbackQuestions() {
+  // Modality-NEUTRAL fallback (used only if the tailored /clarify call fails). Works for
+  // a drug, biologic, device, diagnostic, or SaMD — never assumes a drug.
   return [
     {
-      question: "Which patient population does this primarily target?",
-      field: "patient_population",
-      options: ["Treatment-naive / newly diagnosed patients", "Patients who failed 2+ prior therapies (refractory)", "Specific biomarker-selected subgroup", "Broad population regardless of prior therapy"],
-      hint: "Add any specific biomarker, disease stage, or line-of-therapy detail"
+      question: "What specific population or use case does this primarily address?",
+      field: "target_use",
+      options: ["A specific high-risk subgroup (e.g. a subpopulation or severity tier)", "A defined clinical setting (e.g. ED, ICU, outpatient, radiology/PACS)", "A biomarker- or feature-selected subset", "A broad population/use across the indication"],
+      hint: "Name the exact subgroup, care setting, or use case this is built for"
     },
     {
-      question: "What is the current standard of care and what specific gap does your product address?",
+      question: "What is the current standard of care or status quo, and what gap do you address?",
       field: "standard_of_care",
-      options: ["No approved therapy exists — true first-to-market", "Approved therapies exist but have significant safety/tolerability issues", "Approved therapies exist but only work for a subset of patients", "Generic/off-patent therapies dominate — limited innovation"],
-      hint: "Name the specific SoC drug/device and the exact unmet need your product addresses"
+      options: ["No existing solution — true first-to-market", "Existing solutions have accuracy / safety / performance gaps", "Existing solutions only work for a subset of cases", "Incumbents dominate — this is an incremental improvement"],
+      hint: "Name the specific incumbent product or workflow and the exact gap you close"
     },
     {
-      question: "Who is the primary purchase decision-maker?",
+      question: "Who is the primary purchase decision-maker, and how is it bought?",
       field: "buyer",
-      options: ["Individual physician (outpatient prescribing)", "Hospital P&T committee / formulary decision", "Lab director or hospital procurement (devices/diagnostics)", "Patient / direct-to-consumer"],
-      hint: "Describe the sales cycle and whether this requires institutional approval"
+      options: ["Individual physician (outpatient prescribing)", "Hospital P&T / formulary committee", "Hospital IT / procurement or service-line budget (devices/software)", "Lab director (diagnostics) or patient / direct-to-consumer"],
+      hint: "Describe the sales cycle and whether it needs institutional / capital approval"
     },
     {
-      question: "What is the current development stage?",
+      question: "What is your current development or validation stage?",
       field: "stage",
-      options: ["Concept / early preclinical (no animal data yet)", "Preclinical — animal models with efficacy data", "Phase 1 / IND filed — first-in-human safety ongoing", "Phase 2 or later — proof-of-concept efficacy data exists"],
+      options: ["Concept / early prototype (no supporting data yet)", "Preclinical or retrospective validation data exists", "Prospective / clinical study underway (or Phase 1 for a drug)", "Advanced clinical or pivotal data / near regulatory submission"],
       hint: "Describe the strongest piece of evidence you currently have"
     },
     {
-      question: "What is the intended pricing model?",
+      question: "What is the intended pricing / revenue model?",
       field: "pricing",
-      options: ["One-time procedure or course (acute / episodic)", "Annual chronic therapy (patient on drug indefinitely)", "Per-test / per-scan / per-use (diagnostics or devices)", "SaaS / annual software license (digital health)"],
-      hint: "Name a comparable approved product and its WAC/list price as your pricing anchor"
+      options: ["Per-patient course or chronic therapy (drug/biologic)", "Per-procedure / per-unit or capital purchase (device)", "Per-test / per-scan / per-use (diagnostic)", "Annual institutional SaaS license (software / SaMD)"],
+      hint: "Name a comparable product and its price point as your anchor"
     },
     {
       question: "How does this fit into the clinical workflow?",
       field: "workflow",
-      options: ["Entirely new step — adds to workflow, doesn't replace anything", "Replaces an existing optional test or therapy", "Replaces a guideline-mandated procedure (high adoption barrier)", "Integrates transparently into existing EHR/workflow systems"],
-      hint: "If replacing a mandated procedure, name the specific guideline (e.g. ASCO, AHA, IDSA) that requires it"
+      options: ["Entirely new step — adds to workflow, doesn't replace anything", "Replaces an existing optional test or step", "Replaces a guideline-mandated procedure (higher adoption barrier)", "Integrates transparently into existing EHR / PACS / workflow systems"],
+      hint: "If replacing a mandated step, name the specific guideline (e.g. AHA, ASCO, IDSA)"
     },
     {
       question: "What is your key differentiation vs. the closest competitor or standard of care?",
       field: "differentiation",
-      options: ["Mechanism of action — covers resistant/refractory cases that SoC misses", "Administration route — oral vs. IV, or less frequent dosing", "Safety profile — fewer serious adverse events vs. comparator", "Price — substantially cheaper than existing options"],
-      hint: "Name the specific competitor and the head-to-head advantage (e.g. 'vs. Avycaz — covers NDM-producing organisms')"
+      options: ["Better performance / accuracy / efficacy than the standard", "Better workflow, usability, or integration (less burden)", "Better safety or fewer adverse events", "Lower cost / stronger health-economic case"],
+      hint: "Name the specific competitor and the measurable head-to-head advantage"
     },
   ];
 }
