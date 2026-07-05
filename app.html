@@ -5376,7 +5376,16 @@ async function downloadPDF() {
     const DARK=[13,27,42], BLUE=[8,145,178], INK=[30,41,59], SUB=[100,116,139], LINK=[26,79,214];
     const dateStr = new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
     let y=0;
-    const clean = (s)=> (s==null?'':String(s)).replace(/\s+/g,' ').trim();
+    // jsPDF's built-in helvetica is WinAnsi-only; characters like ≥ ≤ × – — ' " …
+    // corrupt glyph rendering AND throw off splitTextToSize width measurement (which is
+    // what caused the garbled letters + letter-spaced overflow lines in the PDF). Map the
+    // common typographic characters to ASCII and drop anything else non-ASCII.
+    const _CHMAP = {'≥':'>=','≤':'<=','≈':'~','≠':'!=','×':'x','÷':'/','–':'-','—':'-','‑':'-','−':'-','‘':"'",'’':"'",'“':'"','”':'"','…':'...','•':'-','▪':'-','●':'-','→':'->','←':'<-','±':'+/-',' ':' ','°':' deg','®':'(R)','™':'(TM)','€':'EUR','£':'GBP','½':'1/2','¼':'1/4'};
+    const clean = (s)=> String(s==null?'':s)
+      .replace(/[≥≤≈≠×÷–—‑−‘’“”…•▪●→←± °®™€£½¼]/g, m=>(_CHMAP[m]||' '))
+      .normalize('NFKD').replace(/[̀-ͯ]/g,'')   // strip accents (é -> e)
+      .replace(/[^\x00-\x7E]/g,'')                        // drop any remaining non-ASCII
+      .replace(/\s+/g,' ').trim();
 
     function header(){
       pdf.setFillColor(DARK[0],DARK[1],DARK[2]); pdf.rect(0,0,pageW,18,'F');
