@@ -2962,6 +2962,15 @@ function storeAuth(d) {
   localStorage.setItem('pe_user', JSON.stringify(currentUser));
   onLoggedIn();
   closeAuth();
+  // If there's a pending idea whose questions failed due to an expired session,
+  // re-fire _showMandatoryQuestions now that the user has a fresh token.
+  const _pendingIdea = document.getElementById('idea')?.value.trim();
+  const _qPanel = document.getElementById('clarify-panel');
+  if (_pendingIdea && _pendingIdea.length >= 30 && _qPanel && _qPanel.style.display !== 'none') {
+    window._questionsShown = false;
+    window.clarifyAnswers = {};
+    _showMandatoryQuestions(_pendingIdea);
+  }
 }
 
 async function handleGoogleCredential(response) {
@@ -5723,6 +5732,7 @@ async function _showMandatoryQuestions(idea) {
       panel.innerHTML = `<div style="padding:12px 14px;background:var(--bg-2);border:1px solid #dc2626;border-radius:4px;font-size:13px;color:#dc2626;line-height:1.5">
         Your session has expired. <a href="#" onclick="openAuth('login');return false" style="color:#dc2626;font-weight:700;text-decoration:underline">Sign in again</a> to get questions tailored to your innovation.</div>`;
       if (runBtn) { runBtn.disabled = false; runBtn.textContent = 'Run Analysis'; }
+      window._questionsShown = false; // allow re-fire after login
       return;
     }
     const fallbackQs = _fallbackQuestions();
