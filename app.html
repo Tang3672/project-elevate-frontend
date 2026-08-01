@@ -1226,6 +1226,11 @@ tick(); setInterval(tick, 1000);
 
 // PI Analysis
 
+function _isAuthError(msg) {
+  const m = (msg || '').toLowerCase();
+  return m.includes('token') || m.includes('expired') || m.includes('unauthorized') || m.includes('not authenticated');
+}
+
 async function runAnalysis() {
   const idea = document.getElementById('idea').value.trim();
   if (!idea || idea.length < 30) { alert('Please describe your product in at least 30 characters.'); return; }
@@ -1239,6 +1244,22 @@ async function runAnalysis() {
   }
   // Require login (after they've seen pricing and requested access)
   if (!currentUser) { openAuth('login'); return; }
+
+  // Guard: validate token exists and hasn't expired before making any API call.
+  // currentUser and pe_token are stored independently; token can expire while
+  // currentUser remains set, causing a confusing "Invalid or expired token" error.
+  const _tok = localStorage.getItem('pe_token');
+  if (!_tok) {
+    localStorage.removeItem('pe_user'); currentUser = null;
+    openAuth('login'); return;
+  }
+  try {
+    const _payload = JSON.parse(atob(_tok.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));
+    if (_payload.exp && _payload.exp < Math.floor(Date.now() / 1000)) {
+      localStorage.removeItem('pe_token'); localStorage.removeItem('pe_user'); currentUser = null;
+      openAuth('login'); return;
+    }
+  } catch(_) { /* malformed — let server reject */ }
 
   const btn = document.getElementById('run-btn');
   btn.disabled = true; btn.textContent = 'Analyzing…';
@@ -1317,6 +1338,14 @@ async function runAnalysis() {
       });
       if (!startRes.ok) {
         const e = await startRes.json().catch(()=>({})); const detail = e.detail || {};
+        // 401/403 → session expired — open auth modal immediately
+        if (startRes.status === 401 || startRes.status === 403) {
+          clearTimeout(_progTimer);
+          btn.disabled = false; btn.textContent = 'Run Analysis';
+          document.getElementById('results').innerHTML = '';
+          openAuth('login');
+          throw new Error('SESSION_EXPIRED');
+        }
         // 402 quota/subscription errors — show paywall with plan-specific message
         if (startRes.status === 402) {
           clearTimeout(_progTimer);
@@ -1329,7 +1358,15 @@ async function runAnalysis() {
           loadBillingStatus();
           return;
         }
-        throw new Error(typeof detail === 'string' ? detail : (detail.message || `HTTP ${startRes.status}`));
+        const errMsg = typeof detail === 'string' ? detail : (detail.message || `HTTP ${startRes.status}`);
+        if (_isAuthError(errMsg)) {
+          clearTimeout(_progTimer);
+          btn.disabled = false; btn.textContent = 'Run Analysis';
+          document.getElementById('results').innerHTML = '';
+          openAuth('login');
+          throw new Error('SESSION_EXPIRED');
+        }
+        throw new Error(errMsg);
       }
       const startData = await startRes.json();
       window._currentJobId = startData.job_id;
@@ -1346,7 +1383,12 @@ async function runAnalysis() {
     loadBillingStatus(); // refresh counter after each successful report
   } catch(e) {
     clearTimeout(_progTimer);
-    document.getElementById('results').innerHTML = `<div class="err">Error: ${e.message}</div><div class="empty"><div class="empty-s">Make sure the server is running and your API key is valid.</div></div>`;
+    if (e.message === 'SESSION_EXPIRED' || _isAuthError(e.message)) {
+      document.getElementById('results').innerHTML = '';
+      if (e.message !== 'SESSION_EXPIRED') openAuth('login');
+    } else {
+      document.getElementById('results').innerHTML = `<div class="err">Error: ${e.message}</div><div class="empty"><div class="empty-s">Make sure the server is running and your API key is valid.</div></div>`;
+    }
   } finally { btn.disabled = false; btn.textContent = 'Run Analysis'; }
 }
 
@@ -1376,7 +1418,10 @@ async function _pollReport(jobId) {
     }
     const j = await res.json();
     if (j.status === 'done') return j.report;
-    if (j.status === 'error') throw new Error(j.error || 'Report generation failed');
+    if (j.status === 'error') {
+      const msg = j.error || 'Report generation failed';
+      throw new Error(_isAuthError(msg) ? 'SESSION_EXPIRED' : msg);
+    }
     if (Date.now() - startedAt > MAX_MS) throw new Error('Report timed out');
   }
 }
@@ -5672,6 +5717,14 @@ async function _showMandatoryQuestions(idea) {
   } catch(e) {
     clearInterval(window._qLoadTimer);
     window._questionsShown = true;
+    // 401/403 → session expired. Show sign-in prompt instead of generic questions.
+    if (e.message === 'HTTP 401' || e.message === 'HTTP 403') {
+      panel.style.display = 'block';
+      panel.innerHTML = `<div style="padding:12px 14px;background:var(--bg-2);border:1px solid #dc2626;border-radius:4px;font-size:13px;color:#dc2626;line-height:1.5">
+        Your session has expired. <a href="#" onclick="openAuth('login');return false" style="color:#dc2626;font-weight:700;text-decoration:underline">Sign in again</a> to get questions tailored to your innovation.</div>`;
+      if (runBtn) { runBtn.disabled = false; runBtn.textContent = 'Run Analysis'; }
+      return;
+    }
     const fallbackQs = _fallbackQuestions();
     _renderQuestionForm(fallbackQs, panel, runBtn);
   }
