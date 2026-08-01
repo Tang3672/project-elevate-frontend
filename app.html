@@ -1588,13 +1588,17 @@ function renderPIReport(r) {
   window._currentReportId = r.report_id || null;
   document.getElementById('sig-badge').textContent = fmt(r.signals_searched) + ' signals searched';
 
+  // Domain flag used in multiple sections — compute once at the top
+  const _reportDomain = (r.domain || '').toLowerCase();
+  const _isResearchDomain = _reportDomain.includes('research') || _reportDomain.includes('life_sciences_research');
+
   let html = '<div class="sg">';
 
   // REPORT HEADER — verification badges go in a slot so the background poll can
   // patch them in place once verification completes.
   html += `
     <div style="border-left:4px solid var(--blue);padding:16px 20px;background:var(--bg-2);margin-bottom:28px">
-      <div style="font-family:var(--display);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--blue);margin-bottom:6px">Medical Market Intelligence Report</div>
+      <div style="font-family:var(--display);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--blue);margin-bottom:6px">${_isResearchDomain ? 'Commercialization Intelligence Report' : 'Market Intelligence Report'}</div>
       <div style="font-family:var(--display);font-size:20px;font-weight:700;color:var(--text);margin-bottom:8px">${r.disease_intelligence ? r.disease_intelligence.condition : 'Analysis'}</div>
       <div style="font-family:var(--body);font-size:13px;color:var(--text-2);line-height:1.7">${r.executive_summary}</div>
       <div id="verification-slot">${buildVerificationBadgesHTML(r)}</div>
@@ -1802,15 +1806,25 @@ function renderPIReport(r) {
       ? `$${(ms.serviceable_market_usd/1e9).toFixed(1)}B`
       : `$${(ms.serviceable_market_usd/1e6).toFixed(0)}M`;
 
-    html += `<div class="narrative-block">
-      The total addressable market is <strong>${tamVal}</strong> assuming 100% patient capture. The serviceable market, adjusted for formulary access, competitive share, and geographic concentration, is <strong>${samVal}</strong>. The calculation below builds this figure from primary epidemiological sources.
-    </div>`;
+    // Domain-aware intro prose — never inject pharma vocabulary for research tools
+    const _msSteps = ms.derivation_steps || [];
+    const _msMethodNote = ms.methodology_note || '';
+    let _msIntroProse;
+    if (_isResearchDomain) {
+      const _unitLabel = (ms.unit || 'funded labs');
+      const _methodsStr = _msMethodNote || 'buyer population model × observed spend band';
+      _msIntroProse = `TAM is <strong>${tamVal}</strong>, built bottom-up from NIH-funded ${_unitLabel} running instrumented experiments. SAM of <strong>${samVal}</strong> applies reachability and adoption gates. Methodology: ${_methodsStr}.`;
+    } else {
+      const _samGateNote = ms.sam_gate_note || 'reachability, competitive share, and geography';
+      _msIntroProse = `The total addressable market is <strong>${tamVal}</strong>. The serviceable market, filtered by ${_samGateNote}, is <strong>${samVal}</strong>. The derivation below builds this from primary sources.`;
+    }
+    html += `<div class="narrative-block">${_msIntroProse}</div>`;
 
     html += `<div class="ms-totals">
       <div class="ms-total-cell">
         <div class="ms-total-lbl">Total Addressable Market (TAM)</div>
         <div class="ms-total-val">${tamVal}</div>
-        <div class="ms-total-sub">Full market if 100% penetration</div>
+        <div class="ms-total-sub">${_isResearchDomain ? 'Full buyer population at observed spend' : 'Full market if 100% penetration'}</div>
       </div>
       <div class="ms-total-cell">
         <div class="ms-total-lbl">Serviceable Market (SAM)</div>
