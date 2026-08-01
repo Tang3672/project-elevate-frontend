@@ -1321,7 +1321,13 @@ async function runAnalysis() {
       idea,
       product_type: 'other',
       tier1_category: selectedType,
-      target_pathogen: document.getElementById('pathogen').value.trim() || null
+      target_pathogen: document.getElementById('pathogen').value.trim() || null,
+      // Pass classification if available — maps to existing PIReportRequest fields
+      ...(window._classification ? {
+        product_name: window._classification.product_name,
+        domain:       window._classification.domain,
+      } : {}),
+      clarify_answers: window.clarifyAnswers || {},
     };
     let data;
     if (window._mockMode) {
@@ -5669,30 +5675,93 @@ async function startAnalysisFlow() {
   await _showMandatoryQuestions(idea);
 }
 
+// Stored classification from /classify — passed to /clarify and to runAnalysis
+window._classification = null;
+
+function _archetypeLabel(arch) {
+  const MAP = {
+    research_infrastructure_saas: 'Research Infrastructure SaaS',
+    research_tool_non_clinical:   'Non-Clinical Research Tool',
+    therapeutic_small_molecule:   'Small Molecule Drug',
+    therapeutic_biologic:         'Biologic / mAb',
+    gene_cell_therapy:            'Gene / Cell Therapy',
+    device_class_ii:              'Class II Medical Device',
+    device_class_iii:             'Class III Medical Device',
+    samd_clinical:                'Clinical SaMD',
+    diagnostic_ivd:               'In Vitro Diagnostic',
+    vaccine:                      'Vaccine',
+    clinical_workflow_saas:       'Clinical Workflow SaaS',
+    platform:                     'Platform Technology',
+    unknown:                      'Unknown',
+  };
+  return MAP[(arch || '').toLowerCase()] || arch || 'Unknown';
+}
+
+function _domainLabel(domain) {
+  if ((domain || '').includes('RESEARCH')) return 'Life Sciences Research';
+  if ((domain || '').includes('CLINICAL')) return 'Life Sciences Clinical';
+  return domain || '';
+}
+
+function _trlLabel(trl) {
+  const labels = ['','Concept only','Conceptual formulation','Proof-of-concept','Lab validated','Prototype validated','Pilot demonstrated','Pilot deployed','Early commercial','Full commercial'];
+  return labels[trl] ? `TRL ${trl} — ${labels[trl]}` : `TRL ${trl}`;
+}
+
+function _renderClassificationCard(cls, panel) {
+  const archLabel   = _archetypeLabel(cls.archetype);
+  const domainLabel = _domainLabel(cls.domain);
+  const trlLabel    = _trlLabel(cls.trl);
+  const confPct     = Math.round((cls.confidence || 0) * 100);
+  const isResearch  = (cls.domain || '').includes('RESEARCH');
+
+  panel.innerHTML = `
+    <div id="cls-card" style="border:1.5px solid var(--blue);border-radius:6px;overflow:hidden;margin-bottom:14px">
+      <div style="background:var(--blue);color:#fff;padding:10px 14px;display:flex;align-items:center;gap:10px">
+        <span style="font-size:15px">${isResearch ? '🔬' : '💊'}</span>
+        <div style="flex:1">
+          <div style="font-size:14px;font-weight:700">${cls.product_name}</div>
+          <div style="font-size:11px;opacity:.85;margin-top:1px">${cls.one_line}</div>
+        </div>
+        <div style="text-align:right;font-size:10px;opacity:.75;white-space:nowrap">${confPct}% confidence</div>
+      </div>
+      <div style="padding:10px 14px;background:var(--bg-2);display:flex;gap:8px;flex-wrap:wrap">
+        <span style="background:var(--bg-1);border:1px solid var(--border);border-radius:12px;padding:3px 9px;font-size:11px;font-weight:600;color:var(--blue)">${domainLabel}</span>
+        <span style="background:var(--bg-1);border:1px solid var(--border);border-radius:12px;padding:3px 9px;font-size:11px;color:var(--text-2)">${archLabel}</span>
+        <span style="background:var(--bg-1);border:1px solid var(--border);border-radius:12px;padding:3px 9px;font-size:11px;color:var(--text-3)">${trlLabel}</span>
+      </div>
+      ${cls.ambiguities && cls.ambiguities.length ? `
+      <div style="padding:8px 14px 10px;background:var(--bg-2);border-top:1px solid var(--border)">
+        <div style="font-size:10px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">Gaps we still need to answer</div>
+        <ul style="margin:0;padding:0 0 0 16px;font-size:11px;color:var(--text-2);line-height:1.7">
+          ${cls.ambiguities.map(a => `<li>${a}</li>`).join('')}
+        </ul>
+      </div>` : ''}
+    </div>
+    <div id="q-container"></div>`;
+}
+
 async function _showMandatoryQuestions(idea) {
   const panel = document.getElementById('clarify-panel');
   const runBtn = document.getElementById('run-btn');
   panel.style.display = 'block';
-  // Animated loading bar while Claude generates questions
   panel.innerHTML = `
     <div style="background:var(--blue);color:#fff;padding:10px 14px;border-radius:4px 4px 0 0">
       <div style="font-size:13px;font-weight:700">Step 1 of 2 — Refine your idea</div>
-      <div style="font-size:11px;opacity:.85;margin-top:2px">Generating targeted questions for your innovation…</div>
+      <div style="font-size:11px;opacity:.85;margin-top:2px">Classifying your innovation and generating tailored questions…</div>
     </div>
     <div style="padding:16px;background:var(--bg-2);border:1px solid var(--border);border-top:none;border-radius:0 0 4px 4px">
       <div style="height:4px;background:var(--border);border-radius:2px;overflow:hidden;margin-bottom:10px">
         <div id="q-load-bar" style="height:100%;width:0%;background:var(--blue);border-radius:2px;transition:width .4s ease"></div>
       </div>
-      <div id="q-load-label" style="font-size:11px;color:var(--text-3)">Analysing your innovation and generating questions…</div>
+      <div id="q-load-label" style="font-size:11px;color:var(--text-3)">Identifying product archetype…</div>
     </div>`;
   if (runBtn) { runBtn.disabled = true; runBtn.textContent = 'Loading questions…'; }
 
-  // Animate the loading bar while waiting
   const _loadStages = [
-    [15, 'Identifying product archetype and disease area…'],
-    [35, 'Sweeping competitive landscape for named competitors…'],
-    [55, 'Determining relevant market topology questions…'],
-    [75, 'Generating targeted multiple-choice options…'],
+    [20, 'Classifying product type and market domain…'],
+    [45, 'Selecting conditioned questions for your archetype…'],
+    [70, 'Sweeping competitive landscape…'],
     [90, 'Finalising questions…'],
   ];
   let _stageIdx = 0;
@@ -5706,15 +5775,50 @@ async function _showMandatoryQuestions(idea) {
   }, 900);
   window._qLoadTimer = _loadTick;
 
+  const token = localStorage.getItem('pe_token');
+
   try {
-    const token = localStorage.getItem('pe_token');
+    // ── Stage 1: classify the product ──────────────────────────────────────
+    let cls = null;
+    try {
+      const clsRes = await fetch(`${API}/alignment/classify`, {
+        method: 'POST',
+        headers: {'Content-Type':'application/json','Authorization':`Bearer ${token}`},
+        body: JSON.stringify({ idea }),
+      });
+      if (clsRes.ok) {
+        const clsData = await clsRes.json();
+        cls = clsData.classification || null;
+        window._classification = cls;
+        // If classify already returned questions, use them directly
+        if (clsData.questions && clsData.questions.length) {
+          clearInterval(window._qLoadTimer);
+          const bar = document.getElementById('q-load-bar');
+          if (bar) bar.style.width = '100%';
+          window._questionsShown = true;
+          if (cls) _renderClassificationCard(cls, panel);
+          const qTarget = cls ? document.getElementById('q-container') : panel;
+          _renderQuestionForm(clsData.questions, qTarget || panel, runBtn);
+          return;
+        }
+      } else if (clsRes.status === 401 || clsRes.status === 403) {
+        throw new Error('HTTP ' + clsRes.status);
+      }
+    } catch(clsErr) {
+      if (clsErr.message === 'HTTP 401' || clsErr.message === 'HTTP 403') throw clsErr;
+      // Classification failed — fall through to legacy /clarify
+      logger && logger.warn ? null : void 0;
+    }
+
+    // ── Stage 2: get questions (conditioned if we have a classification) ───
     const res = await fetch(`${API}/alignment/clarify`, {
       method: 'POST',
       headers: {'Content-Type':'application/json','Authorization':`Bearer ${token}`},
       body: JSON.stringify({
         idea,
-        pathway:      window.selectedPathway || 'commercial',
-        product_type: window.selectedType    || 'drug_small_molecule',
+        pathway:        window.selectedPathway || 'commercial',
+        product_type:   window.selectedType    || 'drug_small_molecule',
+        classification: cls,
       }),
     });
     if (!res.ok) throw new Error('HTTP ' + res.status);
@@ -5735,18 +5839,23 @@ async function _showMandatoryQuestions(idea) {
     }
 
     window._questionsShown = true;
-    _renderQuestionForm(questions, panel, runBtn);
+    if (cls) {
+      _renderClassificationCard(cls, panel);
+      const qTarget = document.getElementById('q-container') || panel;
+      _renderQuestionForm(questions, qTarget, runBtn);
+    } else {
+      _renderQuestionForm(questions, panel, runBtn);
+    }
 
   } catch(e) {
     clearInterval(window._qLoadTimer);
     window._questionsShown = true;
-    // 401/403 → session expired. Show sign-in prompt instead of generic questions.
     if (e.message === 'HTTP 401' || e.message === 'HTTP 403') {
       panel.style.display = 'block';
       panel.innerHTML = `<div style="padding:12px 14px;background:var(--bg-2);border:1px solid #dc2626;border-radius:4px;font-size:13px;color:#dc2626;line-height:1.5">
         Your session has expired. <a href="#" onclick="openAuth('login');return false" style="color:#dc2626;font-weight:700;text-decoration:underline">Sign in again</a> to get questions tailored to your innovation.</div>`;
       if (runBtn) { runBtn.disabled = false; runBtn.textContent = 'Run Analysis'; }
-      window._questionsShown = false; // allow re-fire after login
+      window._questionsShown = false;
       return;
     }
     const fallbackQs = _fallbackQuestions();
