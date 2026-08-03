@@ -2,8 +2,8 @@
   "name": "projectelevate-frontend",
   "version": "1.0.0",
   "description": "",
-  "main": "_config.js",
   "scripts": {
+    "start": "npx serve . -l ${PORT:-3000} --no-clipboard",
     "test": "playwright test",
     "test:headed": "playwright test --headed",
     "test:report": "playwright show-report"
