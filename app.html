@@ -1190,14 +1190,11 @@ function tab(name) {
 
   // Lazy-load tab content
   if (name === 'index')      loadIndex();
-  if (name === 'discovery')  {
-    if (window._discoveryData && window._discoveryData.length > 0) {
-      // Already pre-loaded in background — render instantly
-      filterDiscovery();
-      window._discoveryLoaded = true;
-    } else if (!window._discoveryLoaded) {
+  if (name === 'discovery') {
+    if (_discoveryData.length > 0) {
+      filterDiscovery(); // already loaded — render instantly from memory
+    } else {
       loadDiscovery();
-      window._discoveryLoaded = true;
     }
   }
   if (name === 'needs')      loadNeeds();
@@ -1225,17 +1222,39 @@ tick(); setInterval(tick, 1000);
 
 // PI Analysis
 
+function _isAuthError(msg) {
+  const m = (msg || '').toLowerCase();
+  return m.includes('token') || m.includes('expired') || m.includes('unauthorized') || m.includes('not authenticated');
+}
+
 async function runAnalysis() {
   const idea = document.getElementById('idea').value.trim();
   if (!idea || idea.length < 30) { alert('Please describe your product in at least 30 characters.'); return; }
 
-  const _devEmails = ['test@medlevate.io','ijw91021@gmail.com','admin@medlevate.io','oneonesie100@gmail.com'];
+  // Show pricing first, then sign in after — no free reports
+  const _devEmails = ['test@medlevate.io','ijw91021@gmail.com','admin@medlevate.io','oneonesie100@gmail.com','lizpeek11@gmail.com','peek@wustl.edu'];
   const _isDev = currentUser && _devEmails.includes(currentUser.email);
   if (!currentUser) { openAuth('login'); return; }
   if (!_isDev && !(billingStatus && billingStatus.is_active)) {
     (window.showPaywall || function(){ document.getElementById('paywall-overlay').style.display='flex'; })();
     return;
   }
+
+  // Guard: validate token exists and hasn't expired before making any API call.
+  // currentUser and pe_token are stored independently; token can expire while
+  // currentUser remains set, causing a confusing "Invalid or expired token" error.
+  const _tok = localStorage.getItem('pe_token');
+  if (!_tok) {
+    localStorage.removeItem('pe_user'); currentUser = null;
+    openAuth('login'); return;
+  }
+  try {
+    const _payload = JSON.parse(atob(_tok.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));
+    if (_payload.exp && _payload.exp < Math.floor(Date.now() / 1000)) {
+      localStorage.removeItem('pe_token'); localStorage.removeItem('pe_user'); currentUser = null;
+      openAuth('login'); return;
+    }
+  } catch(_) { /* malformed — let server reject */ }
 
   const btn = document.getElementById('run-btn');
   btn.disabled = true; btn.textContent = 'Analyzing…';
@@ -1297,7 +1316,13 @@ async function runAnalysis() {
       idea,
       product_type: 'other',
       tier1_category: selectedType,
-      target_pathogen: document.getElementById('pathogen').value.trim() || null
+      target_pathogen: document.getElementById('pathogen').value.trim() || null,
+      // Pass classification if available — maps to existing PIReportRequest fields
+      ...(window._classification ? {
+        product_name: window._classification.product_name,
+        domain:       window._classification.domain,
+      } : {}),
+      clarify_answers: window.clarifyAnswers || {},
     };
     let data;
     if (window._mockMode) {
@@ -1314,6 +1339,14 @@ async function runAnalysis() {
       });
       if (!startRes.ok) {
         const e = await startRes.json().catch(()=>({})); const detail = e.detail || {};
+        // 401/403 → session expired — open auth modal immediately
+        if (startRes.status === 401 || startRes.status === 403) {
+          clearTimeout(_progTimer);
+          btn.disabled = false; btn.textContent = 'Run Analysis';
+          document.getElementById('results').innerHTML = '';
+          openAuth('login');
+          throw new Error('SESSION_EXPIRED');
+        }
         // 402 quota/subscription errors — show paywall with plan-specific message
         if (startRes.status === 402) {
           clearTimeout(_progTimer);
@@ -1326,7 +1359,15 @@ async function runAnalysis() {
           loadBillingStatus();
           return;
         }
-        throw new Error(typeof detail === 'string' ? detail : (detail.message || `HTTP ${startRes.status}`));
+        const errMsg = typeof detail === 'string' ? detail : (detail.message || `HTTP ${startRes.status}`);
+        if (_isAuthError(errMsg)) {
+          clearTimeout(_progTimer);
+          btn.disabled = false; btn.textContent = 'Run Analysis';
+          document.getElementById('results').innerHTML = '';
+          openAuth('login');
+          throw new Error('SESSION_EXPIRED');
+        }
+        throw new Error(errMsg);
       }
       const startData = await startRes.json();
       window._currentJobId = startData.job_id;
@@ -1343,7 +1384,12 @@ async function runAnalysis() {
     loadBillingStatus(); // refresh counter after each successful report
   } catch(e) {
     clearTimeout(_progTimer);
-    document.getElementById('results').innerHTML = `<div class="err">Error: ${e.message}</div><div class="empty"><div class="empty-s">Make sure the server is running and your API key is valid.</div></div>`;
+    if (e.message === 'SESSION_EXPIRED' || _isAuthError(e.message)) {
+      document.getElementById('results').innerHTML = '';
+      if (e.message !== 'SESSION_EXPIRED') openAuth('login');
+    } else {
+      document.getElementById('results').innerHTML = `<div class="err">Error: ${e.message}</div><div class="empty"><div class="empty-s">Make sure the server is running and your API key is valid.</div></div>`;
+    }
   } finally { btn.disabled = false; btn.textContent = 'Run Analysis'; }
 }
 
@@ -1352,7 +1398,7 @@ async function runAnalysis() {
 async function _pollReport(jobId) {
   if (!jobId) throw new Error('No job id returned');
   const startedAt = Date.now();
-  const MAX_MS = 8 * 60 * 1000;   // give up after 8 minutes (covers verification + self-correction)
+  const MAX_MS = 12 * 60 * 1000;  // give up after 12 minutes (covers verification + self-correction)
   const token = localStorage.getItem('pe_token');
   while (true) {
     await new Promise(r => setTimeout(r, 3000));
@@ -1367,13 +1413,17 @@ async function _pollReport(jobId) {
       continue;
     }
     if (res.status === 404) throw new Error('Report job expired — please run it again');
+    if (res.status === 403) throw new Error('SESSION_EXPIRED');
     if (!res.ok) {
       if (Date.now() - startedAt > MAX_MS) throw new Error(`Status check failed (HTTP ${res.status})`);
       continue;
     }
     const j = await res.json();
     if (j.status === 'done') return j.report;
-    if (j.status === 'error') throw new Error(j.error || 'Report generation failed');
+    if (j.status === 'error') {
+      const msg = j.error || 'Report generation failed';
+      throw new Error(_isAuthError(msg) ? 'SESSION_EXPIRED' : msg);
+    }
     if (Date.now() - startedAt > MAX_MS) throw new Error('Report timed out');
   }
 }
@@ -1540,13 +1590,18 @@ function renderPIReport(r) {
   window._currentReportId = r.report_id || null;
   document.getElementById('sig-badge').textContent = fmt(r.signals_searched) + ' signals searched';
 
+  // Domain flag used in multiple sections — compute once at the top
+  const _reportDomain = (r.domain || '').toLowerCase();
+  const _isResearchDomain = _reportDomain.includes('research') || _reportDomain.includes('life_sciences_research');
+
+
   let html = '<div class="sg">';
 
   // REPORT HEADER — verification badges go in a slot so the background poll can
   // patch them in place once verification completes.
   html += `
     <div style="border-left:4px solid var(--blue);padding:16px 20px;background:var(--bg-2);margin-bottom:28px">
-      <div style="font-family:var(--display);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--blue);margin-bottom:6px">Medical Market Intelligence Report</div>
+      <div style="font-family:var(--display);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--blue);margin-bottom:6px">${_isResearchDomain ? 'Commercialization Intelligence Report' : 'Market Intelligence Report'}</div>
       <div style="font-family:var(--display);font-size:20px;font-weight:700;color:var(--text);margin-bottom:8px">${r.disease_intelligence ? r.disease_intelligence.condition : 'Analysis'}</div>
       <div style="font-family:var(--body);font-size:13px;color:var(--text-2);line-height:1.7">${r.executive_summary}</div>
       <div id="verification-slot">${buildVerificationBadgesHTML(r)}</div>
@@ -1754,15 +1809,25 @@ function renderPIReport(r) {
       ? `$${(ms.serviceable_market_usd/1e9).toFixed(1)}B`
       : `$${(ms.serviceable_market_usd/1e6).toFixed(0)}M`;
 
-    html += `<div class="narrative-block">
-      The total addressable market is <strong>${tamVal}</strong> assuming 100% patient capture. The serviceable market, adjusted for formulary access, competitive share, and geographic concentration, is <strong>${samVal}</strong>. The calculation below builds this figure from primary epidemiological sources.
-    </div>`;
+    // Domain-aware intro prose — never inject pharma vocabulary for research tools
+    const _msSteps = ms.derivation_steps || [];
+    const _msMethodNote = ms.methodology_note || '';
+    let _msIntroProse;
+    if (_isResearchDomain) {
+      const _unitLabel = (ms.unit || 'funded labs');
+      const _methodsStr = _msMethodNote || 'buyer population model × observed spend band';
+      _msIntroProse = `TAM is <strong>${tamVal}</strong>, built bottom-up from NIH-funded ${_unitLabel} running instrumented experiments. SAM of <strong>${samVal}</strong> applies reachability and adoption gates. Methodology: ${_methodsStr}.`;
+    } else {
+      const _samGateNote = ms.sam_gate_note || 'reachability, competitive share, and geography';
+      _msIntroProse = `The total addressable market is <strong>${tamVal}</strong>. The serviceable market, filtered by ${_samGateNote}, is <strong>${samVal}</strong>. The derivation below builds this from primary sources.`;
+    }
+    html += `<div class="narrative-block">${_msIntroProse}</div>`;
 
     html += `<div class="ms-totals">
       <div class="ms-total-cell">
         <div class="ms-total-lbl">Total Addressable Market (TAM)</div>
         <div class="ms-total-val">${tamVal}</div>
-        <div class="ms-total-sub">Full market if 100% penetration</div>
+        <div class="ms-total-sub">${_isResearchDomain ? 'Full buyer population at observed spend' : 'Full market if 100% penetration'}</div>
       </div>
       <div class="ms-total-cell">
         <div class="ms-total-lbl">Serviceable Market (SAM)</div>
@@ -2914,6 +2979,15 @@ function storeAuth(d) {
   localStorage.setItem('pe_user', JSON.stringify(currentUser));
   onLoggedIn();
   closeAuth();
+  // If there's a pending idea whose questions failed due to an expired session,
+  // re-fire _showMandatoryQuestions now that the user has a fresh token.
+  const _pendingIdea = document.getElementById('idea')?.value.trim();
+  const _qPanel = document.getElementById('clarify-panel');
+  if (_pendingIdea && _pendingIdea.length >= 30 && _qPanel && _qPanel.style.display !== 'none') {
+    window._questionsShown = false;
+    window.clarifyAnswers = {};
+    _showMandatoryQuestions(_pendingIdea);
+  }
 }
 
 async function handleGoogleCredential(response) {
@@ -3052,50 +3126,8 @@ loadAuthState();
 // Start fetching discovery data immediately in the background so by the time
 // the user clicks "Market Discovery" the data is already loaded.
 // Uses localStorage cache (24h TTL) — returning visitors see results instantly.
-(function _preloadDiscovery() {
-  const CACHE_KEY = 'medlevate_discovery_v3';
-  const CACHE_TTL = 86_400_000;  // 24 hours in ms
-
-  // Check localStorage for fresh cached results
-  try {
-    const cached = localStorage.getItem(CACHE_KEY);
-    if (cached) {
-      const { data, ts } = JSON.parse(cached);
-      if (Date.now() - ts < CACHE_TTL && data?.length > 0) {
-        window._discoveryData = data;
-        window._universeSize  = data.length;
-        window._discoveryLoaded = true;
-        console.log('[Medlevate] Discovery served from cache:', data.length, 'diseases');
-        return;  // Already fresh — no fetch needed
-      }
-    }
-  } catch(e) {}
-
-  // No fresh cache — fetch in background after a short delay
-  // Delay lets auth state resolve so the request can include the token
-  setTimeout(async () => {
-    try {
-      const token = localStorage.getItem('pe_token');
-      if (!token) return;  // Not logged in — don't pre-fetch
-      const res = await fetch(`${API}/alignment/discovery/opportunities?top_n=309`, {
-        headers: {'Authorization': `Bearer ${token}`}
-      });
-      if (!res.ok) return;
-      const json = await res.json();
-      const opps = json.opportunities || [];
-      if (opps.length > 0) {
-        window._discoveryData   = opps;
-        window._universeSize    = json.universe_size || opps.length;
-        window._discoveryLoaded = true;
-        // Cache for 24 hours
-        try {
-          localStorage.setItem(CACHE_KEY, JSON.stringify({ data: opps, ts: Date.now() }));
-        } catch(e) {}  // localStorage full — ignore
-        console.log('[Medlevate] Discovery pre-loaded in background:', opps.length, 'diseases');
-      }
-    } catch(e) {}  // Silent — background pre-load failures don't surface to user
-  }, 1500);  // 1.5s delay — lets auth resolve first
-})();
+// Discovery data is loaded on-demand when the user opens the Discovery tab.
+// loadDiscovery() handles caching internally with a user-scoped localStorage key.
 
 
 
@@ -3920,7 +3952,7 @@ let billingStatus = null;
 
 async function loadBillingStatus() {
   if (!currentUser) return;
-  const DEV_EMAILS_LOCAL = ['test@medlevate.io','ijw91021@gmail.com','admin@medlevate.io','oneonesie100@gmail.com'];
+  const DEV_EMAILS_LOCAL = ['test@medlevate.io','ijw91021@gmail.com','admin@medlevate.io','oneonesie100@gmail.com','lizpeek11@gmail.com','peek@wustl.edu'];
   if (DEV_EMAILS_LOCAL.includes(currentUser.email)) {
     billingStatus = {
       subscription_status:'active', is_active:true, plan:'institution',
@@ -4198,7 +4230,44 @@ function showPricingModal() {
 }
 
 // ── DISCOVERY ENGINE ──────────────────────────────────────────────────────────
-let _discoveryData = [];
+let _discoveryData    = [];
+let _discoveryAbort   = null;  // AbortController for in-flight fetch
+let _discoveryOffset  = 0;     // how many we've loaded so far
+let _discoveryTotal   = 0;     // universe_size from API
+let _discoveryLoading = false; // prevent double-loads
+
+// Source text → canonical URL (for citation links)
+const _SOURCE_URLS = [
+  [/NCI SEER/i,                'https://seer.cancer.gov/statistics-network/explorer/'],
+  [/cBioPortal/i,              'https://www.cbioportal.org'],
+  [/CMS Part B ASP/i,          'https://data.cms.gov/provider-summary-by-type-of-service/medicare-part-b-physician'],
+  [/CMS Part D/i,              'https://data.cms.gov/provider-summary-by-type-of-service/medicare-part-d-prescribers'],
+  [/CMS.*formulary|formulary.*CMS/i, 'https://data.cms.gov/provider-characteristics/medicare-provider-supplier-enrollment/medicare-fee-for-service-public-provider-enrollment'],
+  [/Orphanet/i,                'https://www.orpha.net'],
+  [/CDC ADDM/i,                'https://www.cdc.gov/ncbddd/autism/addm.html'],
+  [/CDC BRFSS/i,               'https://www.cdc.gov/brfss/index.html'],
+  [/CDC/i,                     'https://www.cdc.gov/nchs/fastats/'],
+  [/Alzheimer.*Association/i,  'https://www.alz.org/alzheimers-dementia/facts-figures'],
+  [/NIMH/i,                    'https://www.nimh.nih.gov/health/statistics'],
+  [/IQVIA/i,                   'https://www.iqvia.com/insights/the-iqvia-institute/reports'],
+  [/BIO.*2020|BIO.*2021|BIO\/Informa/i, 'https://www.bio.org/sites/default/files/2021-01/BIO-Clinical-Development-Success-Rates-2011-2020.pdf'],
+  [/Wong.*2019/i,              'https://pubmed.ncbi.nlm.nih.gov/30753344/'],
+  [/Younossi.*2023/i,          'https://pubmed.ncbi.nlm.nih.gov/36921818/'],
+  [/Strnad.*2020/i,            'https://pubmed.ncbi.nlm.nih.gov/32470543/'],
+  [/McDonald.*McGinn|McDonald-McGinn/i, 'https://pubmed.ncbi.nlm.nih.gov/25671430/'],
+  [/MEPS/i,                    'https://meps.ahrq.gov/mepsweb/'],
+  [/openFDA|FDA.*label/i,      'https://open.fda.gov/drug/label/'],
+  [/ClinicalTrials/i,          'https://clinicaltrials.gov'],
+  [/WHO GHO|WHO Global/i,      'https://www.who.int/data/gho'],
+  [/Orphan.*Drug.*Act|OOPD/i,  'https://www.fda.gov/patients/rare-diseases-fda/orphan-drug-designation-program'],
+];
+
+function _linkSource(text) {
+  if (!text) return '—';
+  const match = _SOURCE_URLS.find(([pattern]) => pattern.test(text));
+  if (!match) return text;
+  return `<a href="${match[1]}" target="_blank" rel="noopener" style="color:var(--blue);text-decoration:underline dotted;text-underline-offset:2px">${text}</a>`;
+}
 
 
 
@@ -4229,7 +4298,7 @@ function runDiscoveryReport(disease, ta) {
 const _origTab = window.tab;
 window.tab = function(name) {
   if (typeof _origTab === 'function') _origTab(name);
-  if (name === 'discovery' && _discoveryData.length === 0) loadDiscovery();
+  if (name === 'discovery' && _discoveryData.length === 0) loadDiscovery(); // handled by tab() above, this is a no-op guard
 };
 
 </script>
@@ -4437,64 +4506,95 @@ window.tab = function(name) {
           <div id="build-markets-grid" style="display:none"></div>
             <div style="max-width:600px">
 
-              <!-- Q1: Innovation type -->
+              <!-- Q1: Innovation platform -->
               <div style="margin-bottom:22px">
-                <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:10px">1 · What type of innovation do you have?</div>
-                <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px" id="q1-grid">
-                  <button class="build-opt" data-q="q1" data-v="Small Molecule Drug" onclick="selectBuildOpt(this)">💊 Small Molecule Drug</button>
+                <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">1 · What is your innovation platform?</div>
+                <div style="font-size:11px;color:var(--text-3);margin-bottom:10px">The technology or drug type you're developing</div>
+                <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+                  <button class="build-opt" data-q="q1" data-v="Small Molecule Drug" onclick="selectBuildOpt(this)">💊 Small Molecule</button>
                   <button class="build-opt" data-q="q1" data-v="Biologic / Antibody" onclick="selectBuildOpt(this)">🧫 Biologic / Antibody</button>
-                  <button class="build-opt" data-q="q1" data-v="Gene or Cell Therapy" onclick="selectBuildOpt(this)">🧬 Gene / Cell Therapy</button>
-                  <button class="build-opt" data-q="q1" data-v="Medical Device" onclick="selectBuildOpt(this)">🔬 Medical Device</button>
-                  <button class="build-opt" data-q="q1" data-v="Diagnostic Test" onclick="selectBuildOpt(this)">🧪 Diagnostic / IVD</button>
-                  <button class="build-opt" data-q="q1" data-v="Digital Health / AI" onclick="selectBuildOpt(this)">💻 Digital / AI</button>
+                  <button class="build-opt" data-q="q1" data-v="Gene Therapy (AAV/viral vector)" onclick="selectBuildOpt(this)">🧬 Gene Therapy</button>
+                  <button class="build-opt" data-q="q1" data-v="RNA Therapeutic (siRNA/mRNA/ASO)" onclick="selectBuildOpt(this)">🔗 RNA Therapeutic</button>
+                  <button class="build-opt" data-q="q1" data-v="Cell Therapy (CAR-T/stem cell)" onclick="selectBuildOpt(this)">🔴 Cell Therapy</button>
+                  <button class="build-opt" data-q="q1" data-v="Medical Device / Implant" onclick="selectBuildOpt(this)">🔬 Medical Device</button>
+                  <button class="build-opt" data-q="q1" data-v="Diagnostic Test / Biomarker" onclick="selectBuildOpt(this)">🧪 Diagnostic / IVD</button>
+                  <button class="build-opt" data-q="q1" data-v="Digital Health / AI Software" onclick="selectBuildOpt(this)">💻 Digital / AI</button>
+                  <button class="build-opt" data-q="q1" data-v="Vaccine or Immunotherapy" onclick="selectBuildOpt(this)">💉 Vaccine / Immuno</button>
                   <div style="grid-column:1/-1;display:flex;align-items:center;gap:8px;margin-top:2px">
                     <span style="font-size:11px;color:var(--text-3)">Other:</span>
-                    <input type="text" placeholder="describe your innovation type…" oninput="window._builderSelections.q1=this.value;document.querySelectorAll('.build-opt[data-q=q1]').forEach(b=>b.classList.remove('selected'))" style="flex:1;padding:7px 10px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:12px;border-radius:4px;outline:none"/>
+                    <input type="text" placeholder="e.g. peptide, PROTAC, radiopharmaceutical…" oninput="window._builderSelections.q1=this.value;document.querySelectorAll('.build-opt[data-q=q1]').forEach(b=>b.classList.remove('selected'))" style="flex:1;padding:7px 10px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:12px;border-radius:4px;outline:none"/>
                   </div>
                 </div>
               </div>
 
-              <!-- Q2: Development stage -->
+              <!-- Q2: Biological mechanism — the key discriminator for market matching -->
               <div style="margin-bottom:22px">
-                <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:10px">2 · Where is your work right now?</div>
+                <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">2 · What biological mechanism or pathway does it target?</div>
+                <div style="font-size:11px;color:var(--text-3);margin-bottom:10px">This is the most important question — it determines which diseases your innovation is most likely to work in</div>
                 <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px">
-                  <button class="build-opt" data-q="q2" data-v="Just an idea — no lab work yet" onclick="selectBuildOpt(this)">💭 Just an idea</button>
-                  <button class="build-opt" data-q="q2" data-v="Early-stage research / preclinical data" onclick="selectBuildOpt(this)">🔬 Preclinical research</button>
-                  <button class="build-opt" data-q="q2" data-v="Phase 1 / early clinical" onclick="selectBuildOpt(this)">🏥 Phase 1 / early clinical</button>
-                  <button class="build-opt" data-q="q2" data-v="Existing technology looking for new indication" onclick="selectBuildOpt(this)">🔄 Repurposing / new indication</button>
+                  <button class="build-opt" data-q="q2" data-v="Gene mutation / correction (single-gene defect)" onclick="selectBuildOpt(this)">🧬 Gene mutation / correction</button>
+                  <button class="build-opt" data-q="q2" data-v="RNA silencing or splicing modulation" onclick="selectBuildOpt(this)">🔗 RNA silencing / splicing</button>
+                  <button class="build-opt" data-q="q2" data-v="Protein aggregation or misfolding (tau, amyloid, synuclein)" onclick="selectBuildOpt(this)">🧩 Protein aggregation / misfolding</button>
+                  <button class="build-opt" data-q="q2" data-v="Immune activation or suppression (T-cell, cytokine, complement)" onclick="selectBuildOpt(this)">🛡️ Immune modulation</button>
+                  <button class="build-opt" data-q="q2" data-v="Metabolic enzyme or receptor (lipid, glucose, amino acid)" onclick="selectBuildOpt(this)">⚗️ Metabolic enzyme / receptor</button>
+                  <button class="build-opt" data-q="q2" data-v="Cancer cell signaling or proliferation (kinase, checkpoint, oncogene)" onclick="selectBuildOpt(this)">🎗️ Cancer cell signaling</button>
+                  <button class="build-opt" data-q="q2" data-v="Pathogen or microbial target (bacteria, virus, fungus)" onclick="selectBuildOpt(this)">🦠 Pathogen / antimicrobial</button>
+                  <button class="build-opt" data-q="q2" data-v="Cardiovascular or hemodynamic (ion channel, coagulation, vascular)" onclick="selectBuildOpt(this)">❤️ Cardiovascular / hemodynamic</button>
+                  <button class="build-opt" data-q="q2" data-v="Fibrosis or inflammation (TGF-β, IL pathway, NF-κB)" onclick="selectBuildOpt(this)">🔥 Fibrosis / inflammation</button>
+                  <button class="build-opt" data-q="q2" data-v="Biomarker detection or imaging (sensor, assay, AI-read)" onclick="selectBuildOpt(this)">🔍 Biomarker / detection</button>
                   <div style="grid-column:1/-1;display:flex;align-items:center;gap:8px;margin-top:2px">
                     <span style="font-size:11px;color:var(--text-3)">Other:</span>
-                    <input type="text" placeholder="describe your stage…" oninput="window._builderSelections.q2=this.value;document.querySelectorAll('.build-opt[data-q=q2]').forEach(b=>b.classList.remove('selected'))" style="flex:1;padding:7px 10px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:12px;border-radius:4px;outline:none"/>
+                    <input type="text" placeholder="e.g. epigenetic modification, microbiome, mechanosensing…" oninput="window._builderSelections.q2=this.value;document.querySelectorAll('.build-opt[data-q=q2]').forEach(b=>b.classList.remove('selected'))" style="flex:1;padding:7px 10px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:12px;border-radius:4px;outline:none"/>
                   </div>
                 </div>
               </div>
 
-              <!-- Q3: Primary constraint -->
+              <!-- Q3: Patient population -->
               <div style="margin-bottom:22px">
-                <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:10px">3 · What is your biggest constraint?</div>
+                <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">3 · What patient population does your work address?</div>
+                <div style="font-size:11px;color:var(--text-3);margin-bottom:10px">Determines whether rare/orphan or large-market diseases match better</div>
                 <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px">
-                  <button class="build-opt" data-q="q3" data-v="Time to market — need faster path to approval" onclick="selectBuildOpt(this)">⚡ Speed / regulatory path</button>
-                  <button class="build-opt" data-q="q3" data-v="Capital — limited funding, need non-dilutive grants" onclick="selectBuildOpt(this)">💰 Capital / funding</button>
-                  <button class="build-opt" data-q="q3" data-v="Team size — small academic or startup team" onclick="selectBuildOpt(this)">👥 Team / resources</button>
-                  <button class="build-opt" data-q="q3" data-v="Freedom to operate — IP landscape concerns" onclick="selectBuildOpt(this)">🔒 IP / freedom to operate</button>
+                  <button class="build-opt" data-q="q3" data-v="Rare / orphan disease (fewer than 200,000 US patients)" onclick="selectBuildOpt(this)">🧬 Rare / orphan disease</button>
+                  <button class="build-opt" data-q="q3" data-v="Large chronic disease (millions of patients, long-term treatment)" onclick="selectBuildOpt(this)">📊 Large chronic disease</button>
+                  <button class="build-opt" data-q="q3" data-v="Cancer — any type or stage" onclick="selectBuildOpt(this)">🎗️ Cancer patients</button>
+                  <button class="build-opt" data-q="q3" data-v="Pediatric patients or early-onset genetic disease" onclick="selectBuildOpt(this)">👶 Pediatric / early-onset</button>
+                  <button class="build-opt" data-q="q3" data-v="Hospital / acute care setting (sepsis, surgical, ICU)" onclick="selectBuildOpt(this)">🏥 Hospital / acute care</button>
+                  <button class="build-opt" data-q="q3" data-v="Any population — looking for the best indication fit" onclick="selectBuildOpt(this)">🔎 Best indication (open)</button>
                   <div style="grid-column:1/-1;display:flex;align-items:center;gap:8px;margin-top:2px">
                     <span style="font-size:11px;color:var(--text-3)">Other:</span>
-                    <input type="text" placeholder="describe your constraint…" oninput="window._builderSelections.q3=this.value;document.querySelectorAll('.build-opt[data-q=q3]').forEach(b=>b.classList.remove('selected'))" style="flex:1;padding:7px 10px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:12px;border-radius:4px;outline:none"/>
+                    <input type="text" placeholder="e.g. elderly, women's health, metabolic syndrome…" oninput="window._builderSelections.q3=this.value;document.querySelectorAll('.build-opt[data-q=q3]').forEach(b=>b.classList.remove('selected'))" style="flex:1;padding:7px 10px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:12px;border-radius:4px;outline:none"/>
                   </div>
                 </div>
               </div>
 
-              <!-- Q4: Key differentiator -->
+              <!-- Q4: Development stage -->
+              <div style="margin-bottom:22px">
+                <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">4 · Where is your work right now?</div>
+                <div style="font-size:11px;color:var(--text-3);margin-bottom:10px">Affects which market tractability level is most appropriate for you</div>
+                <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px">
+                  <button class="build-opt" data-q="q4" data-v="Concept / hypothesis — no experimental data yet" onclick="selectBuildOpt(this)">💭 Concept / hypothesis</button>
+                  <button class="build-opt" data-q="q4" data-v="Preclinical — in vitro or animal model data" onclick="selectBuildOpt(this)">🔬 Preclinical data</button>
+                  <button class="build-opt" data-q="q4" data-v="Phase 1 / IND-enabling studies" onclick="selectBuildOpt(this)">🏥 Phase 1 / IND-enabling</button>
+                  <button class="build-opt" data-q="q4" data-v="Validated platform — seeking new indications" onclick="selectBuildOpt(this)">🔄 Platform seeking new indications</button>
+                  <div style="grid-column:1/-1;display:flex;align-items:center;gap:8px;margin-top:2px">
+                    <span style="font-size:11px;color:var(--text-3)">Other:</span>
+                    <input type="text" placeholder="describe your stage…" oninput="window._builderSelections.q4=this.value;document.querySelectorAll('.build-opt[data-q=q4]').forEach(b=>b.classList.remove('selected'))" style="flex:1;padding:7px 10px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:12px;border-radius:4px;outline:none"/>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Q5: Differentiator — used for idea generation, not matching -->
               <div style="margin-bottom:28px">
-                <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:10px">4 · What makes your approach different?</div>
+                <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">5 · What makes your approach unique?</div>
+                <div style="font-size:11px;color:var(--text-3);margin-bottom:10px">Used to write your idea statement — not for disease matching</div>
                 <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px">
-                  <button class="build-opt" data-q="q4" data-v="Novel target or mechanism of action" onclick="selectBuildOpt(this)">🎯 Novel target / mechanism</button>
-                  <button class="build-opt" data-q="q4" data-v="Better delivery or formulation" onclick="selectBuildOpt(this)">🚀 Better delivery / formulation</button>
-                  <button class="build-opt" data-q="q4" data-v="Biomarker-selected patient population" onclick="selectBuildOpt(this)">🧬 Biomarker-selected patients</button>
-                  <button class="build-opt" data-q="q4" data-v="Lower cost or improved access" onclick="selectBuildOpt(this)">♿ Cost / access improvement</button>
+                  <button class="build-opt" data-q="q5" data-v="Novel target or first-in-class mechanism" onclick="selectBuildOpt(this)">🎯 Novel target / mechanism</button>
+                  <button class="build-opt" data-q="q5" data-v="Superior delivery or formulation" onclick="selectBuildOpt(this)">🚀 Better delivery</button>
+                  <button class="build-opt" data-q="q5" data-v="Biomarker-guided patient selection" onclick="selectBuildOpt(this)">🧬 Biomarker selection</button>
+                  <button class="build-opt" data-q="q5" data-v="Lower cost, simpler administration, or improved access" onclick="selectBuildOpt(this)">♿ Accessibility / cost</button>
                   <div style="grid-column:1/-1;display:flex;align-items:center;gap:8px;margin-top:2px">
                     <span style="font-size:11px;color:var(--text-3)">Other:</span>
-                    <input type="text" placeholder="describe your differentiator…" oninput="window._builderSelections.q4=this.value;document.querySelectorAll('.build-opt[data-q=q4]').forEach(b=>b.classList.remove('selected'))" style="flex:1;padding:7px 10px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:12px;border-radius:4px;outline:none"/>
+                    <input type="text" placeholder="e.g. once-monthly dosing, oral formulation…" oninput="window._builderSelections.q5=this.value;document.querySelectorAll('.build-opt[data-q=q5]').forEach(b=>b.classList.remove('selected'))" style="flex:1;padding:7px 10px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:12px;border-radius:4px;outline:none"/>
                   </div>
                 </div>
               </div>
@@ -4659,11 +4759,8 @@ async function loadDiscoveryForBuilder() {
   const grid = document.getElementById('build-markets-grid');
   if (!grid) return;
 
-  // Use already-loaded discovery data if available
-  let top = (window._discoveryData || [])
-    .filter(o => o && o.score)
-    .sort((a,b) => b.score - a.score)
-    .slice(0, 9);
+  // Use the single _discoveryData reference (same as Discovery tab)
+  let top = _discoveryData.filter(o => o && o.score).sort((a,b) => (b.sam_usd||0) - (a.sam_usd||0)).slice(0, 9);
 
   if (!top.length) {
     grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:24px;color:var(--text-3)">
@@ -4672,11 +4769,10 @@ async function loadDiscoveryForBuilder() {
           fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
       <div style="font-size:12px;margin-bottom:8px">Loading top opportunities…</div>
-      
     </div>`;
     try {
       await loadDiscovery();
-      top = (window._discoveryData || []).filter(o => o && o.score).sort((a,b) => b.score - a.score).slice(0, 9);
+      top = _discoveryData.filter(o => o && o.score).sort((a,b) => (b.sam_usd||0) - (a.sam_usd||0)).slice(0, 9);
     } catch(e) {
       grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:20px;font-size:12px;color:var(--text-3)">Could not load market data. <button onclick="loadDiscoveryForBuilder()" style="color:var(--blue);background:none;border:none;cursor:pointer;font-weight:600">Try again</button></div>';
       return;
@@ -4738,11 +4834,86 @@ function selectBuildOpt(btn) {
   window._builderSelections[q] = btn.dataset.v;
 }
 
+// Biology → TA mapping: which therapeutic areas best match each mechanism
+const _BIOLOGY_TA_SCORES = {
+  'gene mutation':     {gene_therapy:1.0, rare_disease:0.9, hematology:0.8, cns:0.4},
+  'rna silencing':     {rare_disease:0.9, gene_therapy:0.8, metabolic:0.7, cns:0.5, cardiovascular:0.4},
+  'protein aggregation':{cns:1.0, rare_disease:0.6},
+  'immune':            {immunology:1.0, hematology:0.8, oncology:0.7, cns:0.4, rare_disease:0.5},
+  'metabolic enzyme':  {metabolic:1.0, rare_disease:0.7, cardiovascular:0.5, gi_hepatology:0.6},
+  'cancer cell':       {oncology:1.0, hematology:0.8},
+  'pathogen':          {amr_infectious:1.0, vaccine:0.7},
+  'cardiovascular':    {cardiovascular:1.0, metabolic:0.4},
+  'fibrosis':          {immunology:0.7, metabolic:0.6, respiratory:0.7, gi_hepatology:0.8, rare_disease:0.5},
+  'biomarker':         {oncology:0.8, amr_infectious:0.7, cardiovascular:0.6, metabolic:0.6, cns:0.5},
+};
+
+// Patient population → TA preference
+const _PATIENT_TA_SCORES = {
+  'rare':    {rare_disease:1.0, gene_therapy:0.9, hematology:0.7},
+  'large chronic': {metabolic:1.0, cardiovascular:0.9, cns:0.8, immunology:0.7, respiratory:0.7},
+  'cancer':  {oncology:1.0, hematology:0.8},
+  'pediatric':{rare_disease:1.0, gene_therapy:0.9, hematology:0.6},
+  'hospital': {amr_infectious:1.0, cardiovascular:0.7, cns:0.4},
+  'open':    {},  // no filter — all TAs equal
+};
+
+// Stage → tractability preference (which disease maturity fits your stage)
+const _STAGE_TRACTABILITY = {
+  'concept':    {EMERGING:1.0, SPECULATIVE:0.7, VIABLE:0.5, VALIDATED_CROWDED:0.3},
+  'preclinical':{EMERGING:1.0, VIABLE:0.8, SPECULATIVE:0.6, VALIDATED_CROWDED:0.5},
+  'phase 1':    {VIABLE:1.0, EMERGING:0.7, VALIDATED_CROWDED:0.7, SPECULATIVE:0.3},
+  'platform':   {VALIDATED_CROWDED:1.0, VIABLE:0.9, EMERGING:0.6, SPECULATIVE:0.4},
+};
+
+function _scoreDiseaseFit(disease, biology, patients, stage) {
+  let score = 0;
+  const ta = disease.therapeutic_area || 'other';
+  const notes = (disease.notes || '').toLowerCase();
+  const tractability = disease.commercial_tractability || 'VIABLE';
+
+  // Biology match (50% weight) — most important signal
+  const bioKey = Object.keys(_BIOLOGY_TA_SCORES).find(k => biology.toLowerCase().includes(k));
+  if (bioKey) {
+    const taScores = _BIOLOGY_TA_SCORES[bioKey];
+    score += 50 * (taScores[ta] || 0.1);
+    // Bonus for keyword match in disease notes
+    const bioKeywords = {
+      'gene mutation': ['gene','mutation','genetic','hereditary','monogenic'],
+      'rna silencing': ['rna','sirna','antisense','splicing','rnai'],
+      'protein aggregation': ['aggregat','misfolded','amyloid','tau','synuclein','prion'],
+      'immune': ['immune','autoimmune','cytokine','t-cell','b-cell','complement','inflammation'],
+      'metabolic enzyme': ['enzyme','metabolic','substrate','cofactor','lipid','glucose'],
+      'cancer cell': ['tumor','carcinoma','oncogen','kinase','checkpoint','proliferat'],
+      'pathogen': ['bacteria','virus','fungal','microbial','resist','antibiotic'],
+      'cardiovascular': ['cardiac','arterial','ventricular','arrhyth','coagulat','vascular'],
+      'fibrosis': ['fibrosis','fibrotic','tgf','collagen','scar'],
+      'biomarker': ['biomarker','diagnostic','detect','screening','assay'],
+    };
+    if ((bioKeywords[bioKey] || []).some(kw => notes.includes(kw))) score += 15;
+  }
+
+  // Patient population match (25% weight)
+  const patKey = Object.keys(_PATIENT_TA_SCORES).find(k => patients.toLowerCase().includes(k)) || 'open';
+  const patScores = _PATIENT_TA_SCORES[patKey] || {};
+  if (Object.keys(patScores).length === 0) {
+    score += 25; // 'open' — all diseases equally valid
+  } else {
+    score += 25 * (patScores[ta] || 0.1);
+  }
+
+  // Stage / tractability match (25% weight)
+  const stgKey = Object.keys(_STAGE_TRACTABILITY).find(k => stage.toLowerCase().includes(k)) || 'preclinical';
+  const stgScores = _STAGE_TRACTABILITY[stgKey] || {};
+  score += 25 * (stgScores[tractability] || 0.5);
+
+  return score;
+}
+
 async function generateIdeas() {
-  // Validate answers
   const missing = ['q1','q2','q3','q4'].filter(q => !window._builderSelections[q]);
   if (missing.length) {
-    alert('Please answer all 4 questions before continuing.');
+    alert('Please answer all questions before continuing.');
     return;
   }
 
@@ -4752,37 +4923,38 @@ async function generateIdeas() {
   if (resultsEl) resultsEl.style.display = 'none';
   if (loadingEl) loadingEl.style.display = '';
 
-  // Auto-match markets from the PI's profile — no manual selection needed.
-  // Filter discovery universe by modality relevance, then take top 3 by SAM.
-  const modality = (window._builderSelections.q1 || '').toLowerCase();
-  const _MODALITY_TA_MAP = {
-    'small molecule': ['amr_infectious','oncology','cns','metabolic','cardiovascular','immunology'],
-    'biologic':       ['oncology','immunology','hematology','rare_disease','cardiovascular'],
-    'gene':           ['gene_therapy','rare_disease','hematology','cns'],
-    'cell therapy':   ['gene_therapy','oncology','hematology'],
-    'medical device': ['cardiovascular','device','metabolic','ophthalmology'],
-    'diagnostic':     ['oncology','amr_infectious','device'],
-    'digital':        ['metabolic','cardiovascular','cns'],
-  };
-  const matchKey = Object.keys(_MODALITY_TA_MAP).find(k => modality.includes(k));
-  const relevantTAs = matchKey ? _MODALITY_TA_MAP[matchKey] : null;
-
-  let candidates = (window._discoveryData || []);
-  if (relevantTAs && candidates.length > 0) {
-    const filtered = candidates.filter(o => relevantTAs.includes(o.therapeutic_area));
-    if (filtered.length >= 3) candidates = filtered;
-  }
-
-  const markets = candidates.length > 0
-    ? candidates.sort((a,b) => (b.sam_usd||0) - (a.sam_usd||0)).slice(0,3).map(o => ({
-        disease: o.disease, ta: o.therapeutic_area, score: o.score,
-        tam: o.sam_fmt || o.peak_revenue_fmt || '—',
-      }))
-    : _BUILDER_FALLBACK_MARKETS.filter(m => !relevantTAs || relevantTAs.includes(m.ta)).slice(0,3).map(m => ({
-        disease: m.disease, ta: m.ta, score: m.score, tam: m.sam || m.tam,
-      }));
-
   const profile = window._builderSelections;
+  const biology  = profile.q2 || '';
+  const patients = profile.q3 || '';
+  const stage    = profile.q4 || '';
+
+  // Score every disease by biology + patient + stage fit — SAM is only a scaling factor
+  let candidates = _discoveryData.filter(o => o && o.score);
+  if (candidates.length === 0) candidates = _BUILDER_FALLBACK_MARKETS.map(m => ({
+    disease: m.disease, therapeutic_area: m.ta, score: m.score,
+    sam_usd: m.sam_usd || 500_000_000, sam_fmt: m.sam, notes: '',
+    commercial_tractability: 'VIABLE',
+  }));
+
+  const scored = candidates.map(o => ({
+    ...o,
+    fit: _scoreDiseaseFit(o, biology, patients, stage),
+  }));
+
+  // Final rank = fit_score × SAM^0.25 (SAM scales up fit equally-good diseases, not overrides)
+  scored.sort((a, b) => {
+    const aFinal = a.fit * Math.pow(Math.max((a.sam_usd||0)/1e6, 1), 0.25);
+    const bFinal = b.fit * Math.pow(Math.max((b.sam_usd||0)/1e6, 1), 0.25);
+    return bFinal - aFinal;
+  });
+
+  const top3 = scored.slice(0, 3);
+  const markets = top3.map(o => ({
+    disease: o.disease, ta: o.therapeutic_area,
+    score: o.score, fit: Math.round(o.fit),
+    sam: o.sam_fmt || o.peak_revenue_fmt || '—',
+    sam_usd: o.sam_usd || 0,
+  }));
 
   try {
     const token = localStorage.getItem('pe_token');
@@ -4790,11 +4962,12 @@ async function generateIdeas() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
       body: JSON.stringify({
-        modality:      profile.q1,
-        stage:         profile.q2,
-        constraint:    profile.q3,
-        differentiator:profile.q4,
-        markets:       markets,
+        platform:      profile.q1,
+        biology:       profile.q2,
+        patients:      profile.q3,
+        stage:         profile.q4,
+        differentiator:profile.q5 || '',
+        markets,
       }),
     });
     if (!res.ok) throw new Error('HTTP ' + res.status);
@@ -4817,22 +4990,29 @@ function renderBuilderResults(apiData, markets, profile) {
 
   const html = `
     <div style="margin-bottom:16px">
-      <div style="font-family:var(--display);font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px">
-        Your matched opportunities
+      <div style="font-family:var(--display);font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px">Your matched opportunities</div>
+      <div style="font-size:12px;color:var(--text-3)">
+        Ranked by <strong>biology match</strong> (${(profile.q2||'').split(' ')[0]}) + <strong>patient fit</strong> (${(profile.q3||'').split('/')[0].split('(')[0].trim()}) + stage.
+        SAM used only as tiebreaker — not the primary sort.
       </div>
-      <div style="font-size:12px;color:var(--text-3)">Based on your ${profile.q1} background at ${profile.q2.split('—')[0].trim()} stage — ranked by fit with your profile.</div>
     </div>
 
-    ${ideas.map((idea, i) => `
+    ${ideas.map((idea, i) => {
+      const mkt = markets[i] || {};
+      const fitScore = mkt.fit || Math.round(idea.match_score || 75);
+      const fitPct   = Math.min(100, Math.round(fitScore));
+      const fitColor = fitPct >= 75 ? '#059669' : fitPct >= 50 ? '#0891b2' : '#d97706';
+      return `
     <div class="idea-card ${i===0?'idea-card-primary':''}">
-      ${i===0 ? '<div style="font-size:10px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">✨ Best match</div>' : ''}
+      ${i===0 ? '<div style="font-size:10px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">✨ Best biology + patient match</div>' : ''}
       <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:10px">
         <div>
           <div style="font-family:var(--display);font-size:14px;font-weight:700;color:var(--text);margin-bottom:2px">${idea.disease}</div>
-          <div style="font-size:11px;color:var(--text-3)">${idea.therapeutic_area?.replace(/_/g,' ')} · ${idea.tam || '—'} market</div>
+          <div style="font-size:11px;color:var(--text-3)">${(idea.therapeutic_area||mkt.ta||'').replace(/_/g,' ')} · SAM ${mkt.sam || idea.tam || '—'}</div>
         </div>
-        <div style="text-align:right">
-          <div style="font-size:18px;font-weight:700;color:var(--blue)">${Math.round(idea.match_score || 75)}<span style="font-size:11px;color:var(--text-3)">/100 fit</span></div>
+        <div style="text-align:right;min-width:80px">
+          <div style="font-size:18px;font-weight:700;color:${fitColor}">${fitPct}<span style="font-size:11px;color:var(--text-3)">/100</span></div>
+          <div style="font-size:9px;color:var(--text-4)">profile fit</div>
         </div>
       </div>
 
@@ -4857,8 +5037,8 @@ function renderBuilderResults(apiData, markets, profile) {
           📋 Copy idea
         </button>
       </div>
-    </div>
-    `).join('')}
+    </div>`;
+    }).join('')}
 
     <div style="margin-top:16px;padding:14px 16px;background:var(--bg-2);border:1px solid var(--border);border-radius:4px;font-size:12px;color:var(--text-3)">
       💡 <strong style="color:var(--text)">Next step:</strong> Click "Analyze in Market Analysis" to generate a full TAM derivation, regulatory pathway, and strategic playbook for your refined idea.
@@ -4869,11 +5049,11 @@ function renderBuilderResults(apiData, markets, profile) {
 }
 
 function _generateClientSideIdeas(markets, profile) {
-  // Client-side fallback when API unavailable — generates ideas from market data + profile answers
-  const modality = profile.q1 || 'intervention';
-  const differentiator = profile.q4 || 'novel approach';
-  const constraint = profile.q3 || '';
-  const stage = profile.q2 || '';
+  const modality      = profile.q1 || 'intervention';
+  const biology       = profile.q2 || 'targeting the underlying mechanism';
+  const patients      = profile.q3 || 'patients with unmet need';
+  const stage         = profile.q4 || '';
+  const differentiator = profile.q5 || profile.q4 || 'novel approach';
 
   const _FAST_PATH_MAP = {
     'Speed / regulatory path': 'Seek Breakthrough Therapy / QIDP designation early',
@@ -4888,8 +5068,7 @@ function _generateClientSideIdeas(markets, profile) {
     const disease = m.disease || 'target disease';
     const ta = (m.ta || 'therapeutic area').replace(/_/g,' ');
 
-    // Generate a plausible refined idea statement
-    const idea = `A ${modality.toLowerCase()} targeting ${disease} through ${differentiator.toLowerCase()}, designed for ${stage.split('—')[0].trim()} translation with a focus on ${constraint.split('—')[0].trim().toLowerCase()}.`;
+    const idea = `A ${modality.toLowerCase()} targeting ${biology.split('(')[0].trim().toLowerCase()} in ${disease} — addressing ${patients.split('(')[0].trim().toLowerCase()} with ${differentiator.toLowerCase()}.`;
 
     return {
       disease,
@@ -4935,38 +5114,61 @@ function copyIdea(encodedIdea) {
 async function loadDiscovery() {
   const listEl = document.getElementById('discovery-list');
   if (!listEl) return;
+
+  // Cancel any in-flight request before starting a new one
+  if (_discoveryAbort) { _discoveryAbort.abort(); }
+  _discoveryAbort = new AbortController();
+
+  // User-scoped localStorage cache (6hr TTL)
+  const CACHE_TTL = 6 * 60 * 60 * 1000;
+  const userKey   = currentUser?.email || 'anon';
+  const CACHE_KEY = `medlevate_discovery_v6_${userKey}`; // v6: full derivation, all diseases served
+  try {
+    const cached = localStorage.getItem(CACHE_KEY);
+    if (cached) {
+      const { data, ts } = JSON.parse(cached);
+      if (Date.now() - ts < CACHE_TTL && Array.isArray(data) && data.length > 0) {
+        _discoveryData = data;
+        window._universeSize = data.length;
+        _updateDiscoveryMeta();
+        filterDiscovery();
+        return;
+      }
+    }
+  } catch(e) {}
+
   listEl.innerHTML = `<div style="text-align:center;padding:50px 20px;color:var(--text-3)">
     <svg class="ecg-svg" viewBox="0 0 200 50" width="220" height="55" style="display:block;margin:0 auto 18px">
       <path class="ecg-path" d="M0,25 L30,25 L38,22 L46,25 L54,25 L60,5 L66,45 L72,25 L82,18 L90,25 L120,25 L128,22 L136,25 L200,25"
         fill="none" stroke="var(--blue)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
     </svg>
     <div style="font-family:var(--display);font-size:15px;font-weight:700;color:var(--text-2);margin-bottom:6px">Analyzing biomedical markets</div>
-    <div style="font-size:12px;color:var(--text-3);margin-bottom:18px">Scoring unmet need, clinical success probability, and commercial potential</div>
-    
+    <div style="font-size:12px;color:var(--text-3)">Scoring unmet need, clinical success probability, and commercial potential</div>
   </div>`;
+
   try {
     const token = localStorage.getItem('pe_token');
-    const res = await fetch(`${API}/alignment/discovery/opportunities?top_n=100`, {
-      headers: {'Authorization': `Bearer ${token}`}
+    const res = await fetch(`${API}/alignment/discovery/opportunities?top_n=1500`, {
+      headers: { 'Authorization': `Bearer ${token}` },
+      signal: _discoveryAbort.signal,
     });
     if (!res.ok) throw new Error('HTTP ' + res.status);
-    const data = await res.json();
-    _discoveryData = data.opportunities || [];
-    window._universeSize = data.universe_size || _discoveryData.length;
-    const updEl = document.getElementById('disco-updated');
-    const uSize = window._universeSize;
-    const uLabel = uSize > 309
-      ? `${uSize.toLocaleString()} diseases indexed`
-      : `${_discoveryData.length} of ${uSize.toLocaleString()} diseases`;
-    if (updEl) updEl.textContent = uLabel + ' · ' + new Date().toLocaleDateString();
-    const showBtn = document.getElementById('show-all-btn');
-    if (showBtn) showBtn.textContent = `Show All ${uSize.toLocaleString()}`;
+    const json = await res.json();
+    const opps = json.opportunities || [];
+    if (opps.length === 0) throw new Error('empty');
+
+    _discoveryData   = opps;
+    window._universeSize = json.universe_size || opps.length;
+    _updateDiscoveryMeta();
     filterDiscovery();
+
+    // Cache with user-scoped key
+    try { localStorage.setItem(CACHE_KEY, JSON.stringify({ data: opps, ts: Date.now() })); } catch(e) {}
+
   } catch(e) {
-    console.error('Discovery error:', e);
-    const listEl = document.getElementById('discovery-list');
-    const isAuthError = e.message?.includes('401') || e.message?.includes('403') || !localStorage.getItem('pe_token');
-    if (listEl) listEl.innerHTML = isAuthError
+    if (e.name === 'AbortError') return; // superseded by newer request — do nothing
+    const isAuthError = e.message?.includes('401') || e.message?.includes('403') || e.message?.includes('402') || !localStorage.getItem('pe_token');
+    listEl.innerHTML = isAuthError
       ? `<div style="text-align:center;padding:60px 20px;color:var(--text-3)">
            <div style="font-size:32px;margin-bottom:14px">🔒</div>
            <div style="font-family:var(--display);font-size:16px;font-weight:700;color:var(--text-2);margin-bottom:8px">Sign in to unlock Market Discovery</div>
@@ -4979,6 +5181,14 @@ async function loadDiscovery() {
            <button onclick="loadDiscovery()" style="color:var(--blue);background:none;border:1px solid var(--border);padding:6px 14px;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer">Try again</button>
          </div>`;
   }
+}
+
+function _updateDiscoveryMeta() {
+  const uSize  = window._universeSize || _discoveryData.length;
+  const updEl  = document.getElementById('disco-updated');
+  const showBtn = document.getElementById('show-all-btn');
+  if (updEl)   updEl.textContent = `${uSize.toLocaleString()} diseases indexed · ${new Date().toLocaleDateString()}`;
+  if (showBtn) showBtn.textContent = `Show All ${uSize.toLocaleString()}`;
 }
 
 function filterDiscovery() {
@@ -5036,7 +5246,7 @@ async function loadAllDiscovery(searchAfter) {
   try {
     const token = localStorage.getItem('pe_token');
     // If searching, pass search param so backend queries all diseases in DB
-    const params = new URLSearchParams({top_n: 500});
+    const params = new URLSearchParams({top_n: 5000});
     if (q) params.set('search', q);
     const res = await fetch(`${API}/alignment/discovery/opportunities?${params}`, {
       headers: {'Authorization': `Bearer ${token}`}
@@ -5075,8 +5285,8 @@ function renderDiscovery(opps, isFiltered) {
 
   listEl.innerHTML = filterBanner + opps.map((o, i) => {
     const comp = o.components || {};
-    const c = o.tier_color || '#0891b2';
-    const ta = taLabels[o.therapeutic_area] || (o.therapeutic_area||'').replace(/_/g,' ');
+    const c    = o.tier_color || '#0891b2';
+    const ta   = taLabels[o.therapeutic_area] || (o.therapeutic_area||'').replace(/_/g,' ');
     const bars = [['Opportunity',comp.opportunity],['Probability',comp.probability],['Value',comp.value]];
     const sam  = o.sam_fmt || o.peak_revenue_fmt || '—';
     const tam  = o.us_tam_fmt || '—';
@@ -5084,13 +5294,71 @@ function renderDiscovery(opps, isFiltered) {
     const tractColor   = tractColors[tractability] || '#0891b2';
     const tractLabel   = {VALIDATED_CROWDED:'Validated market', VIABLE:'Viable path', EMERGING:'Emerging', SPECULATIVE:'Speculative'}[tractability] || tractability;
 
+    // Build derivation rows from every field the API returns
+    const ms  = o.market_sizing || {};
+    const enr = o.enrichment    || {};
+    const pop   = (o.us_patient_population || 0).toLocaleString();
+    const price = o.annual_cost_usd ? '$' + o.annual_cost_usd.toLocaleString() : '—';
+    const tamRaw = o.us_tam_usd ? (o.us_tam_usd >= 1e9 ? `$${(o.us_tam_usd/1e9).toFixed(1)}B` : `$${(o.us_tam_usd/1e6).toFixed(0)}M`) : tam;
+    const eligible   = ms.eligible_patients ? ms.eligible_patients.toLocaleString() : '—';
+    const diagYield  = ms.diagnostic_yield  ? (ms.diagnostic_yield * 100).toFixed(0) + '%' : '—';
+    const treatElig  = (o.us_patient_population && ms.eligible_patients && ms.diagnostic_yield)
+                       ? ((ms.eligible_patients / (o.us_patient_population * ms.diagnostic_yield)) * 100).toFixed(0) + '%' : '—';
+    const bassY5     = ms.bass_penetration_y5 ? (ms.bass_penetration_y5 * 100).toFixed(1) + '%' : '—';
+    const dotYrs     = ms.dot_years ? ms.dot_years.toFixed(1) + ' yr' : '—';
+    const netPct     = ms.net_price_pct_wac ? (ms.net_price_pct_wac * 100).toFixed(0) + '%' : '—';
+    const biaDamp    = ms.bia_dampening && ms.bia_dampening < 1 ? (ms.bia_dampening * 100).toFixed(0) + '% (affordability concern)' : '1.0× (no concern)';
+    const formulary  = enr.formulary_coverage ? (enr.formulary_coverage * 100).toFixed(0) + '%' : '—';
+    const paRate     = enr.pa_approval_rate   ? (enr.pa_approval_rate * 100).toFixed(0) + '%' : '—';
+    const mepsFill   = enr.meps_fill_rate     ? (enr.meps_fill_rate * 100).toFixed(0) + '%' : '—';
+    const mepsAdh    = enr.meps_adherence     ? (enr.meps_adherence * 100).toFixed(0) + '%' : '—';
+    const realFactor = enr.realized_tam_factor ? (enr.realized_tam_factor * 100).toFixed(0) + '%' : '—';
+    const popSrc     = enr.population_source || (o.data_source === 'db' ? 'MONDO / ICD-10 extended universe (TA defaults)' : '—');
+    const priceSrc   = enr.pricing_source    || (o.data_source === 'db' ? 'TA-level default pricing' : '—');
+
+    const hasDerivation = o.us_patient_population || ms.eligible_patients || ms.bass_penetration_y5;
+    const derivationRow = hasDerivation ? `
+      <details style="margin-top:8px">
+        <summary style="font-size:10px;color:var(--blue);cursor:pointer;font-weight:600;list-style:none;display:flex;align-items:center;gap:4px">
+          <span>▸ Show exact TAM/SAM calculation</span>
+        </summary>
+        <div style="margin-top:8px;background:var(--bg-2);border:1px solid var(--border);padding:10px 12px;font-size:10px;line-height:1.7">
+          <table style="width:100%;border-collapse:collapse">
+            <tr><td colspan="3" style="font-weight:700;color:var(--text-2);padding-bottom:4px;border-bottom:1px solid var(--border)">STEP 1 — Inputs</td></tr>
+            <tr><td style="color:var(--text-4);padding:2px 8px 2px 0;width:160px">US patient population</td><td style="font-weight:600;color:var(--text-2)">${pop}</td><td style="color:var(--text-4);padding-left:12px">${popSrc}</td></tr>
+            <tr><td style="color:var(--text-4)">Annual treatment price (WAC)</td><td style="font-weight:600;color:var(--text-2)">${price} / yr</td><td style="color:var(--text-4);padding-left:12px">${priceSrc}</td></tr>
+            <tr><td style="color:var(--text-4)">Duration of therapy</td><td style="font-weight:600;color:var(--text-2)">${dotYrs}</td><td style="color:var(--text-4);padding-left:12px">${ms.dot_category || ''}</td></tr>
+
+            <tr><td colspan="3" style="font-weight:700;color:var(--text-2);padding:8px 0 4px;border-bottom:1px solid var(--border)">STEP 2 — Theoretical TAM (100% capture)</td></tr>
+            <tr><td style="color:var(--text-4)">Raw TAM = pop × price</td><td style="font-weight:600;color:var(--text-2)">${tamRaw}</td><td style="color:var(--text-4);padding-left:12px">theoretical ceiling before access adjustments</td></tr>
+
+            <tr><td colspan="3" style="font-weight:700;color:var(--text-2);padding:8px 0 4px;border-bottom:1px solid var(--border)">STEP 3 — Population Cascade (DisMod)</td></tr>
+            <tr><td style="color:var(--text-4)">Diagnostic yield</td><td style="font-weight:600;color:var(--text-2)">${diagYield}</td><td style="color:var(--text-4);padding-left:12px">fraction receiving correct diagnosis</td></tr>
+            <tr><td style="color:var(--text-4)">Treatment eligibility</td><td style="font-weight:600;color:var(--text-2)">${treatElig}</td><td style="color:var(--text-4);padding-left:12px">of diagnosed, fraction meeting treatment criteria</td></tr>
+            <tr><td style="color:var(--text-4)">Eligible patients</td><td style="font-weight:600;color:var(--text)">${eligible}</td><td style="color:var(--text-4);padding-left:12px">candidates for the therapy</td></tr>
+
+            <tr><td colspan="3" style="font-weight:700;color:var(--text-2);padding:8px 0 4px;border-bottom:1px solid var(--border)">STEP 4 — Bass Diffusion + Market Competition</td></tr>
+            <tr><td style="color:var(--text-4)">Year 5 adoption (Bass)</td><td style="font-weight:600;color:var(--text-2)">${bassY5}</td><td style="color:var(--text-4);padding-left:12px">of eligible patients using therapy by Yr 5</td></tr>
+            <tr><td style="color:var(--text-4)">Gross-to-net pricing</td><td style="font-weight:600;color:var(--text-2)">${netPct} of WAC</td><td style="color:var(--text-4);padding-left:12px">rebates + discounts to payer (IQVIA GTN data)</td></tr>
+            <tr><td style="color:var(--text-4)">BIA dampening</td><td style="font-weight:600;color:var(--text-2)">${biaDamp}</td><td style="color:var(--text-4);padding-left:12px">budget impact affordability gate</td></tr>
+
+            <tr><td colspan="3" style="font-weight:700;color:var(--text-2);padding:8px 0 4px;border-bottom:1px solid var(--border)">STEP 5 — Payer Access Adjustments (CMS MEPS)</td></tr>
+            <tr><td style="color:var(--text-4)">Formulary coverage</td><td style="font-weight:600;color:var(--text-2)">${formulary}</td><td style="color:var(--text-4);padding-left:12px">plans that include this drug class on formulary</td></tr>
+            <tr><td style="color:var(--text-4)">Prior auth approval rate</td><td style="font-weight:600;color:var(--text-2)">${paRate}</td><td style="color:var(--text-4);padding-left:12px">of PA requests that are approved (CMS data)</td></tr>
+            <tr><td style="color:var(--text-4)">MEPS fill rate</td><td style="font-weight:600;color:var(--text-2)">${mepsFill}</td><td style="color:var(--text-4);padding-left:12px">patients who actually fill the prescription</td></tr>
+            <tr><td style="color:var(--text-4)">MEPS adherence rate</td><td style="font-weight:600;color:var(--text-2)">${mepsAdh}</td><td style="color:var(--text-4);padding-left:12px">patients still on therapy at 12 months</td></tr>
+            <tr><td style="color:var(--text-4)">Combined realized factor</td><td style="font-weight:700;color:var(--blue)">${realFactor}</td><td style="color:var(--text-4);padding-left:12px">formulary × PA × fill × adherence</td></tr>
+
+            <tr><td colspan="3" style="border-top:2px solid var(--border);padding-top:6px;margin-top:4px"></td></tr>
+            <tr><td style="font-weight:700;color:var(--text-2);padding-top:4px">TAM (theoretical ceiling)</td><td style="font-weight:700;color:var(--text)">${tam}</td><td style="color:var(--text-4);padding-left:12px">100% capture, full WAC price</td></tr>
+            <tr><td style="font-weight:700;color:var(--blue)">SAM (Yr 5, risk-adjusted)</td><td style="font-weight:800;color:var(--blue)">${sam}</td><td style="color:var(--text-4);padding-left:12px">Bass × GTN × BIA × payer access × PTRS ${o.ptrs||'?'}%</td></tr>
+          </table>
+        </div>
+      </details>` : '';
+
     return `<div style="border:1px solid var(--border);margin-bottom:10px;background:var(--bg)">
       <div style="padding:14px 16px;display:grid;grid-template-columns:36px 1fr 110px;gap:12px;align-items:start">
-
-        <!-- Rank: use original rank from full universe, not filtered position -->
         <div style="font-size:16px;font-weight:800;color:var(--text-4);padding-top:2px">#${o.rank || i+1}</div>
-
-        <!-- Main content -->
         <div>
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap">
             <div style="font-size:14px;font-weight:700;color:var(--text)">${o.disease}</div>
@@ -5098,8 +5366,6 @@ function renderDiscovery(opps, isFiltered) {
             <span style="font-size:10px;font-weight:600;color:${tractColor}">● ${tractLabel}</span>
           </div>
           <div style="font-size:11px;color:var(--text-3);margin-bottom:8px">${o.notes||''}</div>
-
-          <!-- TAM + PTRS secondary row -->
           <div style="display:flex;gap:16px;margin-bottom:7px;font-size:11px;align-items:center">
             <span style="color:var(--text-4)">TAM <strong style="color:var(--text-3)">${tam}</strong></span>
             <span style="color:var(--border)">·</span>
@@ -5107,16 +5373,13 @@ function renderDiscovery(opps, isFiltered) {
             <span style="color:var(--border)">·</span>
             <span style="font-size:10px;font-weight:700;padding:1px 6px;background:${c}22;color:${c};border:1px solid ${c}44">${o.tier}</span>
           </div>
-
-          <!-- Sub-score bars -->
           <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:5px">
             ${bars.map(([label,val])=>`<div><div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-4);margin-bottom:2px"><span>${label}</span><span>${Math.round(val||0)}</span></div><div style="height:3px;background:var(--border);border-radius:2px"><div style="height:3px;background:${c};border-radius:2px;width:${Math.round(val||0)}%"></div></div></div>`).join('')}
           </div>
           ${o.tractability_note ? `<div style="margin-top:5px;font-size:10px;color:${tractColor};opacity:.8">⚠ ${o.tractability_note}</div>` : ''}
           <div style="margin-top:4px;font-size:10px;color:var(--text-4)">Opportunity score: ${o.score}/100 · Confidence: ${o.confidence_low}–${o.confidence_high}</div>
+          ${derivationRow}
         </div>
-
-        <!-- SAM: the hero metric on the right -->
         <div style="text-align:center;border-left:1px solid var(--border);padding-left:12px">
           <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-4);margin-bottom:4px">SAM (Yr 5)</div>
           <div style="font-size:22px;font-weight:800;color:var(--blue);line-height:1;margin-bottom:2px">${sam}</div>
@@ -5168,87 +5431,168 @@ async function downloadPDF() {
       return;
     }
 
+    // ── Real TEXT-based PDF (selectable, searchable, clickable links) built from the
+    //    report DATA — no html2canvas screenshot. ──
+    const r = (typeof lastReport !== 'undefined' && lastReport) ? lastReport : null;
+    if (!r) { alert('Please run an analysis first.'); if (btn){btn.textContent=origText;btn.disabled=false;} return; }
+
     const { jsPDF } = window.jspdf;
-    const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-    const pageW = 210, pageH = 297, margin = 12;
-    const contentW = pageW - margin * 2;
+    const pdf = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
+    const pageW=210, pageH=297, margin=14, contentW=pageW-margin*2;
+    const DARK=[13,27,42], BLUE=[8,145,178], INK=[30,41,59], SUB=[100,116,139], LINK=[26,79,214];
+    const dateStr = new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
+    let y=0;
+    // jsPDF's built-in helvetica is WinAnsi-only; characters like ≥ ≤ × – — ' " …
+    // corrupt glyph rendering AND throw off splitTextToSize width measurement (which is
+    // what caused the garbled letters + letter-spaced overflow lines in the PDF). Map the
+    // common typographic characters to ASCII and drop anything else non-ASCII.
+    const _CHMAP = {'≥':'>=','≤':'<=','≈':'~','≠':'!=','×':'x','÷':'/','–':'-','—':'-','‑':'-','−':'-','‘':"'",'’':"'",'“':'"','”':'"','…':'...','•':'-','▪':'-','●':'-','→':'->','←':'<-','±':'+/-',' ':' ','°':' deg','®':'(R)','™':'(TM)','€':'EUR','£':'GBP','½':'1/2','¼':'1/4'};
+    const clean = (s)=> String(s==null?'':s)
+      .replace(/[≥≤≈≠×÷–—‑−‘’“”…•▪●→←± °®™€£½¼]/g, m=>(_CHMAP[m]||' '))
+      .normalize('NFKD').replace(/[̀-ͯ]/g,'')   // strip accents (é -> e)
+      .replace(/[^\x00-\x7E]/g,'')                        // drop any remaining non-ASCII
+      .replace(/\s+/g,' ').trim();
 
-    // Page 1 header
-    pdf.setFillColor(13, 27, 42);
-    pdf.rect(0, 0, pageW, 22, 'F');
-    pdf.setFillColor(8, 145, 178);
-    pdf.rect(0, 0, 4, 22, 'F');
-    pdf.setTextColor(255, 255, 255);
-    pdf.setFontSize(14); pdf.setFont('helvetica', 'bold');
-    pdf.text('Medlevate', 10, 9);
-    pdf.setFontSize(8); pdf.setFont('helvetica', 'normal');
-    pdf.setTextColor(148, 163, 184);
-    pdf.text('Medical Market Intelligence Report', 10, 15);
-    pdf.setTextColor(148, 163, 184);
-    pdf.text(new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'}), pageW - margin, 9, {align:'right'});
-    pdf.text('medlevate-staging.netlify.app', pageW - margin, 15, {align:'right'});
+    function header(){
+      pdf.setFillColor(DARK[0],DARK[1],DARK[2]); pdf.rect(0,0,pageW,18,'F');
+      pdf.setFillColor(BLUE[0],BLUE[1],BLUE[2]); pdf.rect(0,0,4,18,'F');
+      pdf.setTextColor(255,255,255); pdf.setFont('helvetica','bold'); pdf.setFontSize(13); pdf.text('Medlevate',10,8);
+      pdf.setFont('helvetica','normal'); pdf.setFontSize(7); pdf.setTextColor(148,163,184);
+      pdf.text('Medical Market Intelligence Report',10,13.5);
+      pdf.text(dateStr, pageW-margin, 8, {align:'right'});
+      pdf.text('medlevate.netlify.app', pageW-margin, 13.5, {align:'right'});
+      y=25;
+    }
+    function footer(){
+      pdf.setTextColor(148,163,184); pdf.setFont('helvetica','normal'); pdf.setFontSize(6.5);
+      pdf.text('Generated by Medlevate · medlevate.netlify.app · Confidence range ±35% (IQVIA forecast-error methodology). Not investment advice.', pageW/2, pageH-6, {align:'center'});
+    }
+    function ensure(h){ if (y+h > pageH-12){ footer(); pdf.addPage(); header(); } }
+    function heading(num,title){
+      ensure(16); y+=3;
+      pdf.setDrawColor(BLUE[0],BLUE[1],BLUE[2]); pdf.setLineWidth(0.5); pdf.line(margin,y,pageW-margin,y); y+=5.5;
+      pdf.setFillColor(BLUE[0],BLUE[1],BLUE[2]); pdf.rect(margin,y-4.4,5.5,5.5,'F');
+      pdf.setTextColor(255,255,255); pdf.setFont('helvetica','bold'); pdf.setFontSize(9); pdf.text(String(num), margin+2.75, y-0.4, {align:'center'});
+      pdf.setTextColor(DARK[0],DARK[1],DARK[2]); pdf.setFontSize(13); pdf.text(clean(title), margin+8.5, y);
+      y+=8;
+    }
+    function subhead(t){ if(!t) return; ensure(8); pdf.setTextColor(DARK[0],DARK[1],DARK[2]); pdf.setFont('helvetica','bold'); pdf.setFontSize(10);
+      pdf.splitTextToSize(clean(t),contentW).forEach(l=>{ ensure(6); pdf.text(l,margin,y); y+=5; }); y+=1; }
+    function para(t,o){ o=o||{}; if(t==null||t==='') return;
+      pdf.setFont('helvetica', o.bold?'bold':'normal'); pdf.setFontSize(o.size||9.5); pdf.setTextColor(...(o.color||INK));
+      const x=o.x||margin, w=o.w||contentW, lh=o.lh||4.7;
+      pdf.splitTextToSize(clean(t),w).forEach(l=>{ ensure(lh); pdf.text(l,x,y); y+=lh; }); y += (o.gap==null?1.5:o.gap); }
+    function bullet(t){ if(t==null||t==='') return; pdf.setFont('helvetica','normal'); pdf.setFontSize(9.3); pdf.setTextColor(INK[0],INK[1],INK[2]);
+      pdf.splitTextToSize(clean(t), contentW-6).forEach((l,i)=>{ ensure(4.7); if(i===0){ pdf.setTextColor(BLUE[0],BLUE[1],BLUE[2]); pdf.text('•', margin+1, y); pdf.setTextColor(INK[0],INK[1],INK[2]);} pdf.text(l, margin+6, y); y+=4.6; }); y+=1; }
+    function source(name,url){ if(!name && !url) return; pdf.setFont('helvetica','normal'); pdf.setFontSize(8); pdf.setTextColor(SUB[0],SUB[1],SUB[2]);
+      if(name){ pdf.splitTextToSize('Source: '+clean(name),contentW-4).forEach(l=>{ ensure(4); pdf.text(l,margin+4,y); y+=3.8; }); }
+      if(url){ pdf.setTextColor(LINK[0],LINK[1],LINK[2]); pdf.splitTextToSize(clean(url),contentW-4).forEach(l=>{ ensure(3.8); pdf.textWithLink(l,margin+4,y,{url:url}); y+=3.7; }); } y+=1; }
 
-    // Capture report content
-    if (btn) btn.textContent = 'Capturing report...';
-    const canvas = await html2canvas(reportEl, {
-      scale: 1.5,
-      useCORS: true,
-      allowTaint: true,
-      backgroundColor: '#ffffff',
-      windowWidth: 900,
-      logging: false,
+    header();
+
+    // Title block
+    const cond = clean((r.disease_intelligence&&r.disease_intelligence.condition) || r.idea_submitted || 'Market Intelligence Report');
+    pdf.setTextColor(BLUE[0],BLUE[1],BLUE[2]); pdf.setFont('helvetica','bold'); pdf.setFontSize(8); pdf.text('MEDICAL MARKET INTELLIGENCE REPORT', margin, y); y+=6;
+    pdf.setTextColor(DARK[0],DARK[1],DARK[2]); pdf.setFontSize(17);
+    pdf.splitTextToSize(cond, contentW).forEach(l=>{ ensure(8); pdf.text(l,margin,y); y+=7.5; }); y+=1;
+    if (r.expert_name) para('Expert model: '+clean(r.expert_name), {size:8,color:SUB,gap:2});
+    if (r.executive_summary){ subhead('Executive Summary'); para(r.executive_summary, {size:9.8}); }
+
+    // 1 — Opportunity
+    const di = r.disease_intelligence||{};
+    heading(1,'The Opportunity');
+    if (di.unmet_need_summary) para(di.unmet_need_summary, {bold:true});
+    (di.data_points||[]).slice(0,10).forEach(d=>{
+      bullet((clean(d.metric||d.label||'')?clean(d.metric||d.label||'')+': ':'')+clean(d.value||'')+(d.year?(' ('+clean(d.year)+')'):''));
+      if(d.source||d.source_url) source(d.source, d.source_url);
     });
+    if (di.pipeline_status){ subhead('Current pipeline'); para(di.pipeline_status); }
 
-    const imgData = canvas.toDataURL('image/jpeg', 0.92);
-    const imgW = contentW;
-    const imgH = (canvas.height * imgW) / canvas.width;
-    const usableH = pageH - 28; // below header
+    // 2 — Market
+    const ms = r.market_sizing||{};
+    heading(2,'The Market');
+    if (ms.formula) para(ms.formula, {bold:true});
+    (ms.steps||[]).forEach((s,i)=>{
+      const v = (typeof s.value==='number')? s.value.toLocaleString() : clean(s.value);
+      bullet('Step '+(i+1)+' — '+clean(s.label)+': '+v+(s.unit?(' '+clean(s.unit)):''));
+      if(s.notes) para(clean(s.notes), {x:margin+6,w:contentW-6,size:8.3,color:SUB,gap:0.5});
+      if(s.source||s.source_url) source(s.source, s.source_url);
+    });
+    if (ms.methodology_note) para('Methodology: '+clean(ms.methodology_note), {size:8.3,color:SUB});
 
-    let yPos = 26;
-    let remaining = imgH;
-    let srcY = 0;
+    // 3 — Regulatory
+    const rp = r.regulatory_pathway||{};
+    heading(3,'Your Path to Approval');
+    if (rp.recommended_pathway){ subhead('Recommended pathway'); para(rp.recommended_pathway); }
+    if (rp.pathway_rationale) para(rp.pathway_rationale);
+    if ((rp.designations||[]).length) subhead('FDA designations & pathways');
+    (rp.designations||[]).forEach(d=>{
+      para(clean(d.name)+(d.priority?(' ('+clean(d.priority)+')'):''), {bold:true, gap:0.5});
+      if(d.benefit) para(clean(d.benefit), {size:9, x:margin+3, w:contentW-3, gap:0.5});
+      if(d.timeline) para('Timeline: '+clean(d.timeline), {size:8.3,color:SUB,x:margin+3,gap:0.5});
+      if(d.source_url) source(d.source||d.name, d.source_url);
+    });
+    if (rp.total_timeline_estimate) para('Total timeline: '+clean(rp.total_timeline_estimate), {bold:true, gap:0.5});
+    if (rp.total_cost_estimate) para('Total cost estimate: '+clean(rp.total_cost_estimate), {bold:true});
+    (rp.key_friction_points||[]).forEach(f=> bullet(clean(typeof f==='string'?f:(f.point||f.issue||''))));
 
-    while (remaining > 0) {
-      const sliceH = Math.min(remaining, usableH);
-      const sliceSrcH = (sliceH / imgH) * canvas.height;
-
-      // Create slice canvas
-      const sliceCanvas = document.createElement('canvas');
-      sliceCanvas.width = canvas.width;
-      sliceCanvas.height = sliceSrcH;
-      const ctx = sliceCanvas.getContext('2d');
-      ctx.drawImage(canvas, 0, srcY, canvas.width, sliceSrcH, 0, 0, canvas.width, sliceSrcH);
-      const sliceData = sliceCanvas.toDataURL('image/jpeg', 0.92);
-
-      pdf.addImage(sliceData, 'JPEG', margin, yPos, imgW, sliceH);
-
-      remaining -= sliceH;
-      srcY += sliceSrcH;
-
-      if (remaining > 0) {
-        pdf.addPage();
-        // Add header to subsequent pages
-        pdf.setFillColor(13, 27, 42);
-        pdf.rect(0, 0, pageW, 12, 'F');
-        pdf.setFillColor(8, 145, 178);
-        pdf.rect(0, 0, 4, 12, 'F');
-        pdf.setTextColor(255,255,255);
-        pdf.setFontSize(9); pdf.setFont('helvetica','bold');
-        pdf.text('Medlevate', 10, 8);
-        yPos = 15;
-      }
+    // 4 — Strategic playbook
+    if ((r.strategic_playbook||[]).length){
+      heading(4,'Strategic Playbook');
+      (r.strategic_playbook||[]).forEach(s=>{
+        para(clean(s.strategy), {bold:true, gap:0.5});
+        if(s.example) para('Example: '+clean(s.example), {size:9, gap:0.5});
+        if(s.what_they_did) para(clean(s.what_they_did), {size:9, color:SUB, gap:0.5});
+        if(s.how_to_apply) para('Apply: '+clean(s.how_to_apply), {size:9, gap:0.5});
+        if(s.source_url) source('', s.source_url);
+      });
     }
 
-    // Footer on last page
-    pdf.setTextColor(148, 163, 184);
-    pdf.setFontSize(7);
-    pdf.text('Generated by Medlevate · medlevate-staging.netlify.app · Confidence range ±35% per IQVIA forecast error methodology', pageW/2, pageH - 5, {align:'center'});
+    // 5 — Market access
+    const ma = r.market_access||{};
+    heading(5,'Getting to Market');
+    if (ma.primary_channel){ subhead('Primary channel'); para(ma.primary_channel); }
+    (ma.buyer_segments||[]).slice(0,8).forEach(b=>{
+      if(typeof b==='string'){ bullet(b); return; }
+      bullet(clean(b.segment||b.name||'')+(clean(b.price_per_unit||b.annual_spend||b.pricing||'')?(' — '+clean(b.price_per_unit||b.annual_spend||b.pricing||'')):''));
+      if(b.access_mechanism) para(clean(b.access_mechanism), {x:margin+6,w:contentW-6,size:8.5,color:SUB,gap:0.5});
+    });
+    if (ma.reimbursement_pathway){ subhead('Reimbursement'); para(ma.reimbursement_pathway); }
+    if ((ma.key_opinion_leaders||[]).length){ subhead('Key opinion leaders'); (ma.key_opinion_leaders||[]).slice(0,8).forEach(k=> bullet(clean(typeof k==='string'?k:((k.name||'')+(k.affiliation?(' — '+k.affiliation):''))))); }
 
-    // Get report title for filename
-    const titleEl = document.querySelector('.rpt-name, .disease-name, .report-title');
-    const title = titleEl ? titleEl.textContent.trim().replace(/[^a-zA-Z0-9 ]/g,'').trim() : 'Medlevate';
-    const filename = title.replace(/\s+/g,'-').slice(0,50) + '-' + new Date().toISOString().slice(0,10) + '.pdf';
+    // 6 — Action plan
+    if ((r.recommended_next_steps||[]).length){
+      heading(6,'Your Action Plan');
+      (r.recommended_next_steps||[]).forEach((s,i)=>{
+        const t = clean(typeof s==='string'? s : (s.step||s.action||''));
+        pdf.setFont('helvetica','bold'); pdf.setFontSize(9.3); pdf.setTextColor(BLUE[0],BLUE[1],BLUE[2]); ensure(5); pdf.text(String(i+1)+'.', margin, y);
+        pdf.setFont('helvetica','normal'); pdf.setTextColor(INK[0],INK[1],INK[2]);
+        pdf.splitTextToSize(t, contentW-7).forEach(l=>{ ensure(4.7); pdf.text(l, margin+7, y); y+=4.6; }); y+=1.5;
+      });
+    }
 
+    // 7 — Competitive landscape (optional)
+    const cl = r.competitive_landscape;
+    const hasCL = cl && (cl.competitors||[]).length;
+    if (hasCL){
+      heading(7,'Competitive Landscape');
+      if(cl.summary) para(cl.summary);
+      (cl.competitors||[]).slice(0,12).forEach(c=> bullet(clean(c.name)+(c.company?(' — '+clean(c.company)):'')+(c.stage?(' ['+clean(c.stage)+']'):'')));
+    }
+
+    // Sources & citations (clickable)
+    const srcs = r.sources||[];
+    if (srcs.length){
+      heading(hasCL?8:7,'Sources & Citations');
+      srcs.forEach(s=>{
+        para((s.number!=null?('['+s.number+'] '):'')+clean(s.name), {size:8.5, gap:0.3});
+        if(s.url){ pdf.setTextColor(LINK[0],LINK[1],LINK[2]); pdf.setFont('helvetica','normal'); pdf.setFontSize(8);
+          pdf.splitTextToSize(clean(s.url),contentW).forEach(l=>{ ensure(3.8); pdf.textWithLink(l,margin,y,{url:s.url}); y+=3.7; }); y+=1.5; }
+      });
+    }
+
+    footer();
+    const filename = (cond||'Medlevate').replace(/[^a-zA-Z0-9 ]/g,'').trim().replace(/\s+/g,'-').slice(0,50) + '-' + new Date().toISOString().slice(0,10) + '.pdf';
     pdf.save(filename);
   } catch(e) {
     console.error('PDF error:', e);
@@ -5305,7 +5649,8 @@ async function startAnalysisFlow() {
     return;
   }
 
-  const _devEmails2 = ['test@medlevate.io','ijw91021@gmail.com','admin@medlevate.io','oneonesie100@gmail.com'];
+  // Step 1: Show pricing / early access FIRST (for everyone not already granted access)
+  const _devEmails2 = ['test@medlevate.io','ijw91021@gmail.com','admin@medlevate.io','oneonesie100@gmail.com','lizpeek11@gmail.com','peek@wustl.edu'];
   const _isDev2 = currentUser && _devEmails2.includes(currentUser.email);
   if (!currentUser) { openAuth('login'); return; }
   if (!_isDev2 && !(billingStatus && billingStatus.is_active)) {
@@ -5320,30 +5665,93 @@ async function startAnalysisFlow() {
   await _showMandatoryQuestions(idea);
 }
 
+// Stored classification from /classify — passed to /clarify and to runAnalysis
+window._classification = null;
+
+function _archetypeLabel(arch) {
+  const MAP = {
+    research_infrastructure_saas: 'Research Infrastructure SaaS',
+    research_tool_non_clinical:   'Non-Clinical Research Tool',
+    therapeutic_small_molecule:   'Small Molecule Drug',
+    therapeutic_biologic:         'Biologic / mAb',
+    gene_cell_therapy:            'Gene / Cell Therapy',
+    device_class_ii:              'Class II Medical Device',
+    device_class_iii:             'Class III Medical Device',
+    samd_clinical:                'Clinical SaMD',
+    diagnostic_ivd:               'In Vitro Diagnostic',
+    vaccine:                      'Vaccine',
+    clinical_workflow_saas:       'Clinical Workflow SaaS',
+    platform:                     'Platform Technology',
+    unknown:                      'Unknown',
+  };
+  return MAP[(arch || '').toLowerCase()] || arch || 'Unknown';
+}
+
+function _domainLabel(domain) {
+  if ((domain || '').includes('RESEARCH')) return 'Life Sciences Research';
+  if ((domain || '').includes('CLINICAL')) return 'Life Sciences Clinical';
+  return domain || '';
+}
+
+function _trlLabel(trl) {
+  const labels = ['','Concept only','Conceptual formulation','Proof-of-concept','Lab validated','Prototype validated','Pilot demonstrated','Pilot deployed','Early commercial','Full commercial'];
+  return labels[trl] ? `TRL ${trl} — ${labels[trl]}` : `TRL ${trl}`;
+}
+
+function _renderClassificationCard(cls, panel) {
+  const archLabel   = _archetypeLabel(cls.archetype);
+  const domainLabel = _domainLabel(cls.domain);
+  const trlLabel    = _trlLabel(cls.trl);
+  const confPct     = Math.round((cls.confidence || 0) * 100);
+  const isResearch  = (cls.domain || '').includes('RESEARCH');
+
+  panel.innerHTML = `
+    <div id="cls-card" style="border:1.5px solid var(--blue);border-radius:6px;overflow:hidden;margin-bottom:14px">
+      <div style="background:var(--blue);color:#fff;padding:10px 14px;display:flex;align-items:center;gap:10px">
+        <span style="font-size:15px">${isResearch ? '🔬' : '💊'}</span>
+        <div style="flex:1">
+          <div style="font-size:14px;font-weight:700">${cls.product_name}</div>
+          <div style="font-size:11px;opacity:.85;margin-top:1px">${cls.one_line}</div>
+        </div>
+        <div style="text-align:right;font-size:10px;opacity:.75;white-space:nowrap">${confPct}% confidence</div>
+      </div>
+      <div style="padding:10px 14px;background:var(--bg-2);display:flex;gap:8px;flex-wrap:wrap">
+        <span style="background:var(--bg-1);border:1px solid var(--border);border-radius:12px;padding:3px 9px;font-size:11px;font-weight:600;color:var(--blue)">${domainLabel}</span>
+        <span style="background:var(--bg-1);border:1px solid var(--border);border-radius:12px;padding:3px 9px;font-size:11px;color:var(--text-2)">${archLabel}</span>
+        <span style="background:var(--bg-1);border:1px solid var(--border);border-radius:12px;padding:3px 9px;font-size:11px;color:var(--text-3)">${trlLabel}</span>
+      </div>
+      ${cls.ambiguities && cls.ambiguities.length ? `
+      <div style="padding:8px 14px 10px;background:var(--bg-2);border-top:1px solid var(--border)">
+        <div style="font-size:10px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">Gaps we still need to answer</div>
+        <ul style="margin:0;padding:0 0 0 16px;font-size:11px;color:var(--text-2);line-height:1.7">
+          ${cls.ambiguities.map(a => `<li>${a}</li>`).join('')}
+        </ul>
+      </div>` : ''}
+    </div>
+    <div id="q-container"></div>`;
+}
+
 async function _showMandatoryQuestions(idea) {
   const panel = document.getElementById('clarify-panel');
   const runBtn = document.getElementById('run-btn');
   panel.style.display = 'block';
-  // Animated loading bar while Claude generates questions
   panel.innerHTML = `
     <div style="background:var(--blue);color:#fff;padding:10px 14px;border-radius:4px 4px 0 0">
       <div style="font-size:13px;font-weight:700">Step 1 of 2 — Refine your idea</div>
-      <div style="font-size:11px;opacity:.85;margin-top:2px">Generating targeted questions for your innovation…</div>
+      <div style="font-size:11px;opacity:.85;margin-top:2px">Classifying your innovation and generating tailored questions…</div>
     </div>
     <div style="padding:16px;background:var(--bg-2);border:1px solid var(--border);border-top:none;border-radius:0 0 4px 4px">
       <div style="height:4px;background:var(--border);border-radius:2px;overflow:hidden;margin-bottom:10px">
         <div id="q-load-bar" style="height:100%;width:0%;background:var(--blue);border-radius:2px;transition:width .4s ease"></div>
       </div>
-      <div id="q-load-label" style="font-size:11px;color:var(--text-3)">Analysing your innovation and generating questions…</div>
+      <div id="q-load-label" style="font-size:11px;color:var(--text-3)">Identifying product archetype…</div>
     </div>`;
   if (runBtn) { runBtn.disabled = true; runBtn.textContent = 'Loading questions…'; }
 
-  // Animate the loading bar while waiting
   const _loadStages = [
-    [15, 'Identifying product archetype and disease area…'],
-    [35, 'Sweeping competitive landscape for named competitors…'],
-    [55, 'Determining relevant market topology questions…'],
-    [75, 'Generating targeted multiple-choice options…'],
+    [20, 'Classifying product type and market domain…'],
+    [45, 'Selecting conditioned questions for your archetype…'],
+    [70, 'Sweeping competitive landscape…'],
     [90, 'Finalising questions…'],
   ];
   let _stageIdx = 0;
@@ -5357,15 +5765,42 @@ async function _showMandatoryQuestions(idea) {
   }, 900);
   window._qLoadTimer = _loadTick;
 
+  const token = localStorage.getItem('pe_token');
+
   try {
-    const token = localStorage.getItem('pe_token');
+    // ── Stage 1: classify the product ──────────────────────────────────────
+    let cls = null;
+    try {
+      const clsRes = await fetch(`${API}/alignment/classify`, {
+        method: 'POST',
+        headers: {'Content-Type':'application/json','Authorization':`Bearer ${token}`},
+        body: JSON.stringify({ idea }),
+      });
+      if (clsRes.ok) {
+        const clsData = await clsRes.json();
+        cls = clsData.classification || null;
+        window._classification = cls;
+        // Classification card is shown but we ALWAYS get questions from /clarify
+        // so they are contextually generated by AI (Haiku) rather than static bank.
+        if (cls) _renderClassificationCard(cls, panel);
+      } else if (clsRes.status === 401 || clsRes.status === 403) {
+        throw new Error('HTTP ' + clsRes.status);
+      }
+    } catch(clsErr) {
+      if (clsErr.message === 'HTTP 401' || clsErr.message === 'HTTP 403') throw clsErr;
+      // Classification failed — fall through to legacy /clarify
+      logger && logger.warn ? null : void 0;
+    }
+
+    // ── Stage 2: get questions (conditioned if we have a classification) ───
     const res = await fetch(`${API}/alignment/clarify`, {
       method: 'POST',
       headers: {'Content-Type':'application/json','Authorization':`Bearer ${token}`},
       body: JSON.stringify({
         idea,
-        pathway:      window.selectedPathway || 'commercial',
-        product_type: window.selectedType    || 'drug_small_molecule',
+        pathway:        window.selectedPathway || 'commercial',
+        product_type:   window.selectedType    || 'drug_small_molecule',
+        classification: cls,
       }),
     });
     if (!res.ok) throw new Error('HTTP ' + res.status);
@@ -5386,59 +5821,75 @@ async function _showMandatoryQuestions(idea) {
     }
 
     window._questionsShown = true;
-    _renderQuestionForm(questions, panel, runBtn);
+    if (cls) {
+      _renderClassificationCard(cls, panel);
+      const qTarget = document.getElementById('q-container') || panel;
+      _renderQuestionForm(questions, qTarget, runBtn);
+    } else {
+      _renderQuestionForm(questions, panel, runBtn);
+    }
 
   } catch(e) {
     clearInterval(window._qLoadTimer);
     window._questionsShown = true;
+    if (e.message === 'HTTP 401' || e.message === 'HTTP 403') {
+      panel.style.display = 'block';
+      panel.innerHTML = `<div style="padding:12px 14px;background:var(--bg-2);border:1px solid #dc2626;border-radius:4px;font-size:13px;color:#dc2626;line-height:1.5">
+        Your session has expired. <a href="#" onclick="openAuth('login');return false" style="color:#dc2626;font-weight:700;text-decoration:underline">Sign in again</a> to get questions tailored to your innovation.</div>`;
+      if (runBtn) { runBtn.disabled = false; runBtn.textContent = 'Run Analysis'; }
+      window._questionsShown = false;
+      return;
+    }
     const fallbackQs = _fallbackQuestions();
     _renderQuestionForm(fallbackQs, panel, runBtn);
   }
 }
 
 function _fallbackQuestions() {
+  // Modality-NEUTRAL fallback (used only if the tailored /clarify call fails). Works for
+  // a drug, biologic, device, diagnostic, or SaMD — never assumes a drug.
   return [
     {
-      question: "Which patient population does this primarily target?",
-      field: "patient_population",
-      options: ["Treatment-naive / newly diagnosed patients", "Patients who failed 2+ prior therapies (refractory)", "Specific biomarker-selected subgroup", "Broad population regardless of prior therapy"],
-      hint: "Add any specific biomarker, disease stage, or line-of-therapy detail"
+      question: "What specific population or use case does this primarily address?",
+      field: "target_use",
+      options: ["A specific high-risk subgroup (e.g. a subpopulation or severity tier)", "A defined clinical setting (e.g. ED, ICU, outpatient, radiology/PACS)", "A biomarker- or feature-selected subset", "A broad population/use across the indication"],
+      hint: "Name the exact subgroup, care setting, or use case this is built for"
     },
     {
-      question: "What is the current standard of care and what specific gap does your product address?",
+      question: "What is the current standard of care or status quo, and what gap do you address?",
       field: "standard_of_care",
-      options: ["No approved therapy exists — true first-to-market", "Approved therapies exist but have significant safety/tolerability issues", "Approved therapies exist but only work for a subset of patients", "Generic/off-patent therapies dominate — limited innovation"],
-      hint: "Name the specific SoC drug/device and the exact unmet need your product addresses"
+      options: ["No existing solution — true first-to-market", "Existing solutions have accuracy / safety / performance gaps", "Existing solutions only work for a subset of cases", "Incumbents dominate — this is an incremental improvement"],
+      hint: "Name the specific incumbent product or workflow and the exact gap you close"
     },
     {
-      question: "Who is the primary purchase decision-maker?",
+      question: "Who is the primary purchase decision-maker, and how is it bought?",
       field: "buyer",
-      options: ["Individual physician (outpatient prescribing)", "Hospital P&T committee / formulary decision", "Lab director or hospital procurement (devices/diagnostics)", "Patient / direct-to-consumer"],
-      hint: "Describe the sales cycle and whether this requires institutional approval"
+      options: ["Individual physician (outpatient prescribing)", "Hospital P&T / formulary committee", "Hospital IT / procurement or service-line budget (devices/software)", "Lab director (diagnostics) or patient / direct-to-consumer"],
+      hint: "Describe the sales cycle and whether it needs institutional / capital approval"
     },
     {
-      question: "What is the current development stage?",
+      question: "What is your current development or validation stage?",
       field: "stage",
-      options: ["Concept / early preclinical (no animal data yet)", "Preclinical — animal models with efficacy data", "Phase 1 / IND filed — first-in-human safety ongoing", "Phase 2 or later — proof-of-concept efficacy data exists"],
+      options: ["Concept / early prototype (no supporting data yet)", "Preclinical or retrospective validation data exists", "Prospective / clinical study underway (or Phase 1 for a drug)", "Advanced clinical or pivotal data / near regulatory submission"],
       hint: "Describe the strongest piece of evidence you currently have"
     },
     {
-      question: "What is the intended pricing model?",
+      question: "What is the intended pricing / revenue model?",
       field: "pricing",
-      options: ["One-time procedure or course (acute / episodic)", "Annual chronic therapy (patient on drug indefinitely)", "Per-test / per-scan / per-use (diagnostics or devices)", "SaaS / annual software license (digital health)"],
-      hint: "Name a comparable approved product and its WAC/list price as your pricing anchor"
+      options: ["Per-patient course or chronic therapy (drug/biologic)", "Per-procedure / per-unit or capital purchase (device)", "Per-test / per-scan / per-use (diagnostic)", "Annual institutional SaaS license (software / SaMD)"],
+      hint: "Name a comparable product and its price point as your anchor"
     },
     {
       question: "How does this fit into the clinical workflow?",
       field: "workflow",
-      options: ["Entirely new step — adds to workflow, doesn't replace anything", "Replaces an existing optional test or therapy", "Replaces a guideline-mandated procedure (high adoption barrier)", "Integrates transparently into existing EHR/workflow systems"],
-      hint: "If replacing a mandated procedure, name the specific guideline (e.g. ASCO, AHA, IDSA) that requires it"
+      options: ["Entirely new step — adds to workflow, doesn't replace anything", "Replaces an existing optional test or step", "Replaces a guideline-mandated procedure (higher adoption barrier)", "Integrates transparently into existing EHR / PACS / workflow systems"],
+      hint: "If replacing a mandated step, name the specific guideline (e.g. AHA, ASCO, IDSA)"
     },
     {
       question: "What is your key differentiation vs. the closest competitor or standard of care?",
       field: "differentiation",
-      options: ["Mechanism of action — covers resistant/refractory cases that SoC misses", "Administration route — oral vs. IV, or less frequent dosing", "Safety profile — fewer serious adverse events vs. comparator", "Price — substantially cheaper than existing options"],
-      hint: "Name the specific competitor and the head-to-head advantage (e.g. 'vs. Avycaz — covers NDM-producing organisms')"
+      options: ["Better performance / accuracy / efficacy than the standard", "Better workflow, usability, or integration (less burden)", "Better safety or fewer adverse events", "Lower cost / stronger health-economic case"],
+      hint: "Name the specific competitor and the measurable head-to-head advantage"
     },
   ];
 }
