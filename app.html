@@ -1418,6 +1418,7 @@ async function _pollReport(jobId) {
       continue;
     }
     if (res.status === 404) throw new Error('Report job expired — please run it again');
+    if (res.status === 403) throw new Error('SESSION_EXPIRED');
     if (!res.ok) {
       if (Date.now() - startedAt > MAX_MS) throw new Error(`Status check failed (HTTP ${res.status})`);
       continue;
