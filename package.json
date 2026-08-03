@@ -1,0 +1,26 @@
+{
+  "name": "projectelevate-frontend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "_config.js",
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:report": "playwright show-report"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Tang3672/project-elevate-frontend.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Tang3672/project-elevate-frontend/issues"
+  },
+  "homepage": "https://github.com/Tang3672/project-elevate-frontend#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.62.1"
+  }
+}
