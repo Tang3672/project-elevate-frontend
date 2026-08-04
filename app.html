@@ -5802,6 +5802,48 @@ async function downloadPDF() {
     if (r.expert_name) para('Expert model: '+clean(r.expert_name), {size:8,color:SUB,gap:2});
     if (r.executive_summary){ subhead('Executive Summary'); para(r.executive_summary, {size:9.8}); }
 
+    // Verification summary
+    const _val = r.validation||{};
+    const _trust = r.trust||{};
+    if (_val.status && _val.status !== 'PENDING') {
+      const _vIcon = {ERROR:'[ERROR]', FLAG:'[FLAG]', REVIEW:'[REVIEW]', PASS:'[PASS]'}[_val.status]||'';
+      ensure(10); y+=3;
+      para(_vIcon+' Verification: '+clean(_val.summary||''), {bold:true, size:9, gap:0.5});
+      (_val.errors||[]).forEach(e=>para('  '+clean(e.agent)+': '+clean(e.issue), {size:8.3,color:SUB,gap:0.3}));
+      (_val.warnings||[]).slice(0,3).forEach(w=>para('  '+clean(w.agent)+': '+clean(w.issue), {size:8.3,color:SUB,gap:0.3}));
+    }
+    if (_trust.citation_support_score!=null) {
+      const _pctTrust = Math.round(_trust.citation_support_score*100);
+      para('Source coverage: '+_pctTrust+'% of factual claims linked to a retrieved source'+
+           (_trust.checkable_claims?' ('+_trust.checkable_claims+' claims checked)':''), {size:8.5,color:SUB});
+    }
+
+    // Commercialization assessment
+    const _cs = r.commercialization_scores;
+    if (_cs&&_cs.commercialization_scores) {
+      const _sc = _cs.commercialization_scores;
+      const _rat = _cs.score_rationales||{};
+      const _dimLabels = {
+        regulatory_feasibility:'Regulatory feasibility', sbir_fit:'Non-dilutive (SBIR/STTR) fit',
+        competitive_whitespace:'Competitive whitespace', patentability:'Patentability',
+        reimbursement_feasibility:'Reimbursement', investor_attractiveness:'Investor appeal',
+        licensing_likelihood:'Licensing', spinout_likelihood:'Spinout', acquisition_potential:'Acquisition potential'
+      };
+      const _dimOrder = ['regulatory_feasibility','competitive_whitespace','sbir_fit','patentability',
+                         'reimbursement_feasibility','investor_attractiveness','licensing_likelihood','spinout_likelihood','acquisition_potential'];
+      ensure(12); y+=3;
+      subhead('Commercialization Assessment'+((_sc.overall_priority!=null)?' — overall '+Math.round(_sc.overall_priority*100)+'%':''));
+      _dimOrder.forEach(k=>{
+        if(_sc[k]==null) return;
+        const dim = _rat[k]||{};
+        const drivers = dim.drivers||[];
+        para((_dimLabels[k]||k)+' '+Math.round(_sc[k]*100)+'%', {bold:true,size:9,gap:0.5});
+        drivers.slice(0,2).forEach(d=>para('  '+clean(d.fact)+' — '+clean(d.source||''), {size:8.3,color:SUB,gap:0.3}));
+        if(!drivers.length) para('  No specific retrieved signals.', {size:8.3,color:SUB,gap:0.3});
+      });
+      if(_cs.recommendation) para('Recommended next action: '+clean(_cs.recommendation), {bold:true,size:9});
+    }
+
     // 1 — Opportunity
     const di = r.disease_intelligence||{};
     heading(1,'The Opportunity');
@@ -5811,6 +5853,20 @@ async function downloadPDF() {
       if(d.source||d.source_url) source(d.source, d.source_url);
     });
     if (di.pipeline_status){ subhead('Current pipeline'); para(di.pipeline_status); }
+
+    // Literature citations
+    if ((r.literature_citations||[]).length) {
+      subhead('Supporting literature');
+      r.literature_citations.slice(0,8).forEach(p=>{
+        const auth = clean((p.authors||'').split(',').slice(0,3).join(',')+((p.authors||'').split(',').length>3?' et al.':''));
+        para(auth+(p.year?' ('+p.year+')':'')+(p.title?'. '+clean(p.title):'')+(p.journal?'. '+clean(p.journal):'.'), {size:8.5,gap:0.3});
+        if(p.relevance) para(clean(p.relevance), {size:8.3,color:SUB,x:margin+4,w:contentW-4,gap:0.5});
+        const purl = p.url||p.source_url||(p.pmid?'https://pubmed.ncbi.nlm.nih.gov/'+p.pmid+'/':'');
+        if(purl){ pdf.setTextColor(LINK[0],LINK[1],LINK[2]); pdf.setFontSize(7.5);
+          ensure(3.5); pdf.textWithLink(clean(purl),margin+4,y,{url:purl}); y+=3.7; pdf.setTextColor(INK[0],INK[1],INK[2]); }
+        y+=1;
+      });
+    }
 
     // 2 — Market
     const ms = r.market_sizing||{};
@@ -5825,6 +5881,48 @@ async function downloadPDF() {
       if(s.source||s.source_url) source(s.source, s.source_url);
     });
     if (ms.methodology_note) para('Methodology: '+clean(ms.methodology_note), {size:8.3,color:SUB});
+
+    // Scenarios (conservative / base / aggressive)
+    const _prov = r.market_sizing_provenance;
+    if (_prov&&(_prov.scenarios||[]).length) {
+      subhead('Adoption scenarios');
+      _prov.scenarios.forEach(sc=>{
+        const isBase = sc.scenario==='base';
+        para(clean(sc.scenario.toUpperCase()+(isBase?' (base case)':''))+': SOM '+clean(sc.som_fmt)+
+             ' / SAM '+clean(sc.sam_fmt)+' / TAM '+clean(sc.tam_fmt), {bold:isBase,size:9,gap:0.3});
+        if(sc.narrative) para(clean(sc.narrative), {size:8.3,color:SUB,x:margin+4,w:contentW-4,gap:1});
+      });
+    }
+
+    // Provenance waterfall
+    if (_prov&&(_prov.waterfall||[]).length) {
+      subhead('Provenance waterfall');
+      const _wFmt = (v,u)=>{
+        if(v==null) return '-';
+        if((u||'').toLowerCase()==='usd') return '$'+Math.round(v/1e3)+'K';
+        if(Math.abs(v)<1) return (v*100).toFixed(0)+'%';
+        return Number(v).toLocaleString();
+      };
+      _prov.waterfall.forEach(w=>{
+        if(w.is_aggregate){
+          ensure(6);
+          pdf.setFont('helvetica','bold'); pdf.setFontSize(9.3); pdf.setTextColor(BLUE[0],BLUE[1],BLUE[2]);
+          pdf.text(clean(w.label)+': '+clean(_wFmt(w.value,w.unit)), margin, y); y+=5.5;
+          pdf.setTextColor(INK[0],INK[1],INK[2]);
+        } else {
+          bullet(clean(w.label)+': '+clean(_wFmt(w.value,w.unit))+(w.unit&&w.unit.toLowerCase()!=='usd'?' '+clean(w.unit):''));
+          if(w.source_name) source(w.source_name, w.source_url||'');
+        }
+      });
+    }
+
+    // Geography
+    if (r.market_geography&&r.market_geography.description) {
+      subhead('Geographic concentration');
+      para(clean(r.market_geography.description), {size:9.3});
+      if ((r.market_geography.top_states||[]).length)
+        para('Top states: '+r.market_geography.top_states.join(', '), {size:8.3,color:SUB});
+    }
 
     // 3 — Regulatory (suppressed for non-regulated research tools)
     const _pdfIsResearch = (r.domain||'').toLowerCase().includes('research');
@@ -5888,15 +5986,46 @@ async function downloadPDF() {
     if (hasCL){
       heading(7,'Competitive Landscape');
       if(cl.summary) para(cl.summary);
-      (cl.competitors||[]).slice(0,12).forEach(c=> bullet(clean(c.name)+(c.company?(' — '+clean(c.company)):'')+(c.stage?(' ['+clean(c.stage)+']'):'')));
+      // Research tools use a different schema (overlap/where_you_win/switching_cost instead of approval_status/pipeline counts)
+      const isResearchCL = (cl.competitors||[]).some(c=>c.overlap||c.where_you_win||c.switching_cost);
+      (cl.competitors||[]).slice(0,12).forEach(c=>{
+        if(isResearchCL){
+          para(clean(c.name)+(c.category?' ['+clean(c.category)+']':''), {bold:true,gap:0.5});
+          if(c.overlap) para('Overlap: '+clean(c.overlap), {size:9,x:margin+4,w:contentW-4,gap:0.3});
+          if(c.where_you_win) para('Advantage: '+clean(c.where_you_win), {size:9,x:margin+4,w:contentW-4,gap:0.3});
+          if(c.where_you_lose) para('Disadvantage: '+clean(c.where_you_lose), {size:9,x:margin+4,w:contentW-4,color:SUB,gap:0.3});
+          if(c.switching_cost) para('Switching cost: '+clean(c.switching_cost), {size:9,x:margin+4,w:contentW-4,gap:0.3});
+          if(c.price_point) para('Price: '+clean(c.price_point), {size:8.3,x:margin+4,w:contentW-4,color:SUB,gap:0.5});
+        } else {
+          bullet(clean(c.name)+(c.company?(' — '+clean(c.company)):'')+(c.stage?(' ['+clean(c.stage)+']'):''));
+          if(c.approval_status) para('Status: '+clean(c.approval_status)+(c.approval_count!=null?' ('+c.approval_count+' approved)':''), {size:8.5,x:margin+6,w:contentW-6,color:SUB,gap:0.3});
+        }
+      });
     }
 
-    // Sources & citations (clickable)
-    const srcs = r.sources||[];
+    // Sources & citations — aggregate the same way the web renderer does
+    // (r.sources + literature + strategies + buyer segments → identical count to web)
+    const srcs = (r.sources||[]).slice();
+    const _seenUrls = new Set(srcs.map(s=>s.url).filter(Boolean));
+    const _today = new Date().toISOString().slice(0,10);
+    function _addSrc(name,url){
+      if(!url||_seenUrls.has(url)) return;
+      _seenUrls.add(url);
+      srcs.push({number:srcs.length+1, name:clean(name||''), url:url, accessed:_today});
+    }
+    (r.literature_citations||[]).forEach(p=>{
+      const url = p.url||p.source_url||(p.pmid?'https://pubmed.ncbi.nlm.nih.gov/'+p.pmid+'/':'');
+      _addSrc((p.authors||'')+(p.year?' ('+p.year+')':'')+(p.title?'. '+p.title:'')+(p.journal?'. '+p.journal:''), url);
+    });
+    (r.strategic_playbook||[]).forEach(s=>{ if(s.source_url) _addSrc((s.example||'')+' - '+(s.strategy||''), s.source_url); });
+    ((r.market_access||{}).buyer_segments||[]).forEach(b=>{ if(b.source_url) _addSrc((b.source||'')+' - '+(b.segment||b.segment_name||b.name||''), b.source_url); });
+    if(r.market_access&&r.market_access.reimbursement_source_url) _addSrc('Reimbursement pathway', r.market_access.reimbursement_source_url);
+    srcs.forEach((s,i)=>s.number=i+1);
+
     if (srcs.length){
       heading(hasCL?8:7,'Sources & Citations');
       srcs.forEach(s=>{
-        para((s.number!=null?('['+s.number+'] '):'')+clean(s.name), {size:8.5, gap:0.3});
+        para((s.number!=null?('['+s.number+'] '):'')+clean(s.name||''), {size:8.5, gap:0.3});
         if(s.url){ pdf.setTextColor(LINK[0],LINK[1],LINK[2]); pdf.setFont('helvetica','normal'); pdf.setFontSize(8);
           pdf.splitTextToSize(clean(s.url),contentW).forEach(l=>{ ensure(3.8); pdf.textWithLink(l,margin,y,{url:s.url}); y+=3.7; }); y+=1.5; }
       });
