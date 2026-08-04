@@ -1329,6 +1329,7 @@ async function runAnalysis() {
       const res = await fetch(`${API}/alignment/pi-report/mock`, {method:'GET', headers:{'Authorization':`Bearer ${localStorage.getItem('pe_token')}`}});
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       data = await res.json();
+      data._is_mock = true;  // flag so the renderer adds the watermark
     } else {
       // Async: start a background job (returns instantly), then poll for the result.
       // Report generation is a ~2-3 min operation, too long for a single HTTP request.
@@ -1597,6 +1598,14 @@ function renderPIReport(r) {
 
   let html = '<div class="sg">';
 
+  // Mock-mode watermark — must be unmissable; a mocked report that looks real is dangerous
+  if (r._is_mock) {
+    html += `<div style="background:#fef3c7;border:2px solid #f59e0b;padding:16px 20px;margin-bottom:20px;text-align:center">
+      <div style="font-family:var(--display);font-size:14px;font-weight:800;color:#92400e;letter-spacing:.04em">⚠ DEV MOCK MODE — THIS IS FIXTURE DATA, NOT A REAL ANALYSIS</div>
+      <div style="font-family:var(--body);font-size:12px;color:#92400e;margin-top:4px">Numbers, citations, and recommendations below are synthetic test data. Do not share or act on this output.</div>
+    </div>`;
+  }
+
   // REPORT HEADER — verification badges go in a slot so the background poll can
   // patch them in place once verification completes.
   html += `
@@ -1741,10 +1750,16 @@ function renderPIReport(r) {
     const di = r.disease_intelligence;
     html += chapterHeader('1', 'The Opportunity', 'Understanding the disease landscape, unmet need, and why this market exists');
 
-    // Narrative intro
-    html += `<div class="narrative-block">
-      The competitive and clinical landscape for <strong>${di.condition}</strong> defines the opportunity size and development risk. The data below establishes the epidemiological basis for your market sizing and regulatory strategy.
-    </div>`;
+    // Narrative intro — domain-aware to avoid clinical vocabulary for research tools
+    if (_isResearchDomain) {
+      html += `<div class="narrative-block">
+        The institutional demand landscape for <strong>${di.condition || 'this product'}</strong> defines the opportunity size and go-to-market strategy. The data below establishes the buyer population and adoption environment.
+      </div>`;
+    } else {
+      html += `<div class="narrative-block">
+        The competitive and clinical landscape for <strong>${di.condition}</strong> defines the opportunity size and development risk. The data below establishes the epidemiological basis for your market sizing and regulatory strategy.
+      </div>`;
+    }
 
     // Data points grid
     if (di.data_points && di.data_points.length) {
@@ -1762,11 +1777,12 @@ function renderPIReport(r) {
       html += '</div>';
     }
 
-    if (di.resistance_profile) {
+    if (di.resistance_profile && !_isResearchDomain) {
       html += `<div class="narrative-block"><strong>Resistance & mechanism landscape:</strong> ${di.resistance_profile}</div>`;
     }
     if (di.pipeline_status) {
-      html += `<div class="narrative-block"><strong>Current competitive pipeline:</strong> ${di.pipeline_status}</div>`;
+      const _pipelineLabel = _isResearchDomain ? 'Current solution landscape' : 'Current competitive pipeline';
+      html += `<div class="narrative-block"><strong>${_pipelineLabel}:</strong> ${di.pipeline_status}</div>`;
     }
 
     // Unmet need callout
@@ -1848,9 +1864,11 @@ function renderPIReport(r) {
       const srcHtml = s.source_url
         ? `<a href="${s.source_url}" target="_blank">${s.source}</a>`
         : `<span style="color:var(--text-4)">${s.source || 'No source'}</span>`;
+      // Strip "Step N — " prefix from label to avoid "Step 1 - Step 1 -" duplication
+      const _stepLabel = (s.label||'').replace(/^Step\s+\d+\s*[-–—]\s*/i,'');
       html += `<div class="ms-step">
         <div>
-          <div class="ms-step-label">${s.label}</div>
+          <div class="ms-step-label">${_stepLabel}</div>
           ${s.notes ? `<div class="ms-step-source">${s.notes}</div>` : ''}
           <div class="ms-step-source">Source: ${srcHtml}</div>
         </div>
@@ -1918,8 +1936,8 @@ function renderPIReport(r) {
     }
   }
 
-  // CHAPTER 3: YOUR PATH TO APPROVAL
-  if (r.regulatory_pathway) {
+  // CHAPTER 3: YOUR PATH TO APPROVAL — suppressed for non-regulated research tools
+  if (r.regulatory_pathway && !_isResearchDomain) {
     const rp = r.regulatory_pathway;
     html += chapterHeader('3', 'Your Path to Approval', 'The FDA regulatory strategy, designations to pursue, and clinical trial roadmap');
 
@@ -2065,7 +2083,7 @@ function renderPIReport(r) {
   }
 
   // CHAPTER 4: GETTING TO MARKET
-  if (r.market_access) {
+  if (r.market_access && !_isResearchDomain) {
     const ma = r.market_access;
     html += chapterHeader('5', 'Getting to Market', 'Who buys your product, how reimbursement works, and how to win formulary access');
 
@@ -2693,17 +2711,56 @@ async function _loadCompetitiveSweep(disease, ta, tickInterval, bar, attempt) {
   }
 }
 
+function _renderResearchCompetitors(data) {
+  const comps = data.research_tool_comparators || data.comparators || data.competitors || [];
+  const summary = data.competitive_summary || data.honest_empty_state || '';
+  let html = `<div style="margin-bottom:16px">`;
+  if (summary) html += `<div style="font-size:13px;color:var(--text-2);line-height:1.6;margin-bottom:12px">${summary}</div>`;
+  if (comps.length) {
+    html += `<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-3);margin-bottom:8px">Comparators (${comps.length})</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:8px;margin-bottom:16px">`;
+    comps.forEach(c => {
+      const cat = c.category || c.stage || '';
+      const desc = c.key_differentiator || c.description || c.positioning_signal || '';
+      const incumbent = c.incumbent ? 'Incumbent / Status quo' : (c.category === 'status_quo' ? 'Incumbent / Status quo' : 'Challenger');
+      html += `<div style="background:var(--bg-2);border:1px solid var(--border);padding:10px 12px">
+        <div style="font-size:11px;color:var(--text-4);margin-bottom:4px">${cat}</div>
+        <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:2px">${c.name || ''}</div>
+        <div style="font-size:11px;color:var(--text-3);margin-bottom:6px">${incumbent}</div>
+        ${desc ? `<div style="font-size:11px;color:var(--text-2)">${desc.slice(0,180)}${desc.length>180?'…':''}</div>` : ''}
+      </div>`;
+    });
+    html += `</div>`;
+  } else {
+    html += `<div style="font-size:12px;color:var(--text-3)">No named comparators found.</div>`;
+  }
+  html += `</div>`;
+  return html;
+}
+
 function renderCompetitiveLandscape(data) {
+  // Research tools use a different schema than drug/device pipelines.
+  // Detect by whether drug-pipeline fields are present to avoid "undefined" output.
+  const isResearchTool = data.research_tool_comparators != null ||
+    (data.market_structure == null && data.approved_count == null);
+
+  if (isResearchTool) {
+    return _renderResearchCompetitors(data);
+  }
+
   const stageIcon  = {approved:'✅', phase3:'🔵', phase2:'🟡', phase1:'⚪'};
   const stageLabel = {approved:'Approved', phase3:'Phase 3', phase2:'Phase 2', phase1:'Phase 1'};
   const sc = {empty:'#059669','pre-launch':'#0891b2',monopoly:'#d97706',oligopoly:'#d97706',competitive:'#dc2626',crowded:'#dc2626'}[data.market_structure] || '#6366f1';
+  const mktStruct = data.market_structure || '';
+  const approvedCount = data.approved_count != null ? data.approved_count : '';
+  const pipelineCount = data.pipeline_count != null ? data.pipeline_count : '';
 
   let html = `<div style="margin-bottom:16px">
     <div style="display:flex;gap:10px;align-items:center;margin-bottom:12px;flex-wrap:wrap">
-      <span style="font-size:11px;font-weight:700;padding:3px 9px;background:${sc}22;color:${sc};border:1px solid ${sc}44;border-radius:2px;text-transform:uppercase">${data.market_structure}</span>
-      <span style="font-size:12px;color:var(--text-3)">${data.approved_count} approved · ${data.pipeline_count} in pipeline</span>
+      ${mktStruct ? `<span style="font-size:11px;font-weight:700;padding:3px 9px;background:${sc}22;color:${sc};border:1px solid ${sc}44;border-radius:2px;text-transform:uppercase">${mktStruct}</span>` : ''}
+      ${(approvedCount !== '' || pipelineCount !== '') ? `<span style="font-size:12px;color:var(--text-3)">${approvedCount !== '' ? approvedCount + ' approved' : ''}${approvedCount !== '' && pipelineCount !== '' ? ' · ' : ''}${pipelineCount !== '' ? pipelineCount + ' in pipeline' : ''}</span>` : ''}
     </div>
-    <div style="font-size:13px;color:var(--text-2);line-height:1.6;margin-bottom:16px">${data.competitive_summary}</div>`;
+    <div style="font-size:13px;color:var(--text-2);line-height:1.6;margin-bottom:16px">${data.competitive_summary || ''}</div>`;
 
   if (data.competitors && data.competitors.length) {
     html += `<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-3);margin-bottom:8px">Named Competitors</div>
@@ -5458,14 +5515,15 @@ async function downloadPDF() {
       pdf.setFillColor(BLUE[0],BLUE[1],BLUE[2]); pdf.rect(0,0,4,18,'F');
       pdf.setTextColor(255,255,255); pdf.setFont('helvetica','bold'); pdf.setFontSize(13); pdf.text('Medlevate',10,8);
       pdf.setFont('helvetica','normal'); pdf.setFontSize(7); pdf.setTextColor(148,163,184);
-      pdf.text('Medical Market Intelligence Report',10,13.5);
+      const _hdrSub = (r && (r.domain||'').toLowerCase().includes('research')) ? 'Commercialization Intelligence Report' : 'Market Intelligence Report';
+      pdf.text(_hdrSub,10,13.5);
       pdf.text(dateStr, pageW-margin, 8, {align:'right'});
       pdf.text('medlevate.netlify.app', pageW-margin, 13.5, {align:'right'});
       y=25;
     }
     function footer(){
       pdf.setTextColor(148,163,184); pdf.setFont('helvetica','normal'); pdf.setFontSize(6.5);
-      pdf.text('Generated by Medlevate · medlevate.netlify.app · Confidence range ±35% (IQVIA forecast-error methodology). Not investment advice.', pageW/2, pageH-6, {align:'center'});
+      pdf.text('Generated by Medlevate · medlevate.netlify.app · Not investment advice.', pageW/2, pageH-6, {align:'center'});
     }
     function ensure(h){ if (y+h > pageH-12){ footer(); pdf.addPage(); header(); } }
     function heading(num,title){
@@ -5492,7 +5550,8 @@ async function downloadPDF() {
 
     // Title block
     const cond = clean((r.disease_intelligence&&r.disease_intelligence.condition) || r.idea_submitted || 'Market Intelligence Report');
-    pdf.setTextColor(BLUE[0],BLUE[1],BLUE[2]); pdf.setFont('helvetica','bold'); pdf.setFontSize(8); pdf.text('MEDICAL MARKET INTELLIGENCE REPORT', margin, y); y+=6;
+    const _reportTypeLabel = (r && (r.domain||'').toLowerCase().includes('research')) ? 'COMMERCIALIZATION INTELLIGENCE REPORT' : 'MARKET INTELLIGENCE REPORT';
+    pdf.setTextColor(BLUE[0],BLUE[1],BLUE[2]); pdf.setFont('helvetica','bold'); pdf.setFontSize(8); pdf.text(_reportTypeLabel, margin, y); y+=6;
     pdf.setTextColor(DARK[0],DARK[1],DARK[2]); pdf.setFontSize(17);
     pdf.splitTextToSize(cond, contentW).forEach(l=>{ ensure(8); pdf.text(l,margin,y); y+=7.5; }); y+=1;
     if (r.expert_name) para('Expert model: '+clean(r.expert_name), {size:8,color:SUB,gap:2});
@@ -5514,27 +5573,32 @@ async function downloadPDF() {
     if (ms.formula) para(ms.formula, {bold:true});
     (ms.steps||[]).forEach((s,i)=>{
       const v = (typeof s.value==='number')? s.value.toLocaleString() : clean(s.value);
-      bullet('Step '+(i+1)+' — '+clean(s.label)+': '+v+(s.unit?(' '+clean(s.unit)):''));
+      // Strip any "Step N — " or "Step N - " prefix the LLM may have baked into the label
+      const _rawLabel = clean(s.label||'').replace(/^Step\s+\d+\s*[-–—]\s*/i,'');
+      bullet('Step '+(i+1)+' — '+_rawLabel+': '+v+(s.unit?(' '+clean(s.unit)):''));
       if(s.notes) para(clean(s.notes), {x:margin+6,w:contentW-6,size:8.3,color:SUB,gap:0.5});
       if(s.source||s.source_url) source(s.source, s.source_url);
     });
     if (ms.methodology_note) para('Methodology: '+clean(ms.methodology_note), {size:8.3,color:SUB});
 
-    // 3 — Regulatory
+    // 3 — Regulatory (suppressed for non-regulated research tools)
+    const _pdfIsResearch = (r.domain||'').toLowerCase().includes('research');
     const rp = r.regulatory_pathway||{};
-    heading(3,'Your Path to Approval');
-    if (rp.recommended_pathway){ subhead('Recommended pathway'); para(rp.recommended_pathway); }
-    if (rp.pathway_rationale) para(rp.pathway_rationale);
-    if ((rp.designations||[]).length) subhead('FDA designations & pathways');
-    (rp.designations||[]).forEach(d=>{
-      para(clean(d.name)+(d.priority?(' ('+clean(d.priority)+')'):''), {bold:true, gap:0.5});
-      if(d.benefit) para(clean(d.benefit), {size:9, x:margin+3, w:contentW-3, gap:0.5});
-      if(d.timeline) para('Timeline: '+clean(d.timeline), {size:8.3,color:SUB,x:margin+3,gap:0.5});
-      if(d.source_url) source(d.source||d.name, d.source_url);
-    });
-    if (rp.total_timeline_estimate) para('Total timeline: '+clean(rp.total_timeline_estimate), {bold:true, gap:0.5});
-    if (rp.total_cost_estimate) para('Total cost estimate: '+clean(rp.total_cost_estimate), {bold:true});
-    (rp.key_friction_points||[]).forEach(f=> bullet(clean(typeof f==='string'?f:(f.point||f.issue||''))));
+    if (!_pdfIsResearch) {
+      heading(3,'Your Path to Approval');
+      if (rp.recommended_pathway){ subhead('Recommended pathway'); para(rp.recommended_pathway); }
+      if (rp.pathway_rationale) para(rp.pathway_rationale);
+      if ((rp.designations||[]).length) subhead('FDA designations & pathways');
+      (rp.designations||[]).forEach(d=>{
+        para(clean(d.name)+(d.priority?(' ('+clean(d.priority)+')'):''), {bold:true, gap:0.5});
+        if(d.benefit) para(clean(d.benefit), {size:9, x:margin+3, w:contentW-3, gap:0.5});
+        if(d.timeline) para('Timeline: '+clean(d.timeline), {size:8.3,color:SUB,x:margin+3,gap:0.5});
+        if(d.source_url) source(d.source||d.name, d.source_url);
+      });
+      if (rp.total_timeline_estimate) para('Total timeline: '+clean(rp.total_timeline_estimate), {bold:true, gap:0.5});
+      if (rp.total_cost_estimate) para('Total cost estimate: '+clean(rp.total_cost_estimate), {bold:true});
+      (rp.key_friction_points||[]).forEach(f=> bullet(clean(typeof f==='string'?f:(f.point||f.issue||''))));
+    }
 
     // 4 — Strategic playbook
     if ((r.strategic_playbook||[]).length){
@@ -5548,17 +5612,19 @@ async function downloadPDF() {
       });
     }
 
-    // 5 — Market access
+    // 5 — Market access (suppressed for research tools — no reimbursement pathway)
     const ma = r.market_access||{};
-    heading(5,'Getting to Market');
-    if (ma.primary_channel){ subhead('Primary channel'); para(ma.primary_channel); }
-    (ma.buyer_segments||[]).slice(0,8).forEach(b=>{
-      if(typeof b==='string'){ bullet(b); return; }
-      bullet(clean(b.segment||b.name||'')+(clean(b.price_per_unit||b.annual_spend||b.pricing||'')?(' — '+clean(b.price_per_unit||b.annual_spend||b.pricing||'')):''));
-      if(b.access_mechanism) para(clean(b.access_mechanism), {x:margin+6,w:contentW-6,size:8.5,color:SUB,gap:0.5});
-    });
-    if (ma.reimbursement_pathway){ subhead('Reimbursement'); para(ma.reimbursement_pathway); }
-    if ((ma.key_opinion_leaders||[]).length){ subhead('Key opinion leaders'); (ma.key_opinion_leaders||[]).slice(0,8).forEach(k=> bullet(clean(typeof k==='string'?k:((k.name||'')+(k.affiliation?(' — '+k.affiliation):''))))); }
+    if (!_pdfIsResearch) {
+      heading(5,'Getting to Market');
+      if (ma.primary_channel){ subhead('Primary channel'); para(ma.primary_channel); }
+      (ma.buyer_segments||[]).slice(0,8).forEach(b=>{
+        if(typeof b==='string'){ bullet(b); return; }
+        bullet(clean(b.segment||b.name||'')+(clean(b.price_per_unit||b.annual_spend||b.pricing||'')?(' — '+clean(b.price_per_unit||b.annual_spend||b.pricing||'')):''));
+        if(b.access_mechanism) para(clean(b.access_mechanism), {x:margin+6,w:contentW-6,size:8.5,color:SUB,gap:0.5});
+      });
+      if (ma.reimbursement_pathway){ subhead('Reimbursement'); para(ma.reimbursement_pathway); }
+      if ((ma.key_opinion_leaders||[]).length){ subhead('Key opinion leaders'); (ma.key_opinion_leaders||[]).slice(0,8).forEach(k=> bullet(clean(typeof k==='string'?k:((k.name||'')+(k.affiliation?(' — '+k.affiliation):''))))); }
+    } // end if (!_pdfIsResearch)
 
     // 6 — Action plan
     if ((r.recommended_next_steps||[]).length){
