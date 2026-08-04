@@ -1517,16 +1517,18 @@ function buildVerificationBadgesHTML(r) {
   if (_val.pending || _trust.pending) {
     return `<div style="margin-top:10px;padding:7px 12px;background:var(--bg);border:1px solid var(--border);border-radius:3px;font-size:11px;color:var(--text-3)">⏳ Verifying claims, FDA/market facts, and source coverage… <span style="color:var(--text-4)">— this fills in here in a few seconds</span></div>`;
   }
-  const _valColor = {ERROR:'#dc2626', FLAG:'#d97706', REVIEW:'#0891b2', PASS:'#059669'}[_val.status] || '#6366f1';
-  const _valIcon  = {ERROR:'✗', FLAG:'⚠', REVIEW:'ℹ', PASS:'✓'}[_val.status] || '…';
+  const _isBlocking = _val.status === 'BLOCKING';
+  const _valColor = {BLOCKING:'#7c3aed', ERROR:'#dc2626', FLAG:'#d97706', REVIEW:'#0891b2', PASS:'#059669'}[_val.status] || '#6366f1';
+  const _valIcon  = {BLOCKING:'⛔', ERROR:'✗', FLAG:'⚠', REVIEW:'ℹ', PASS:'✓'}[_val.status] || '…';
   const _valBadge = (_val.status && _val.status !== 'PENDING')
     ? `<div style="margin-top:10px;padding:7px 12px;background:${_valColor}11;border:1px solid ${_valColor}33;border-radius:3px;display:flex;gap:8px;align-items:flex-start">
         <span style="font-size:14px;color:${_valColor};font-weight:800;flex-shrink:0">${_valIcon}</span>
-        <div>
-          <div style="font-size:11px;font-weight:700;color:${_valColor}">Verification — ${_val.status}</div>
+        <div style="flex:1">
+          <div style="font-size:11px;font-weight:700;color:${_valColor}">Verification — ${_val.status}${_isBlocking ? ' · PDF export blocked' : ''}</div>
           <div style="font-size:11px;color:var(--text-2);margin-top:1px">${_val.summary || ''}</div>
           ${(_val.errors||[]).length ? `<div style="font-size:10px;color:#dc2626;margin-top:4px">${_val.errors.map(e=>`<strong>${e.agent}:</strong> ${e.issue}`).join('<br>')}</div>` : ''}
           ${(_val.warnings||[]).length && !(_val.errors||[]).length ? `<div style="font-size:10px;color:#d97706;margin-top:4px">${_val.warnings.slice(0,2).map(w=>`<strong>${w.agent}:</strong> ${w.issue}`).join('<br>')}</div>` : ''}
+          ${_isBlocking ? `<div style="margin-top:6px;font-size:10px;color:#7c3aed;font-weight:600">Correct the arithmetic errors above, then regenerate to unlock export.</div>` : ''}
         </div>
       </div>` : '';
   const _tpct = v => (v == null ? '—' : Math.round(v * 100) + '%');
@@ -2835,10 +2837,11 @@ function renderCompetitiveLandscape(data) {
     data.competitors.slice(0,8).forEach(c => {
       const brand = c.brand_name ? ` (${c.brand_name})` : '';
       const route = c.route ? ` · ${c.route}` : '';
+      const stageLbl = stageLabel[c.stage] || c.stage || '';
       html += `<div style="background:var(--bg-2);border:1px solid var(--border);padding:10px 12px">
-        <div style="font-size:11px;color:var(--text-4);margin-bottom:4px">${stageIcon[c.stage]||'⚪'} ${stageLabel[c.stage]||c.stage}${route}</div>
-        <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:2px">${c.name}${brand}</div>
-        <div style="font-size:11px;color:var(--text-3);margin-bottom:6px">${c.company}</div>
+        <div style="font-size:11px;color:var(--text-4);margin-bottom:4px">${stageIcon[c.stage]||'⚪'} ${stageLbl}${route}</div>
+        <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:2px">${c.name||''}${brand}</div>
+        <div style="font-size:11px;color:var(--text-3);margin-bottom:6px">${c.company||''}</div>
         ${(c.advantages||[]).slice(0,2).map(a=>`<div style="font-size:11px;color:#059669;padding:1px 0">▲ ${a}</div>`).join('')}
         ${(c.vulnerabilities||[]).slice(0,1).map(v=>`<div style="font-size:11px;color:#dc2626;padding:1px 0">▽ ${v}</div>`).join('')}
         ${c.positioning_signal?`<div style="font-size:10px;color:var(--text-4);margin-top:4px;font-style:italic">→ ${c.positioning_signal.slice(0,120)}${c.positioning_signal.length>120?'…':''}</div>`:''}
@@ -5737,6 +5740,15 @@ async function downloadPDF() {
     //    report DATA — no html2canvas screenshot. ──
     const r = (typeof lastReport !== 'undefined' && lastReport) ? lastReport : null;
     if (!r) { alert('Please run an analysis first.'); if (btn){btn.textContent=origText;btn.disabled=false;} return; }
+
+    // B-02: Block export when the Math Verifier found an arithmetic inconsistency.
+    const _valStatus = (r.validation || {}).status;
+    if (_valStatus === 'BLOCKING' || (r.validation || {}).export_blocked) {
+      const _msg = (r.validation || {}).summary || 'The Math Verifier found an arithmetic error in the market model.';
+      alert('⛔ PDF export is blocked.\n\n' + _msg + '\n\nCorrect the flagged errors and regenerate before exporting.');
+      if (btn) { btn.textContent = origText; btn.disabled = false; }
+      return;
+    }
 
     const { jsPDF } = window.jspdf;
     const pdf = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
