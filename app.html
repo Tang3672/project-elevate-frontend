@@ -1842,12 +1842,12 @@ function renderPIReport(r) {
     html += `<div class="ms-totals">
       <div class="ms-total-cell">
         <div class="ms-total-lbl">Total Addressable Market (TAM)</div>
-        <div class="ms-total-val">${tamVal}</div>
+        <div class="ms-total-val" id="ms-headline-tam">${tamVal}</div>
         <div class="ms-total-sub">${_isResearchDomain ? 'Full buyer population at observed spend' : 'Full market if 100% penetration'}</div>
       </div>
       <div class="ms-total-cell">
         <div class="ms-total-lbl">Serviceable Market (SAM)</div>
-        <div class="ms-total-val" style="color:var(--green)">${samVal}</div>
+        <div class="ms-total-val" style="color:var(--green)" id="ms-headline-sam">${samVal}</div>
         <div class="ms-total-sub">Realistic capture scenario</div>
       </div>
     </div>`;
@@ -1903,23 +1903,88 @@ function renderPIReport(r) {
         html += `</div></div>`;
       }
       if (_prov.waterfall && _prov.waterfall.length) {
-        html += `<div style="margin-top:16px"><div class="ms-total-lbl" style="margin-bottom:8px">Provenance Waterfall — every input typed, scored, and source-linked</div><div class="ms-steps">`;
+        // Capture original aggregates for recompute (set before the loop so JS can read them)
+        const _wfRun = _prov.run || {};
+        window._msWfState = {
+          tam: _wfRun.tam_usd || 0,
+          sam: _wfRun.sam_usd || 0,
+          som: _wfRun.som_usd || 0,
+          reportId: window._currentReportId,
+        };
+        let _wIdx = 0;
+        html += `<div style="margin-top:16px" id="ms-waterfall-container">
+          <div class="ms-total-lbl" style="margin-bottom:8px">Provenance Waterfall — click any input value to adjust; TAM/SAM/SOM update live</div>
+          <div class="ms-steps">`;
         _prov.waterfall.forEach(w => {
           const rc = {TAM:'#6366f1', SAM:'#0891b2', SOM:'#059669'}[w.used_in_formula] || '#6b7280';
           const src = w.source_url
             ? `<a href="${w.source_url}" target="_blank">${w.source_name}</a>`
             : `<span style="color:var(--text-4)">${w.source_name || 'No source'}</span>`;
           const conf = (w.confidence == null) ? '' : ` · <span style="color:var(--text-4)">confidence ${Math.round(w.confidence*100)}%</span>`;
-          html += `<div class="ms-step"${w.is_aggregate?' style="background:var(--bg-2)"':''}>
-            <div>
-              <div class="ms-step-label">${w.label} <span style="background:${rc}1a;color:${rc};font-size:9px;font-weight:700;padding:1px 5px;border-radius:2px;margin-left:4px">${w.used_in_formula}</span></div>
-              <div class="ms-step-source">Source: ${src}${conf}</div>
-            </div>
-            <div class="ms-step-value">${_wval(w.value, w.unit)}</div>
-            <div class="ms-step-unit">${w.unit || ''}</div>
-          </div>`;
+          const roleBadge = `<span style="background:${rc}1a;color:${rc};font-size:9px;font-weight:700;padding:1px 5px;border-radius:2px;margin-left:4px">${w.used_in_formula}</span>`;
+          if (w.is_aggregate) {
+            // Aggregate rows — display only, updated by _msRecompute
+            const aggId = `ms-agg-val-${w.used_in_formula}`;
+            html += `<div class="ms-step" id="ms-agg-row-${w.used_in_formula}" style="background:var(--bg-2)">
+              <div>
+                <div class="ms-step-label">${w.label} ${roleBadge}</div>
+                <div class="ms-step-source"><span style="color:var(--text-4)">${w.source_name || 'Bottom-up derivation'}</span></div>
+              </div>
+              <div class="ms-step-value" id="${aggId}" style="font-variant-numeric:tabular-nums">${_wval(w.value, w.unit)}</div>
+              <div class="ms-step-unit"><span id="ms-delta-${w.used_in_formula}" style="display:none;font-size:10px;font-weight:700;padding:1px 6px;border-radius:3px;margin-right:4px"></span>${w.unit || ''}</div>
+            </div>`;
+          } else {
+            // Input steps — editable
+            const isRatio = typeof w.value === 'number' && w.value > 0 && w.value < 1;
+            const displayVal = isRatio ? (w.value * 100).toFixed(1) : (w.value != null ? Math.round(w.value) : '');
+            const displayUnit = isRatio ? '%' : (w.unit || '');
+            const safeLabel = (w.label || '').replace(/"/g, '&quot;');
+            html += `<div class="ms-step">
+              <div>
+                <div class="ms-step-label">${w.label} ${roleBadge}</div>
+                <div class="ms-step-source">Source: ${src}${conf}</div>
+              </div>
+              <div class="ms-step-value">
+                <input class="ms-gate-input"
+                       id="ms-gate-${_wIdx}"
+                       type="number"
+                       value="${displayVal}"
+                       data-orig="${w.value}"
+                       data-is-ratio="${isRatio}"
+                       data-role="${w.used_in_formula}"
+                       data-label="${safeLabel}"
+                       oninput="_msOnGateEdit(this)"
+                       title="Edit this value — TAM/SAM/SOM will recompute automatically"
+                       style="width:90px;font-family:var(--display);font-size:14px;font-weight:700;
+                              text-align:right;border:1px dashed var(--border);background:var(--bg-2);
+                              color:var(--text);padding:2px 6px;border-radius:3px;cursor:text">
+              </div>
+              <div class="ms-step-unit">${displayUnit}</div>
+            </div>`;
+            _wIdx++;
+          }
         });
-        html += `</div></div>`;
+        html += `</div>
+          <div id="ms-save-bar" style="display:none;margin-top:10px;padding:12px 14px;
+               background:var(--bg-2);border:1px solid var(--border);border-left:3px solid var(--blue)">
+            <div style="font-family:var(--display);font-size:11px;font-weight:700;color:var(--blue);margin-bottom:6px"
+                 id="ms-save-bar-label">Adjusted assumptions — not yet saved</div>
+            <textarea id="ms-rationale"
+                      placeholder="Why are you adjusting these numbers? Cite your source (e.g. 'Our lab survey found 1,800 active rigs, not 5,500')."
+                      style="width:100%;min-height:56px;font-family:var(--body);font-size:12px;color:var(--text);
+                             background:var(--bg);border:1px solid var(--border);padding:8px;resize:vertical;
+                             box-sizing:border-box;margin-bottom:8px"></textarea>
+            <div style="display:flex;gap:8px;align-items:center">
+              <button onclick="_msSaveOverrides()"
+                      style="font-family:var(--display);font-size:11px;font-weight:700;background:var(--blue);
+                             color:#fff;border:none;padding:6px 14px;cursor:pointer;border-radius:2px">Save Overrides</button>
+              <button onclick="_msRevertOverrides()"
+                      style="font-family:var(--display);font-size:11px;font-weight:700;background:transparent;
+                             color:var(--text-3);border:1px solid var(--border);padding:6px 14px;cursor:pointer;border-radius:2px">Revert to Model</button>
+              <span id="ms-save-status" style="font-size:11px;color:var(--green)"></span>
+            </div>
+          </div>
+        </div>`;
       }
     }
 
@@ -2302,6 +2367,8 @@ function renderPIReport(r) {
 
   document.getElementById('results').innerHTML = html;
   lastReport = r;
+  // Load any saved gate overrides after DOM is ready
+  setTimeout(_msLoadOverrides, 0);
   // Competitive landscape now comes from the report (server-side sweep), patched in
   // by the verification poll — no separate, flaky client fetch.
 
@@ -3881,6 +3948,184 @@ async function loadGrantDeadlines() {
       </div>`;
     }).join('');
   } catch(e) { /* silent */ }
+}
+
+// ── Market-sizing gate editing (Part D) ─────────────────────────────────────
+
+function _msOnGateEdit(input) {
+  _msRecompute();
+  const bar = document.getElementById('ms-save-bar');
+  if (bar) bar.style.display = 'block';
+  const statusEl = document.getElementById('ms-save-status');
+  if (statusEl) statusEl.textContent = '';
+}
+
+function _msRecompute() {
+  const st = window._msWfState;
+  if (!st || !st.tam) return;
+
+  let tamR = 1, samR = 1, somR = 1;
+  document.querySelectorAll('.ms-gate-input').forEach(inp => {
+    const orig = parseFloat(inp.dataset.orig);
+    if (!orig) return;
+    const isRatio = inp.dataset.isRatio === 'true';
+    const cur = isRatio ? parseFloat(inp.value) / 100 : parseFloat(inp.value);
+    if (isNaN(cur) || cur === orig) return;
+    const ratio = cur / orig;
+    const role = inp.dataset.role;
+    if (role === 'TAM') tamR *= ratio;
+    else if (role === 'SAM') samR *= ratio;
+    else if (role === 'SOM') somR *= ratio;
+  });
+
+  const newTam = st.tam * tamR;
+  const newSam = Math.min(st.sam * tamR * samR, newTam);
+  const newSom = Math.min(st.som * tamR * samR * somR, newSam);
+
+  const _setAgg = (role, origVal, newVal) => {
+    const el = document.getElementById(`ms-agg-val-${role}`);
+    if (el) el.textContent = fmtUSD(newVal);
+    const delta = document.getElementById(`ms-delta-${role}`);
+    if (!delta) return;
+    const pct = origVal ? (newVal - origVal) / origVal * 100 : 0;
+    if (Math.abs(pct) > 0.5) {
+      const sign = pct > 0 ? '+' : '';
+      delta.textContent = `${sign}${Math.round(pct)}%`;
+      delta.style.display = 'inline';
+      delta.style.background = pct > 0 ? '#d1fae5' : '#fee2e2';
+      delta.style.color = pct > 0 ? '#065f46' : '#991b1b';
+    } else {
+      delta.style.display = 'none';
+    }
+  };
+  _setAgg('TAM', st.tam, newTam);
+  _setAgg('SAM', st.sam, newSam);
+  _setAgg('SOM', st.som, newSom);
+
+  // Update headline values
+  const ht = document.getElementById('ms-headline-tam');
+  if (ht) ht.textContent = fmtUSD(newTam);
+  const hs = document.getElementById('ms-headline-sam');
+  if (hs) hs.textContent = fmtUSD(newSam);
+
+  // Verifier: amber border when value is implausibly far from model
+  document.querySelectorAll('.ms-gate-input').forEach(inp => {
+    const orig = parseFloat(inp.dataset.orig);
+    if (!orig) return;
+    const isRatio = inp.dataset.isRatio === 'true';
+    const cur = isRatio ? parseFloat(inp.value) / 100 : parseFloat(inp.value);
+    if (isNaN(cur)) return;
+    const ratio = cur / orig;
+    if (ratio > 4 || ratio < 0.1) {
+      inp.style.borderColor = '#f59e0b';
+      inp.title = `Value is ${ratio > 4 ? ratio.toFixed(1) + '× larger' : (ratio * 100).toFixed(0) + '% of'} the model estimate — confirm your source before saving.`;
+    } else {
+      inp.style.borderColor = '';
+      inp.title = 'Edit this value — TAM/SAM/SOM will recompute automatically';
+    }
+  });
+}
+
+async function _msSaveOverrides() {
+  const st = window._msWfState;
+  const statusEl = document.getElementById('ms-save-status');
+  if (!st?.reportId) {
+    if (statusEl) statusEl.textContent = 'Save the report first to persist overrides.';
+    return;
+  }
+
+  const stepOverrides = {};
+  let tamR = 1, samR = 1, somR = 1;
+  document.querySelectorAll('.ms-gate-input').forEach(inp => {
+    const orig = parseFloat(inp.dataset.orig);
+    if (!orig) return;
+    const isRatio = inp.dataset.isRatio === 'true';
+    const cur = isRatio ? parseFloat(inp.value) / 100 : parseFloat(inp.value);
+    if (isNaN(cur) || cur === orig) return;
+    stepOverrides[inp.dataset.label] = {orig, override: cur, role: inp.dataset.role};
+    const ratio = cur / orig;
+    if (inp.dataset.role === 'TAM') tamR *= ratio;
+    else if (inp.dataset.role === 'SAM') samR *= ratio;
+    else if (inp.dataset.role === 'SOM') somR *= ratio;
+  });
+
+  const newTam = st.tam * tamR;
+  const newSam = Math.min(st.sam * tamR * samR, newTam);
+  const newSom = Math.min(st.som * tamR * samR * somR, newSam);
+  const rationale = document.getElementById('ms-rationale')?.value || '';
+
+  try {
+    const tok = localStorage.getItem('jwt') || sessionStorage.getItem('jwt') || '';
+    const headers = {'Content-Type': 'application/json'};
+    if (tok) headers['Authorization'] = `Bearer ${tok}`;
+    const res = await fetch(`${API}/alignment/market-sizing-override`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        report_id: st.reportId,
+        step_overrides: stepOverrides,
+        rationale,
+        tam_usd: Math.round(newTam),
+        sam_usd: Math.round(newSam),
+        som_usd: Math.round(newSom),
+      }),
+    });
+    if (res.ok) {
+      if (statusEl) { statusEl.textContent = '✓ Saved'; setTimeout(() => { if (statusEl) statusEl.textContent = ''; }, 3000); }
+      const barLabel = document.getElementById('ms-save-bar-label');
+      if (barLabel) { barLabel.style.color = 'var(--green)'; barLabel.textContent = 'Overrides saved'; }
+    } else {
+      if (statusEl) statusEl.textContent = 'Save failed — try again.';
+    }
+  } catch(e) {
+    if (statusEl) statusEl.textContent = 'Save failed — check connection.';
+  }
+}
+
+function _msRevertOverrides() {
+  document.querySelectorAll('.ms-gate-input').forEach(inp => {
+    const orig = parseFloat(inp.dataset.orig);
+    const isRatio = inp.dataset.isRatio === 'true';
+    inp.value = isRatio ? (orig * 100).toFixed(1) : Math.round(orig);
+    inp.style.borderColor = '';
+    inp.title = 'Edit this value — TAM/SAM/SOM will recompute automatically';
+  });
+  _msRecompute();
+  const bar = document.getElementById('ms-save-bar');
+  if (bar) bar.style.display = 'none';
+}
+
+async function _msLoadOverrides() {
+  const rid = window._currentReportId;
+  if (!rid) return;
+  try {
+    const tok = localStorage.getItem('jwt') || sessionStorage.getItem('jwt') || '';
+    const headers = {};
+    if (tok) headers['Authorization'] = `Bearer ${tok}`;
+    const res = await fetch(`${API}/alignment/market-sizing-override/${rid}`, {headers});
+    if (!res.ok) return;
+    const data = await res.json();
+    if (!data.has_override) return;
+
+    let anyChanged = false;
+    Object.entries(data.step_overrides || {}).forEach(([label, {orig, override}]) => {
+      const inp = document.querySelector(`.ms-gate-input[data-label="${CSS.escape(label)}"]`);
+      if (!inp) return;
+      const isRatio = inp.dataset.isRatio === 'true';
+      inp.value = isRatio ? (override * 100).toFixed(1) : Math.round(override);
+      anyChanged = true;
+    });
+
+    if (anyChanged) {
+      _msRecompute();
+      const bar = document.getElementById('ms-save-bar');
+      if (bar) bar.style.display = 'block';
+      const barLabel = document.getElementById('ms-save-bar-label');
+      if (barLabel) { barLabel.style.color = 'var(--green)'; barLabel.textContent = 'Saved overrides applied'; }
+      const ratEl = document.getElementById('ms-rationale');
+      if (ratEl && data.rationale) ratEl.value = data.rationale;
+    }
+  } catch(e) { /* non-fatal */ }
 }
 
 // Init
