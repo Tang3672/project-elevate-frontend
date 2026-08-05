@@ -2382,6 +2382,8 @@ function _renderPostReportTools(r) {
   const idea      = document.getElementById('idea')?.value || r.idea_submitted || '';
   const disease   = (r.disease_intelligence?.condition || idea).slice(0,80);
   const ptype     = r.product_type || selectedType || 'other';
+  // B-10: gate CTAs by archetype — research/non-clinical products have no clinical trial pathway
+  const _isResearchProduct = (r.domain || '').toLowerCase().includes('research');
   const existingPanel = document.getElementById('post-report-tools');
   if (existingPanel) existingPanel.remove();
 
@@ -2402,8 +2404,8 @@ function _renderPostReportTools(r) {
         <div id="pr-save-status" style="font-size:11px;color:var(--text-3);margin-top:6px"></div>
       </div>
 
-      <!-- Trial Sites -->
-      <div style="border:1px solid var(--border);background:var(--bg-2);padding:14px 16px">
+      <!-- Trial Sites — clinical products only (B-10: gate CTAs by archetype) -->
+      ${_isResearchProduct ? '' : `<div style="border:1px solid var(--border);background:var(--bg-2);padding:14px 16px">
         <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">🏥 Find Trial Sites</div>
         <div style="font-size:11px;color:var(--text-3);margin-bottom:10px">Identify top hospitals and research centres for running clinical trials in this indication.</div>
         <button onclick="_runTrialSitesInline('${disease.replace(/'/g,"\\'")}'')"
@@ -2411,7 +2413,7 @@ function _renderPostReportTools(r) {
           Find Sites for ${disease.slice(0,30)}${disease.length>30?'…':''}
         </button>
         <div id="pr-trials-result" style="margin-top:10px;font-size:11px;color:var(--text-3)"></div>
-      </div>
+      </div>`}
 
       <!-- Dev Timeline -->
       <div style="border:1px solid var(--border);background:var(--bg-2);padding:14px 16px">
