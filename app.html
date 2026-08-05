@@ -831,7 +831,9 @@
         <div class="card">
           <div class="ch"><span class="ct">Product Submission</span><span class="cb-badge" id="pt-badge">Select type below</span></div>
           <div class="cb">
-            <span class="lbl" style="margin-bottom:10px">Select product type</span>
+            <span class="lbl" style="margin-bottom:6px">Select product type</span>
+
+            <div style="font-family:var(--body);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--blue);padding:4px 0 6px;border-bottom:1px solid var(--border);margin-bottom:6px">Life Sciences Clinical</div>
             <div class="type-grid">
               <button class="type-btn active" onclick="selectType('drug_small_molecule',this)">
                 <span class="type-icon">💊</span>
@@ -873,10 +875,19 @@
                 <span class="type-name">Other / Platform</span>
                 <span class="type-desc">Microbiome, CRISPR, delivery platforms</span>
               </button>
+            </div>
+
+            <div style="font-family:var(--body);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--blue);padding:12px 0 6px;border-bottom:1px solid var(--border);margin-bottom:6px">Life Sciences Research</div>
+            <div class="type-grid">
               <button class="type-btn" onclick="selectType('research_tool_non_clinical',this)">
                 <span class="type-icon">🖥️</span>
                 <span class="type-name">Research Tool</span>
-                <span class="type-desc">Lab software, instruments, data infrastructure</span>
+                <span class="type-desc">Lab instruments, hardware, data acquisition</span>
+              </button>
+              <button class="type-btn" onclick="selectType('research_infrastructure_saas',this)">
+                <span class="type-icon">☁️</span>
+                <span class="type-name">Lab Infrastructure SaaS</span>
+                <span class="type-desc">ELN, LIMS, data management, cloud sync</span>
               </button>
             </div>
 
@@ -904,6 +915,7 @@
                 <button class="chip" onclick="setEx(8)">Rapid AST — point-of-care diagnostic</button>
                 <button class="chip" onclick="setEx(12)">Neurotech lab — wearable data sync</button>
                 <button class="chip" onclick="setEx(13)">Behavioral science — lab data mgmt</button>
+                <button class="chip" onclick="setEx(14)">ELN / protocol mgmt — lab SaaS</button>
               </div>
             </div>
 
@@ -1121,6 +1133,7 @@ const EXAMPLES = [
   { type:'other_platform', idea:'An in vivo base editing therapy using adenine base editors delivered via LNP to permanently reduce PCSK9 expression in hepatocytes, providing lifelong LDL cholesterol reduction with a single dose.', pathogen:'' },
   { type:'research_tool_non_clinical', idea:'A cloud-based data sync and session management platform for academic neurotech labs, automating wearable sensor data ingestion from ActiGraph and custom embedded devices into a unified lab database with experiment-level metadata tagging and multi-site sharing for NIH-funded research groups.', pathogen:'' },
   { type:'research_tool_non_clinical', idea:'A research data management SaaS for NIH-funded behavioral science labs, replacing manual SD-card and script-based workflows with automated device sync, multi-lab sharing, and experiment replay — targeting core facility administrators and PIs managing longitudinal cohorts across 3–12 sites.', pathogen:'' },
+  { type:'research_infrastructure_saas', idea:'An electronic lab notebook (ELN) and protocol management platform for academic biomedical labs, with built-in version control, automated audit trails for NIH data sharing compliance, and one-click export to figshare and Zenodo — targeting lab managers and PIs at R1 universities managing multi-member research groups.', pathogen:'' },
 ];
 
 const SRC_NAMES = {
@@ -1154,7 +1167,8 @@ function selectType(type, el) {
     digital_health: 'Describe your software - clinical problem, data it uses, how clinicians use it.',
     vaccine_immunotherapy: 'Describe your vaccine or immunotherapy - target antigen, platform (mRNA, protein subunit, viral vector).',
     other_platform: 'Describe your platform - what it does, diseases it addresses, what makes it novel.',
-    research_tool_non_clinical: 'Describe your research tool — what it does, who uses it (PIs, core facilities, institutions), what problem it solves for academic or biotech labs.'
+    research_tool_non_clinical: 'Describe your research tool — what it does, who uses it (PIs, core facilities, institutions), what problem it solves for academic or biotech labs.',
+    research_infrastructure_saas: 'Describe your lab infrastructure software — ELN, LIMS, data management, cloud sync, or compute platform for academic or biotech research labs.'
   };
   document.getElementById('idea').placeholder = placeholders[type] || placeholders.other_platform;
 }
@@ -1164,13 +1178,15 @@ function setEx(i) {
   if (!ex) return;
   document.getElementById('idea').value    = ex.idea;
   document.getElementById('pathogen').value = ex.pathogen || '';
-  const typeOrder = ['drug_small_molecule','biologic','gene_cell_therapy','medical_device',
-                     'diagnostic','digital_health','vaccine_immunotherapy','other_platform',
-                     'research_tool_non_clinical'];
+  // Find the matching button by its onclick attribute value (stable across layout changes)
   const btns = document.querySelectorAll('.type-btn');
-  const idx  = typeOrder.indexOf(ex.type);
   btns.forEach(b => b.classList.remove('active'));
-  const btn = btns[idx >= 0 ? idx : 7];
+  let matched = null;
+  btns.forEach(b => {
+    const fn = b.getAttribute('onclick') || '';
+    if (fn.includes("'" + ex.type + "'") || fn.includes('"' + ex.type + '"')) matched = b;
+  });
+  const btn = matched || btns[0];
   if (btn) btn.classList.add('active');
   selectedType = ex.type;
   document.getElementById('pt-badge').textContent = btn?.querySelector('.type-name')?.textContent || ex.type;
@@ -1624,7 +1640,7 @@ function renderPIReport(r) {
   html += `
     <div style="border-left:4px solid var(--blue);padding:16px 20px;background:var(--bg-2);margin-bottom:28px">
       <div style="font-family:var(--display);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--blue);margin-bottom:6px">${_isResearchDomain ? 'Commercialization Intelligence Report' : 'Market Intelligence Report'}</div>
-      <div style="font-family:var(--display);font-size:20px;font-weight:700;color:var(--text);margin-bottom:8px">${r.disease_intelligence ? r.disease_intelligence.condition : 'Analysis'}</div>
+      <div style="font-family:var(--display);font-size:20px;font-weight:700;color:var(--text);margin-bottom:8px">${r.product_name || (r.disease_intelligence ? r.disease_intelligence.condition : '') || 'Analysis'}</div>
       <div style="font-family:var(--body);font-size:13px;color:var(--text-2);line-height:1.7">${r.executive_summary}</div>
       <div id="verification-slot">${buildVerificationBadgesHTML(r)}</div>
     </div>`;
@@ -2391,7 +2407,7 @@ function renderPIReport(r) {
 
 function _renderPostReportTools(r) {
   const idea      = document.getElementById('idea')?.value || r.idea_submitted || '';
-  const disease   = (r.disease_intelligence?.condition || idea).slice(0,80);
+  const disease   = (r.product_name || r.disease_intelligence?.condition || idea).slice(0,80);
   const ptype     = r.product_type || selectedType || 'other';
   // B-10: gate CTAs by archetype — research/non-clinical products have no clinical trial pathway
   const _isResearchProduct = (r.domain || '').toLowerCase().includes('research');
@@ -3161,8 +3177,8 @@ function googleSignIn() {
 // SAVE REPORT
 function showSaveBar(idea, pathogen) {
   lastIdea = {idea, pathogen};
-  // Suggest a name from idea text
-  const suggest = idea.slice(0, 60).trim();
+  // Suggest name from product_name (classification) > idea text
+  const suggest = (window._classification?.product_name || lastReport?.product_name || idea).slice(0, 60).trim();
   document.getElementById('save-name').value = suggest;
   document.getElementById('save-bar').classList.add('show');
 }
@@ -5819,7 +5835,7 @@ async function downloadPDF() {
     header();
 
     // Title block
-    const cond = clean((r.disease_intelligence&&r.disease_intelligence.condition) || r.idea_submitted || 'Market Intelligence Report');
+    const cond = clean(r.product_name || (r.disease_intelligence&&r.disease_intelligence.condition) || r.idea_submitted || 'Market Intelligence Report');
     const _reportTypeLabel = (r && (r.domain||'').toLowerCase().includes('research')) ? 'COMMERCIALIZATION INTELLIGENCE REPORT' : 'MARKET INTELLIGENCE REPORT';
     pdf.setTextColor(BLUE[0],BLUE[1],BLUE[2]); pdf.setFont('helvetica','bold'); pdf.setFontSize(8); pdf.text(_reportTypeLabel, margin, y); y+=6;
     pdf.setTextColor(DARK[0],DARK[1],DARK[2]); pdf.setFontSize(17);
@@ -6180,11 +6196,46 @@ function _renderClassificationCard(cls, panel) {
         </div>
         <div style="text-align:right;font-size:10px;opacity:.75;white-space:nowrap">${confPct}% confidence</div>
       </div>
-      <div style="padding:10px 14px;background:var(--bg-2);display:flex;gap:8px;flex-wrap:wrap">
+      <div style="padding:10px 14px;background:var(--bg-2);display:flex;gap:8px;flex-wrap:wrap;align-items:center">
         <span style="background:var(--bg-1);border:1px solid var(--border);border-radius:12px;padding:3px 9px;font-size:11px;font-weight:600;color:var(--blue)">${domainLabel}</span>
         <span style="background:var(--bg-1);border:1px solid var(--border);border-radius:12px;padding:3px 9px;font-size:11px;color:var(--text-2)">${archLabel}</span>
         <span style="background:var(--bg-1);border:1px solid var(--border);border-radius:12px;padding:3px 9px;font-size:11px;color:var(--text-3)">${trlLabel}</span>
+        <button onclick="_toggleClsEdit()" style="margin-left:auto;background:none;border:none;color:var(--blue);font-size:11px;cursor:pointer;text-decoration:underline;padding:0">Not right? Edit</button>
       </div>
+
+      <!-- Inline correction panel (hidden by default) -->
+      <div id="cls-edit-panel" style="display:none;padding:10px 14px;background:var(--bg-2);border-top:1px solid var(--border)">
+        <div style="font-size:10px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Correct classification</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+          <div>
+            <div style="font-size:10px;color:var(--text-3);margin-bottom:3px">Domain</div>
+            <select id="cls-domain-sel" style="width:100%;padding:5px 8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:11px">
+              <option value="LIFE_SCIENCES_CLINICAL" ${!isResearch?'selected':''}>Life Sciences Clinical</option>
+              <option value="LIFE_SCIENCES_RESEARCH" ${isResearch?'selected':''}>Life Sciences Research</option>
+              <option value="ENGINEERING_HARDWARE">Engineering / Hardware</option>
+            </select>
+          </div>
+          <div>
+            <div style="font-size:10px;color:var(--text-3);margin-bottom:3px">Archetype</div>
+            <select id="cls-arch-sel" style="width:100%;padding:5px 8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:11px">
+              <option value="research_tool_non_clinical" ${cls.archetype==='research_tool_non_clinical'?'selected':''}>Non-Clinical Research Tool</option>
+              <option value="research_infrastructure_saas" ${cls.archetype==='research_infrastructure_saas'?'selected':''}>Research Infrastructure SaaS</option>
+              <option value="therapeutic_small_molecule" ${cls.archetype==='therapeutic_small_molecule'?'selected':''}>Small Molecule Drug</option>
+              <option value="therapeutic_biologic" ${cls.archetype==='therapeutic_biologic'?'selected':''}>Biologic / mAb</option>
+              <option value="gene_cell_therapy" ${cls.archetype==='gene_cell_therapy'?'selected':''}>Gene / Cell Therapy</option>
+              <option value="device_class_ii" ${cls.archetype==='device_class_ii'?'selected':''}>Class II Medical Device</option>
+              <option value="device_class_iii" ${cls.archetype==='device_class_iii'?'selected':''}>Class III Medical Device</option>
+              <option value="samd_clinical" ${cls.archetype==='samd_clinical'?'selected':''}>Clinical SaMD</option>
+              <option value="diagnostic_ivd" ${cls.archetype==='diagnostic_ivd'?'selected':''}>In Vitro Diagnostic</option>
+              <option value="vaccine" ${cls.archetype==='vaccine'?'selected':''}>Vaccine</option>
+              <option value="clinical_workflow_saas" ${cls.archetype==='clinical_workflow_saas'?'selected':''}>Clinical Workflow SaaS</option>
+              <option value="platform" ${cls.archetype==='platform'?'selected':''}>Platform Technology</option>
+            </select>
+          </div>
+        </div>
+        <button onclick="_applyClsCorrection()" style="padding:5px 14px;background:var(--blue);color:#fff;border:none;border-radius:3px;font-size:11px;font-weight:600;cursor:pointer">Apply correction</button>
+      </div>
+
       ${cls.ambiguities && cls.ambiguities.length ? `
       <div style="padding:8px 14px 10px;background:var(--bg-2);border-top:1px solid var(--border)">
         <div style="font-size:10px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">Gaps we still need to answer</div>
@@ -6194,6 +6245,28 @@ function _renderClassificationCard(cls, panel) {
       </div>` : ''}
     </div>
     <div id="q-container"></div>`;
+}
+
+function _toggleClsEdit() {
+  const p = document.getElementById('cls-edit-panel');
+  if (p) p.style.display = p.style.display === 'none' ? 'block' : 'none';
+}
+
+function _applyClsCorrection() {
+  const domainSel = document.getElementById('cls-domain-sel');
+  const archSel   = document.getElementById('cls-arch-sel');
+  if (!domainSel || !archSel || !window._classification) return;
+  window._classification.domain    = domainSel.value;
+  window._classification.archetype = archSel.value;
+  // Close the edit panel and reflect the new labels in the chips
+  const card = document.getElementById('cls-card');
+  if (card) {
+    const chips = card.querySelectorAll('div[style*="border-radius:12px"]');
+    if (chips[0]) chips[0].textContent = _domainLabel(domainSel.value);
+    if (chips[1]) chips[1].textContent = _archetypeLabel(archSel.value);
+  }
+  const p = document.getElementById('cls-edit-panel');
+  if (p) p.style.display = 'none';
 }
 
 async function _showMandatoryQuestions(idea) {
