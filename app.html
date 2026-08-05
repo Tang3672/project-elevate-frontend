@@ -88,7 +88,7 @@
     .cb{padding:18px 20px}
 
     /* PRODUCT TYPE SELECTOR */
-    .type-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:16px;overflow:hidden}
+    .type-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:16px;overflow:hidden}
     .type-btn{padding:8px 4px;border:1.5px solid var(--border);background:var(--bg-3);cursor:pointer;text-align:center;transition:all .12s;font-family:var(--body);min-width:0;overflow:hidden}
     .type-btn:hover{border-color:var(--blue);background:var(--blue-lite)}
     .type-btn.active{border-color:var(--blue);background:var(--blue-lite);box-shadow:0 0 0 3px rgba(26,79,214,.1)}
@@ -873,6 +873,11 @@
                 <span class="type-name">Other / Platform</span>
                 <span class="type-desc">Microbiome, CRISPR, delivery platforms</span>
               </button>
+              <button class="type-btn" onclick="selectType('research_tool_non_clinical',this)">
+                <span class="type-icon">🖥️</span>
+                <span class="type-name">Research Tool</span>
+                <span class="type-desc">Lab software, instruments, data infrastructure</span>
+              </button>
             </div>
 
             <div style="margin-top:14px">
@@ -897,6 +902,8 @@
                 <button class="chip" onclick="setEx(6)">Rural CGM — next-gen device</button>
                 <button class="chip" onclick="setEx(7)">Sepsis — AI early detection</button>
                 <button class="chip" onclick="setEx(8)">Rapid AST — point-of-care diagnostic</button>
+                <button class="chip" onclick="setEx(12)">Neurotech lab — wearable data sync</button>
+                <button class="chip" onclick="setEx(13)">Behavioral science — lab data mgmt</button>
               </div>
             </div>
 
@@ -1112,6 +1119,8 @@ const EXAMPLES = [
   { type:'vaccine_immunotherapy', idea:'A personalized mRNA neoantigen vaccine for stage III melanoma patients, encoding patient-specific tumor mutations identified by whole exome sequencing, administered in combination with pembrolizumab.', pathogen:'' },
   { type:'gene_cell_therapy', idea:'An exon-skipping antisense oligonucleotide for Duchenne muscular dystrophy patients with exon 51-amenable mutations, designed to restore partial dystrophin expression and slow disease progression.', pathogen:'' },
   { type:'other_platform', idea:'An in vivo base editing therapy using adenine base editors delivered via LNP to permanently reduce PCSK9 expression in hepatocytes, providing lifelong LDL cholesterol reduction with a single dose.', pathogen:'' },
+  { type:'research_tool_non_clinical', idea:'A cloud-based data sync and session management platform for academic neurotech labs, automating wearable sensor data ingestion from ActiGraph and custom embedded devices into a unified lab database with experiment-level metadata tagging and multi-site sharing for NIH-funded research groups.', pathogen:'' },
+  { type:'research_tool_non_clinical', idea:'A research data management SaaS for NIH-funded behavioral science labs, replacing manual SD-card and script-based workflows with automated device sync, multi-lab sharing, and experiment replay — targeting core facility administrators and PIs managing longitudinal cohorts across 3–12 sites.', pathogen:'' },
 ];
 
 const SRC_NAMES = {
@@ -1144,9 +1153,10 @@ function selectType(type, el) {
     diagnostic: 'Describe your diagnostic - what it detects, technology platform, clinical gap.',
     digital_health: 'Describe your software - clinical problem, data it uses, how clinicians use it.',
     vaccine_immunotherapy: 'Describe your vaccine or immunotherapy - target antigen, platform (mRNA, protein subunit, viral vector).',
-    other_platform: 'Describe your platform - what it does, diseases it addresses, what makes it novel.'
+    other_platform: 'Describe your platform - what it does, diseases it addresses, what makes it novel.',
+    research_tool_non_clinical: 'Describe your research tool — what it does, who uses it (PIs, core facilities, institutions), what problem it solves for academic or biotech labs.'
   };
-  document.getElementById('idea').placeholder = placeholders[type] || placeholders.other;
+  document.getElementById('idea').placeholder = placeholders[type] || placeholders.other_platform;
 }
 
 function setEx(i) {
@@ -1155,7 +1165,8 @@ function setEx(i) {
   document.getElementById('idea').value    = ex.idea;
   document.getElementById('pathogen').value = ex.pathogen || '';
   const typeOrder = ['drug_small_molecule','biologic','gene_cell_therapy','medical_device',
-                     'diagnostic','digital_health','vaccine_immunotherapy','other_platform'];
+                     'diagnostic','digital_health','vaccine_immunotherapy','other_platform',
+                     'research_tool_non_clinical'];
   const btns = document.querySelectorAll('.type-btn');
   const idx  = typeOrder.indexOf(ex.type);
   btns.forEach(b => b.classList.remove('active'));
