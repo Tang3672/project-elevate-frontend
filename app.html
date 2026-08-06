@@ -2391,6 +2391,228 @@ function renderPIReport(r) {
     </div>`;
   }
 
+  // CHAPTER 8: STRATEGIC INTELLIGENCE — S-01…S-09
+  // Evidence base, value drivers, segment fit, feature posture, pricing model,
+  // positioning, risks, guiding question, adversarial review.
+  const _hasStrategicContent = !!(
+    r.positioning_statement || r.guiding_question ||
+    (r.value_driver_ranking && r.value_driver_ranking.length) ||
+    (r.segment_fit_table && r.segment_fit_table.length) ||
+    (r.feature_investment_posture && r.feature_investment_posture.length) ||
+    (r.pricing_model_analysis && (r.pricing_model_analysis.model_comparison || []).length) ||
+    (r.strategic_risks && r.strategic_risks.length) ||
+    (r.adversarial_review && r.adversarial_review.length) ||
+    (r.evidence_base && Object.keys(r.evidence_base).length)
+  );
+  if (_hasStrategicContent) {
+    html += chapterHeader('8', 'Strategic Intelligence', 'Positioning, segment choices, feature priorities, pricing trade-offs, and adversarial review');
+
+    // S-01 Evidence Base
+    const _eb = r.evidence_base;
+    if (_eb && (_eb.source_types_used || _eb.evidence_gap_block || _eb.limitations)) {
+      html += `<div style="border:1px solid var(--border);border-radius:4px;padding:14px 16px;margin-bottom:20px;background:var(--bg-2)">
+        <div style="font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Evidence Base</div>`;
+      if (_eb.source_types_used && _eb.source_types_used.length) {
+        html += `<div style="font-size:11px;color:var(--text-2);margin-bottom:5px"><strong>Sources used:</strong> ${_eb.source_types_used.join(', ')}</div>`;
+      }
+      if (_eb.sample_composition) {
+        html += `<div style="font-size:11px;color:var(--text-2);margin-bottom:5px"><strong>Sample:</strong> ${_eb.sample_composition}</div>`;
+      }
+      if (_eb.decision_authority_profile) {
+        html += `<div style="font-size:11px;color:var(--text-2);margin-bottom:5px"><strong>Purchase authority:</strong> ${_eb.decision_authority_profile}</div>`;
+      }
+      if ((_eb.limitations || []).length) {
+        html += `<div style="font-size:11px;color:#d97706;margin-top:8px"><strong>Limitations:</strong> ${_eb.limitations.join(' · ')}</div>`;
+      }
+      if (_eb.evidence_gap_block) {
+        html += `<div style="font-size:11px;color:#dc2626;margin-top:8px;padding:8px 12px;background:#fef2f2;border-left:3px solid #dc2626">${_eb.evidence_gap_block}</div>`;
+      }
+      html += `</div>`;
+    }
+
+    // S-02 Value Driver Ranking
+    const _vdr = r.value_driver_ranking || [];
+    if (_vdr.length) {
+      html += `<div style="margin-bottom:20px">
+        <div style="font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Value Driver Ranking</div>
+        <div style="border:1px solid var(--border);border-radius:4px;overflow:hidden">
+          <table style="width:100%;border-collapse:collapse;font-size:12px">
+            <thead><tr style="background:var(--bg-2)">
+              <th style="text-align:left;padding:7px 12px;font-weight:700;color:var(--text-3)">Driver</th>
+              <th style="text-align:center;padding:7px 12px;font-weight:700;color:var(--text-3);white-space:nowrap">Importance</th>
+              <th style="text-align:left;padding:7px 12px;font-weight:700;color:var(--text-3)">Product Implication</th>
+            </tr></thead>
+            <tbody>
+              ${_vdr.map(v => {
+                const imp = (v.relative_importance||'').toUpperCase();
+                const impColor = imp==='HIGH' ? 'var(--green)' : imp==='LOW' ? 'var(--text-4)' : 'var(--text-2)';
+                return `<tr style="border-top:1px solid var(--border)">
+                  <td style="padding:7px 12px;color:var(--text);font-weight:600">${v.value_driver||v.driver||''}</td>
+                  <td style="padding:7px 12px;text-align:center;color:${impColor};font-weight:700;font-size:10px;text-transform:uppercase">${imp}</td>
+                  <td style="padding:7px 12px;color:var(--text-2)">${v.product_implication||v.rationale||''}</td>
+                </tr>`;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>`;
+    }
+
+    // S-03 Segment Fit Table
+    const _sft = r.segment_fit_table || [];
+    if (_sft.length) {
+      html += `<div style="margin-bottom:20px">
+        <div style="font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Segment Fit</div>
+        <div style="border:1px solid var(--border);border-radius:4px;overflow:hidden">
+          <table style="width:100%;border-collapse:collapse;font-size:12px">
+            <thead><tr style="background:var(--bg-2)">
+              <th style="text-align:left;padding:7px 12px;font-weight:700;color:var(--text-3)">Segment</th>
+              <th style="text-align:center;padding:7px 12px;font-weight:700;color:var(--text-3)">Fit</th>
+              <th style="text-align:center;padding:7px 12px;font-weight:700;color:var(--text-3)">Stance</th>
+              <th style="text-align:left;padding:7px 12px;font-weight:700;color:var(--text-3)">Rationale</th>
+            </tr></thead>
+            <tbody>
+              ${_sft.map(s => {
+                const stance = s.strategic_stance || s.fit || '';
+                const isNonTarget = stance.toLowerCase().includes('non-target');
+                const isTarget = stance.toLowerCase() === 'target';
+                const stanceColor = isNonTarget ? '#dc2626' : isTarget ? 'var(--green)' : 'var(--text-2)';
+                const fit = s.relative_fit || '';
+                const fitColor = fit === 'Strong' ? 'var(--green)' : fit === 'Weak' ? '#dc2626' : 'var(--text-2)';
+                return `<tr style="border-top:1px solid var(--border);${isNonTarget?'opacity:.8':''}">
+                  <td style="padding:7px 12px;color:var(--text);font-weight:600">${s.segment||s.segment_name||''}</td>
+                  <td style="padding:7px 12px;text-align:center;color:${fitColor};font-size:11px;font-weight:700">${fit}</td>
+                  <td style="padding:7px 12px;text-align:center;color:${stanceColor};font-size:10px;font-weight:700;white-space:nowrap">${stance}</td>
+                  <td style="padding:7px 12px;color:var(--text-2)">${s.rationale||''}</td>
+                </tr>`;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>`;
+    }
+
+    // S-04 Feature Investment Posture
+    const _fip = r.feature_investment_posture || [];
+    if (_fip.length) {
+      html += `<div style="margin-bottom:20px">
+        <div style="font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Feature Investment Posture</div>
+        <div style="border:1px solid var(--border);border-radius:4px;overflow:hidden">
+          <table style="width:100%;border-collapse:collapse;font-size:12px">
+            <thead><tr style="background:var(--bg-2)">
+              <th style="text-align:left;padding:7px 12px;font-weight:700;color:var(--text-3)">Feature Area</th>
+              <th style="text-align:center;padding:7px 12px;font-weight:700;color:var(--text-3)">Posture</th>
+              <th style="text-align:left;padding:7px 12px;font-weight:700;color:var(--text-3)">Rationale</th>
+            </tr></thead>
+            <tbody>
+              ${_fip.map(f => {
+                const posture = f.posture || '';
+                const isExclude = posture.toLowerCase() === 'exclude';
+                const isBuild = posture.toLowerCase().includes('build and prioritize');
+                const postureColor = isExclude ? '#dc2626' : isBuild ? 'var(--green)' : 'var(--text-2)';
+                return `<tr style="border-top:1px solid var(--border)">
+                  <td style="padding:7px 12px;color:var(--text);font-weight:600">${f.feature_area||f.feature||''}</td>
+                  <td style="padding:7px 12px;text-align:center;color:${postureColor};font-size:10px;font-weight:700;white-space:nowrap">${posture}</td>
+                  <td style="padding:7px 12px;color:var(--text-2)">${f.rationale||''}</td>
+                </tr>`;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>`;
+    }
+
+    // S-05 Pricing Model Analysis
+    const _pma = r.pricing_model_analysis || {};
+    const _modelComp = _pma.model_comparison || [];
+    const _ctxAnal = _pma.contextual_analysis || [];
+    if (_modelComp.length || _ctxAnal.length) {
+      html += `<div style="margin-bottom:20px">
+        <div style="font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Pricing Model Analysis</div>`;
+      if (_modelComp.length) {
+        html += `<div style="border:1px solid var(--border);border-radius:4px;overflow:hidden;margin-bottom:12px">
+          <table style="width:100%;border-collapse:collapse;font-size:12px">
+            <thead><tr style="background:var(--bg-2)">
+              <th style="text-align:left;padding:7px 12px;font-weight:700;color:var(--text-3)">Model</th>
+              <th style="text-align:center;padding:7px 12px;font-weight:700;color:var(--text-3)">User Appeal</th>
+              <th style="text-align:center;padding:7px 12px;font-weight:700;color:var(--text-3)">Sustainability</th>
+              <th style="text-align:center;padding:7px 12px;font-weight:700;color:var(--text-3)">Stance</th>
+            </tr></thead>
+            <tbody>
+              ${_modelComp.map(m => {
+                const stance = m.strategic_stance || '';
+                const isRec = stance.toLowerCase() === 'recommended';
+                const isAvoid = stance.toLowerCase() === 'avoid';
+                const sc = isRec ? 'var(--green)' : isAvoid ? '#dc2626' : 'var(--text-2)';
+                return `<tr style="border-top:1px solid var(--border)${isRec?';background:var(--bg-2)':''}">
+                  <td style="padding:7px 12px;color:var(--text);font-weight:600">${m.pricing_model||''}</td>
+                  <td style="padding:7px 12px;text-align:center;color:var(--text-2)">${m.user_appeal||''}</td>
+                  <td style="padding:7px 12px;text-align:center;color:var(--text-2)">${m.business_sustainability||''}</td>
+                  <td style="padding:7px 12px;text-align:center;color:${sc};font-size:10px;font-weight:700">${stance}</td>
+                </tr>`;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>`;
+      }
+      if (_ctxAnal.length) {
+        html += `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:8px">
+          ${_ctxAnal.map(c => `<div style="border:1px solid var(--border);border-radius:4px;padding:10px 12px;background:var(--bg-2)">
+            <div style="font-size:11px;font-weight:700;color:var(--text);margin-bottom:4px">${c.context||''}</div>
+            <div style="font-size:11px;color:var(--text-2);margin-bottom:4px">${c.why_this_model_works||''}</div>
+            ${c.structural_risk?`<div style="font-size:11px;color:#d97706"><strong>Risk:</strong> ${c.structural_risk}</div>`:''}
+          </div>`).join('')}
+        </div>`;
+      }
+      html += `</div>`;
+    }
+
+    // S-07 Positioning Statement
+    if (r.positioning_statement) {
+      html += `<div style="margin-bottom:20px;padding:16px 20px;border-left:4px solid var(--blue);background:var(--bg-2)">
+        <div style="font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Positioning Statement</div>
+        <div style="font-size:13px;color:var(--text);line-height:1.7;font-style:italic">${r.positioning_statement}</div>
+      </div>`;
+    }
+
+    // S-09 Guiding Question
+    if (r.guiding_question) {
+      html += `<div style="margin-bottom:20px;padding:14px 18px;border:1.5px solid var(--blue);border-radius:4px;background:var(--bg)">
+        <div style="font-size:10px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Guiding Question</div>
+        <div style="font-size:14px;font-weight:700;color:var(--text);line-height:1.5">${r.guiding_question}</div>
+      </div>`;
+    }
+
+    // S-08 Strategic Risks
+    const _sr = r.strategic_risks || [];
+    if (_sr.length) {
+      html += `<div style="margin-bottom:20px">
+        <div style="font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Strategic Risks</div>
+        <ol style="margin:0;padding:0 0 0 18px">
+          ${_sr.map(risk => `<li style="font-size:12px;color:var(--text-2);padding:4px 0;line-height:1.5">${risk}</li>`).join('')}
+        </ol>
+      </div>`;
+    }
+
+    // S-06 Adversarial Review
+    const _adv = r.adversarial_review || [];
+    if (_adv.length) {
+      html += `<div style="margin-bottom:20px">
+        <div style="font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">Adversarial Review</div>
+        <div style="font-size:11px;color:var(--text-3);margin-bottom:10px">Independent critic pass — each recommendation evaluated for structural risk and disconfirming evidence.</div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          ${_adv.map(item => `<div style="border:1px solid var(--border);border-radius:4px;padding:12px 14px;background:var(--bg-2)">
+            <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:6px">${item.recommendation||''}</div>
+            ${item.supporting_case?`<div style="font-size:11px;color:var(--text-2);margin-bottom:4px"><strong>Supporting case:</strong> ${item.supporting_case}</div>`:''}
+            ${item.structural_risk?`<div style="font-size:11px;color:#d97706;margin-bottom:4px"><strong>Structural risk:</strong> ${item.structural_risk}</div>`:''}
+            ${item.disconfirming_evidence?`<div style="font-size:11px;color:#dc2626;margin-bottom:4px"><strong>Disconfirming evidence:</strong> ${item.disconfirming_evidence}</div>`:''}
+            ${item.what_would_change_this?`<div style="font-size:11px;color:var(--text-3)"><strong>What would change this:</strong> ${item.what_would_change_this}</div>`:''}
+          </div>`).join('')}
+        </div>
+      </div>`;
+    }
+  }
+
   html += '<div class="rmeta">Generated ' + new Date(r.generated_at).toLocaleString() + ' · ' + fmt(r.signals_searched) + ' signals searched · Model v' + r.model_version + '</div>';
   html += '</div>';
 
@@ -6062,6 +6284,65 @@ async function downloadPDF() {
     ((r.market_access||{}).buyer_segments||[]).forEach(b=>{ if(b.source_url) _addSrc((b.source||'')+' - '+(b.segment||b.segment_name||b.name||''), b.source_url); });
     if(r.market_access&&r.market_access.reimbursement_source_url) _addSrc('Reimbursement pathway', r.market_access.reimbursement_source_url);
     srcs.forEach((s,i)=>s.number=i+1);
+
+    // §8 Strategic Intelligence — S-01…S-09
+    const _pdfSIC = !!(
+      r.positioning_statement || r.guiding_question ||
+      (r.value_driver_ranking||[]).length || (r.segment_fit_table||[]).length ||
+      (r.feature_investment_posture||[]).length || (r.strategic_risks||[]).length ||
+      (r.adversarial_review||[]).length || ((r.pricing_model_analysis||{}).model_comparison||[]).length
+    );
+    if (_pdfSIC) {
+      heading(hasCL?9:8,'Strategic Intelligence');
+
+      if (r.positioning_statement) {
+        subhead('Positioning'); para(r.positioning_statement);
+      }
+      if (r.guiding_question) {
+        subhead('Guiding Question'); para(r.guiding_question, {bold:true});
+      }
+
+      const _vdr = r.value_driver_ranking||[];
+      if (_vdr.length) {
+        subhead('Value Driver Ranking');
+        _vdr.forEach(v=>{ bullet((v.value_driver||v.driver||'') + ' — ' + (v.relative_importance||'') + '. ' + (v.product_implication||v.rationale||'')); });
+      }
+
+      const _sft = r.segment_fit_table||[];
+      if (_sft.length) {
+        subhead('Segment Fit');
+        _sft.forEach(s=>{ bullet((s.segment||s.segment_name||'') + ' [' + (s.strategic_stance||s.fit||'') + '] — ' + (s.rationale||'')); });
+      }
+
+      const _fip = r.feature_investment_posture||[];
+      if (_fip.length) {
+        subhead('Feature Investment Posture');
+        _fip.forEach(f=>{ bullet((f.feature_area||f.feature||'') + ' [' + (f.posture||'') + '] — ' + (f.rationale||'')); });
+      }
+
+      const _mc = (r.pricing_model_analysis||{}).model_comparison||[];
+      if (_mc.length) {
+        subhead('Pricing Model Analysis');
+        _mc.forEach(m=>{ bullet((m.pricing_model||'') + ' — ' + (m.strategic_stance||'') + '. User appeal: ' + (m.user_appeal||'') + '. Sustainability: ' + (m.business_sustainability||'')); });
+        ((r.pricing_model_analysis||{}).contextual_analysis||[]).forEach(c=>{ bullet((c.context||'') + ': ' + (c.structural_risk||'')); });
+      }
+
+      const _sr = r.strategic_risks||[];
+      if (_sr.length) {
+        subhead('Strategic Risks');
+        _sr.forEach(risk=>{ bullet(risk); });
+      }
+
+      const _adv = r.adversarial_review||[];
+      if (_adv.length) {
+        subhead('Adversarial Review');
+        _adv.forEach(item=>{
+          if (item.recommendation) para(item.recommendation, {bold:true, size:9, gap:0.5});
+          if (item.structural_risk) para('Structural risk: ' + item.structural_risk, {size:8.5, color:SUB, gap:0.3});
+          if (item.what_would_change_this) para('What would change this: ' + item.what_would_change_this, {size:8.5, color:SUB, gap:1});
+        });
+      }
+    }
 
     if (srcs.length){
       heading(hasCL?8:7,'Sources & Citations');
