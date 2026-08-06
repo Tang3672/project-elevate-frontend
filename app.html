@@ -2020,6 +2020,145 @@ function renderPIReport(r) {
     // Anchor for the derivation panel — inserted here by _renderDerivationPanel
     html += `<div id="derivation-anchor" style="margin-top:4px"></div>`;
 
+    // ── TRIANGULATION + MONTE CARLO + SENSITIVITY (D.3 / D.7) ─────────────────
+    if (r.triangulation) {
+      const _tri = r.triangulation;
+      const _mc  = _tri.monte_carlo;
+      const _sns = r.sensitivity || [];
+      const _fM  = v => v == null ? '—' : (v >= 1e9 ? `$${(v/1e9).toFixed(1)}B` : `$${(v/1e6).toFixed(0)}M`);
+
+      html += `<div style="margin-top:28px;padding-top:20px;border-top:1px solid var(--border)">
+        <div style="font-family:var(--display);font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--text-4);margin-bottom:3px">Methodology Transparency</div>
+        <div style="font-family:var(--display);font-size:16px;font-weight:800;color:var(--text);margin-bottom:6px">Market Sizing — How We Got Here</div>
+        <div style="font-size:11.5px;color:var(--text-3);line-height:1.65;max-width:660px;margin-bottom:18px">The TAM figure above is not a single model's output. Three independent estimation methods were run, then reconciled by weighted average. This section shows each method's reasoning so you can pressure-test the assumptions that drive the number.</div>
+      </div>`;
+
+      // Three method cards
+      const _triMethods = [
+        {key:'bottom_up',   label:'Bottom-Up Funnel',  weight:50, color:'#6366f1'},
+        {key:'top_down',    label:'Top-Down Proxy',     weight:25, color:'#0891b2'},
+        {key:'value_based', label:'Value-Based (WTP)',  weight:25, color:'#059669'},
+      ];
+
+      html += `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);margin-bottom:1px">`;
+      _triMethods.forEach(tm => {
+        const d = _tri[tm.key];
+        if (!d) { html += `<div style="background:var(--bg-2);padding:14px"><span style="color:var(--text-4);font-size:10px">No data</span></div>`; return; }
+        html += `<div style="background:var(--bg-2);padding:14px">
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px">
+            <span style="font-family:var(--display);font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:${tm.color}">${tm.label}</span>
+            <span style="margin-left:auto;background:${tm.color}22;color:${tm.color};font-family:var(--display);font-size:8px;font-weight:800;padding:2px 6px;border-radius:2px">weight ${tm.weight}%</span>
+          </div>
+          <div style="font-family:var(--display);font-size:19px;font-weight:800;color:var(--text)">${_fM(d.tam_usd)}</div>
+          <div style="font-size:9px;color:var(--text-4);margin-bottom:10px">range ${_fM(d.low_usd)} – ${_fM(d.high_usd)}</div>
+          <div style="font-size:10.5px;color:var(--text-2);line-height:1.55">${d.description||''}</div>`;
+        if (tm.key === 'bottom_up') {
+          const tb = d.tier_breakdown || {};
+          if (tb.academic_usd != null || tb.core_facility_usd != null || tb.site_license_usd != null) {
+            html += `<div style="margin-top:10px;border-top:1px solid var(--border);padding-top:8px">
+              <div style="font-family:var(--display);font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-4);margin-bottom:5px">Revenue split by tier</div>`;
+            if (tb.academic_usd      != null) html += `<div style="display:flex;justify-content:space-between;font-size:10px;padding:2px 0;color:var(--text-2)"><span>Academic labs</span><span style="font-weight:700">${_fM(tb.academic_usd)}</span></div>`;
+            if (tb.core_facility_usd != null) html += `<div style="display:flex;justify-content:space-between;font-size:10px;padding:2px 0;color:var(--text-2)"><span>Core facilities</span><span style="font-weight:700">${_fM(tb.core_facility_usd)}</span></div>`;
+            if (tb.site_license_usd  != null) html += `<div style="display:flex;justify-content:space-between;font-size:10px;padding:2px 0;color:var(--text-2)"><span>Site licenses</span><span style="font-weight:700">${_fM(tb.site_license_usd)}</span></div>`;
+            html += `</div>`;
+          }
+          if (d.addressable_labs) html += `<div style="font-size:9.5px;color:var(--text-3);margin-top:6px">N = ${Number(d.addressable_labs).toLocaleString()} addressable labs</div>`;
+        }
+        if (tm.key === 'top_down' && d.adjacent_tam_usd) {
+          const slo = d.defensible_share_low  != null ? (d.defensible_share_low  * 100).toFixed(0) : '?';
+          const shi = d.defensible_share_high != null ? (d.defensible_share_high * 100).toFixed(0) : '?';
+          html += `<div style="font-size:9.5px;color:var(--text-3);margin-top:8px">Adjacent NIH spend: ${_fM(d.adjacent_tam_usd)} × ${slo}–${shi}% defensible share</div>`;
+        }
+        if (tm.key === 'value_based' && d.labor_value_per_lab_usd != null) {
+          html += `<div style="margin-top:10px;border-top:1px solid var(--border);padding-top:8px">
+            <div style="font-family:var(--display);font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-4);margin-bottom:5px">WTP derivation per lab</div>
+            <div style="display:flex;justify-content:space-between;font-size:10px;padding:2px 0;color:var(--text-2)"><span>Labor savings</span><span style="font-weight:700">${_fM(d.labor_value_per_lab_usd)}</span></div>`;
+          if (d.data_loss_value_per_lab_usd != null) html += `<div style="display:flex;justify-content:space-between;font-size:10px;padding:2px 0;color:var(--text-2)"><span>Data integrity value</span><span style="font-weight:700">${_fM(d.data_loss_value_per_lab_usd)}</span></div>`;
+          html += `<div style="display:flex;justify-content:space-between;font-size:10px;padding:3px 0;border-top:1px solid var(--border);margin-top:3px;color:var(--text)"><span style="font-weight:600">WTP midpoint / lab</span><span style="font-weight:800">${_fM(d.wtp_mid_per_lab_usd)}</span></div></div>`;
+          const ss = d.survey_signals || {};
+          if (ss.pct_cite_manual_burden != null) html += `<div style="font-size:9.5px;color:var(--text-3);margin-top:6px">${Math.round(ss.pct_cite_manual_burden*100)}% of surveyed labs cite manual burden as top pain point</div>`;
+        }
+        html += `</div>`;
+      });
+      html += `</div>`; // end 3-col grid
+
+      // Reconciliation
+      if (_tri.reconciled) {
+        const rec = _tri.reconciled;
+        const _rcBdr = rec.divergence_flag ? '#f59e0b' : 'var(--green)';
+        html += `<div style="background:var(--bg-2);padding:14px 16px;border-left:3px solid ${_rcBdr};margin-bottom:20px">
+          <div style="display:flex;align-items:flex-start;gap:20px;flex-wrap:wrap">
+            <div>
+              <div style="font-family:var(--display);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-4)">Reconciled Estimate</div>
+              <div style="font-family:var(--display);font-size:24px;font-weight:800;color:var(--text);line-height:1.1">${_fM(rec.tam_usd)}</div>
+              <div style="font-size:9.5px;color:var(--text-3)">range ${_fM(rec.low_usd)} – ${_fM(rec.high_usd)}</div>
+            </div>
+            <div style="flex:1;min-width:200px;font-size:10.5px;color:var(--text-2);line-height:1.6;padding-top:2px">
+              <strong>Weights:</strong> Bottom-up 50% · Top-down 25% · Value-based 25%<br>${rec.description||''}
+            </div>
+          </div>
+          ${rec.divergence_flag ? `<div style="margin-top:10px;padding:8px 10px;background:#fef3c7;color:#92400e;border-radius:3px;font-size:10.5px;line-height:1.5"><strong>⚠ Methods diverge${rec.divergence_ratio != null ? ` (${rec.divergence_ratio.toFixed(1)}×)` : ''}</strong> — ${rec.divergence_note||'Verify assumptions before citing this estimate.'}</div>` : ''}
+        </div>`;
+      }
+
+      // Monte Carlo
+      if (_mc) {
+        const _p10f = _fM(_mc.p10), _p50f = _fM(_mc.p50), _p90f = _fM(_mc.p90);
+        const _mcR  = (_mc.p90||0) - (_mc.p10||0);
+        const _midP = _mcR > 0 ? Math.round(((_mc.p50||0) - (_mc.p10||0)) / _mcR * 100) : 50;
+        const _prms = _mc.uncertain_parameters || [];
+        html += `<div style="margin-bottom:22px">
+          <div style="font-family:var(--display);font-size:12px;font-weight:800;color:var(--text);margin-bottom:4px">Monte Carlo Uncertainty Envelope</div>
+          <div style="font-size:11px;color:var(--text-3);line-height:1.6;margin-bottom:12px">${(_mc.n_iterations||10000).toLocaleString()} simulations. Each uncertain input was drawn from a PERT distribution on every iteration; the spread below reflects assumption uncertainty, not model error. Seed ${_mc.seed} — results are fully reproducible.</div>
+          <div style="position:relative;height:52px;background:var(--bg-2);border-radius:4px;overflow:hidden;margin-bottom:10px">
+            <div style="position:absolute;top:0;bottom:0;left:0;width:${_midP}%;background:var(--blue);opacity:.12"></div>
+            <div style="position:absolute;top:0;bottom:0;left:${_midP}%;right:0;background:var(--blue);opacity:.06"></div>
+            <div style="position:absolute;top:0;bottom:0;left:${_midP}%;width:2px;background:var(--blue);opacity:.5"></div>
+            <div style="position:absolute;inset:0;display:flex;align-items:center;padding:0 16px">
+              <div style="text-align:center;flex:1">
+                <div style="font-family:var(--display);font-size:8.5px;font-weight:700;color:var(--text-4);text-transform:uppercase;letter-spacing:.05em">P10 — pessimistic</div>
+                <div style="font-family:var(--display);font-size:15px;font-weight:800;color:var(--text)">${_p10f}</div>
+              </div>
+              <div style="text-align:center;flex:1">
+                <div style="font-family:var(--display);font-size:8.5px;font-weight:700;color:var(--text);text-transform:uppercase;letter-spacing:.05em">P50 — median</div>
+                <div style="font-family:var(--display);font-size:15px;font-weight:800;color:var(--text)">${_p50f}</div>
+              </div>
+              <div style="text-align:center;flex:1">
+                <div style="font-family:var(--display);font-size:8.5px;font-weight:700;color:var(--text-4);text-transform:uppercase;letter-spacing:.05em">P90 — optimistic</div>
+                <div style="font-family:var(--display);font-size:15px;font-weight:800;color:var(--text)">${_p90f}</div>
+              </div>
+            </div>
+          </div>
+          ${_prms.length > 0 ? `<div style="font-size:10px;color:var(--text-3);line-height:1.8"><strong style="color:var(--text-2)">Uncertain parameters sampled:</strong> ${_prms.map(p=>`<code style="background:var(--bg-2);color:var(--text-2);padding:1px 5px;border-radius:2px;font-size:9.5px;margin:0 2px">${p}</code>`).join('')}</div>` : ''}
+        </div>`;
+      }
+
+      // Sensitivity tornado
+      if (_sns.length > 0) {
+        const _topS = _sns.slice(0, 8);
+        const _maxI = _topS[0]?.impact_usd || 1;
+        html += `<div style="margin-bottom:8px">
+          <div style="font-family:var(--display);font-size:12px;font-weight:800;color:var(--text);margin-bottom:4px">Sensitivity Analysis — What Moves the Number Most</div>
+          <div style="font-size:11px;color:var(--text-3);line-height:1.6;margin-bottom:14px">Each assumption was varied ±50% while all others were held fixed. The longest bar is your highest-leverage assumption — the one worth the most diligence effort before citing this TAM.</div>
+          <div style="display:flex;flex-direction:column;gap:8px">`;
+        _topS.forEach((s, i) => {
+          const _bw  = Math.max(4, Math.round((s.impact_usd / _maxI) * 100));
+          const _ipc = ((s.impact_pct||0) * 100).toFixed(0);
+          const _col = i === 0 ? 'var(--blue)' : (i < 3 ? '#6366f199' : 'var(--border)');
+          html += `<div>
+            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px">
+              <span style="font-size:10.5px;font-weight:600;color:var(--text)">${s.label||s.node_id}</span>
+              <span style="font-size:9px;color:var(--text-4)">±${_ipc}% TAM impact · ${_fM(s.tam_low_usd)} – ${_fM(s.tam_high_usd)}</span>
+            </div>
+            <div style="height:9px;background:var(--bg-2);border-radius:2px;overflow:hidden">
+              <div style="width:${_bw}%;height:100%;background:${_col};border-radius:2px"></div>
+            </div>
+          </div>`;
+        });
+        html += `</div></div>`;
+      }
+    } // end r.triangulation
+
     // Market geography inline
     if (r.market_geography) {
       const g = r.market_geography;
@@ -6186,6 +6325,98 @@ async function downloadPDF() {
       if ((r.market_geography.top_states||[]).length)
         para('Top states: '+r.market_geography.top_states.join(', '), {size:8.3,color:SUB});
     }
+
+    // Triangulation + Monte Carlo + Sensitivity
+    if (r.triangulation) {
+      const _ptri = r.triangulation;
+      const _pmc  = _ptri.monte_carlo;
+      const _psns = r.sensitivity || [];
+      const _pfM  = v => v == null ? '-' : (v >= 1e9 ? '$'+(v/1e9).toFixed(1)+'B' : '$'+Math.round(v/1e6)+'M');
+
+      subhead('Market Sizing — How We Got Here');
+      para('Three independent methods were triangulated and reconciled by weighted average. The weights (bottom-up 50%, top-down 25%, value-based 25%) are explicit so you can interrogate the assumptions.', {size:9,color:SUB});
+
+      const _pmethods = [
+        {key:'bottom_up',   label:'Bottom-Up Funnel',  weight:'50%'},
+        {key:'top_down',    label:'Top-Down Proxy',     weight:'25%'},
+        {key:'value_based', label:'Value-Based (WTP)',  weight:'25%'},
+      ];
+      _pmethods.forEach(tm => {
+        const d = _ptri[tm.key];
+        if (!d) return;
+        ensure(5);
+        pdf.setFont('helvetica','bold'); pdf.setFontSize(9.3); pdf.setTextColor(INK[0],INK[1],INK[2]);
+        pdf.text(clean(tm.label)+' [weight '+tm.weight+']: '+clean(_pfM(d.tam_usd))+
+                 ' (range '+clean(_pfM(d.low_usd))+' – '+clean(_pfM(d.high_usd))+')', margin, y); y+=5;
+        pdf.setFont('helvetica','normal'); pdf.setFontSize(8.5); pdf.setTextColor(SUB[0],SUB[1],SUB[2]);
+        const _desc = d.description||'';
+        if (_desc) { const _dl = pdf.splitTextToSize(clean(_desc), contentW-4); pdf.text(_dl, margin+4, y); y+=_dl.length*4+1; }
+        if (tm.key==='bottom_up'&&d.tier_breakdown) {
+          const tb = d.tier_breakdown;
+          if (tb.academic_usd      != null) { pdf.text('  Academic labs: '+clean(_pfM(tb.academic_usd)),      margin+4, y); y+=4; }
+          if (tb.core_facility_usd != null) { pdf.text('  Core facilities: '+clean(_pfM(tb.core_facility_usd)),margin+4, y); y+=4; }
+          if (tb.site_license_usd  != null) { pdf.text('  Site licenses: '+clean(_pfM(tb.site_license_usd)),  margin+4, y); y+=4; }
+          if (d.addressable_labs) { pdf.text('  N = '+Number(d.addressable_labs).toLocaleString()+' addressable labs', margin+4, y); y+=4; }
+        }
+        if (tm.key==='top_down'&&d.adjacent_tam_usd) {
+          const slo=(d.defensible_share_low !=null?(d.defensible_share_low*100).toFixed(0):'?');
+          const shi=(d.defensible_share_high!=null?(d.defensible_share_high*100).toFixed(0):'?');
+          pdf.text('  Adjacent NIH spend: '+clean(_pfM(d.adjacent_tam_usd))+' × '+slo+'–'+shi+'% defensible share', margin+4, y); y+=4;
+        }
+        if (tm.key==='value_based'&&d.labor_value_per_lab_usd!=null) {
+          pdf.text('  Labor savings/lab: '+clean(_pfM(d.labor_value_per_lab_usd)), margin+4, y); y+=4;
+          if (d.data_loss_value_per_lab_usd!=null) { pdf.text('  Data integrity value/lab: '+clean(_pfM(d.data_loss_value_per_lab_usd)), margin+4, y); y+=4; }
+          if (d.wtp_mid_per_lab_usd!=null) { pdf.text('  WTP midpoint/lab: '+clean(_pfM(d.wtp_mid_per_lab_usd)), margin+4, y); y+=4; }
+        }
+        pdf.setTextColor(INK[0],INK[1],INK[2]);
+        y+=2;
+      });
+
+      if (_ptri.reconciled) {
+        const rec = _ptri.reconciled;
+        ensure(10);
+        pdf.setFont('helvetica','bold'); pdf.setFontSize(10); pdf.setTextColor(BLUE[0],BLUE[1],BLUE[2]);
+        pdf.text('Reconciled estimate: '+clean(_pfM(rec.tam_usd))+
+                 ' (range '+clean(_pfM(rec.low_usd))+' – '+clean(_pfM(rec.high_usd))+')', margin, y); y+=5.5;
+        pdf.setFont('helvetica','normal'); pdf.setFontSize(8.5); pdf.setTextColor(SUB[0],SUB[1],SUB[2]);
+        if (rec.description) { const _rl=pdf.splitTextToSize(clean(rec.description),contentW); pdf.text(_rl,margin,y); y+=_rl.length*4+1; }
+        if (rec.divergence_flag) {
+          pdf.setTextColor(220,100,0);
+          const _dv='⚠ Methods diverge'+(rec.divergence_ratio!=null?' ('+rec.divergence_ratio.toFixed(1)+'×)':'')+': '+(rec.divergence_note||'Verify assumptions before citing.');
+          const _dl2=pdf.splitTextToSize(clean(_dv),contentW); pdf.text(_dl2,margin,y); y+=_dl2.length*4+3;
+          pdf.setTextColor(INK[0],INK[1],INK[2]);
+        }
+      }
+
+      if (_pmc) {
+        ensure(12);
+        pdf.setFont('helvetica','bold'); pdf.setFontSize(9.3); pdf.setTextColor(INK[0],INK[1],INK[2]);
+        pdf.text('Monte Carlo Uncertainty Envelope', margin, y); y+=5;
+        pdf.setFont('helvetica','normal'); pdf.setFontSize(8.5); pdf.setTextColor(SUB[0],SUB[1],SUB[2]);
+        pdf.text((_pmc.n_iterations||10000).toLocaleString()+' simulations · seed '+clean(String(_pmc.seed||''))+' (reproducible)', margin+2, y); y+=4.5;
+        pdf.text('P10: '+clean(_pfM(_pmc.p10))+'   P50 (median): '+clean(_pfM(_pmc.p50))+'   P90: '+clean(_pfM(_pmc.p90)), margin+2, y); y+=4.5;
+        if ((_pmc.uncertain_parameters||[]).length) {
+          const _up='Uncertain parameters: '+(_pmc.uncertain_parameters||[]).join(', ');
+          const _ul=pdf.splitTextToSize(clean(_up),contentW-4); pdf.text(_ul,margin+2,y); y+=_ul.length*4+1;
+        }
+        pdf.setTextColor(INK[0],INK[1],INK[2]);
+        y+=2;
+      }
+
+      if (_psns.length > 0) {
+        ensure(8);
+        pdf.setFont('helvetica','bold'); pdf.setFontSize(9.3); pdf.setTextColor(INK[0],INK[1],INK[2]);
+        pdf.text('Sensitivity Analysis (top drivers, ±50% each)', margin, y); y+=5;
+        pdf.setFont('helvetica','normal'); pdf.setFontSize(8.3); pdf.setTextColor(SUB[0],SUB[1],SUB[2]);
+        _psns.slice(0,8).forEach((s,i)=>{
+          ensure(4);
+          const _sp=clean('#'+(i+1)+' '+clean(s.label||s.node_id)+': '+clean(_pfM(s.tam_low_usd))+' – '+clean(_pfM(s.tam_high_usd))+' (±'+((s.impact_pct||0)*100).toFixed(0)+'% impact)');
+          pdf.text(_sp, margin+2, y); y+=4;
+        });
+        pdf.setTextColor(INK[0],INK[1],INK[2]);
+        y+=2;
+      }
+    } // end r.triangulation
 
     // 3 — Regulatory (suppressed for non-regulated research tools)
     const _pdfIsResearch = (r.domain||'').toLowerCase().includes('research');
