@@ -2020,6 +2020,46 @@ function renderPIReport(r) {
     // Anchor for the derivation panel — inserted here by _renderDerivationPanel
     html += `<div id="derivation-anchor" style="margin-top:4px"></div>`;
 
+    // ── AXIS DECISIONS (C.1/C.2) — which axes were selected and which rejected ─
+    if (r.axis_decisions) {
+      const _ad  = r.axis_decisions;
+      const _sel = _ad.selected || [];
+      const _rej = (_ad.rejected || []).filter(ax => ax.reason);
+      if (_sel.length > 0 || _rej.length > 0) {
+        html += `<div style="margin-top:22px;padding-top:18px;border-top:1px solid var(--border)">
+          <div style="font-family:var(--display);font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--text-4);margin-bottom:3px">Segmentation Methodology</div>
+          <div style="font-family:var(--display);font-size:15px;font-weight:800;color:var(--text);margin-bottom:6px">Which Axes We Used — and Which We Rejected</div>
+          <div style="font-size:11.5px;color:var(--text-3);line-height:1.65;max-width:660px;margin-bottom:14px">A consultant doesn't segment every market the same way. The axes below were selected because they discriminate meaningfully for this product's buyer. Axes that were considered but excluded are listed with the reason — the exclusion list is what signals expertise.</div>`;
+
+        if (_sel.length > 0) {
+          const _famC = {patient_demographic:'#ec4899',geographic:'#f59e0b',institutional:'#6366f1',firmographic:'#0891b2',payer:'#059669',clinical:'#ef4444',behavioral:'#8b5cf6',operational:'#64748b'};
+          html += `<div style="margin-bottom:14px">
+            <div style="font-family:var(--display);font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--green);margin-bottom:8px">Used in this analysis (${_sel.length})</div>
+            <div style="display:flex;flex-wrap:wrap;gap:6px">`;
+          _sel.forEach(ax => {
+            const _c = _famC[ax.family] || '#6b7280';
+            html += `<span style="display:inline-flex;align-items:center;gap:5px;background:var(--bg-2);border:1px solid var(--border);padding:4px 10px;border-radius:3px;font-size:10.5px;color:var(--text)"><span style="width:6px;height:6px;border-radius:50%;background:${_c};flex-shrink:0"></span><span style="font-weight:600">${ax.label}</span>${ax.est_lift != null ? `<span style="color:var(--text-4);font-size:9px">&nbsp;·&nbsp;${(ax.est_lift*100).toFixed(0)}% lift</span>` : ''}</span>`;
+          });
+          html += `</div></div>`;
+        }
+
+        if (_rej.length > 0) {
+          html += `<div>
+            <div style="font-family:var(--display);font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--text-4);margin-bottom:8px">Considered, not applicable (${_rej.length})</div>
+            <div style="display:flex;flex-direction:column;gap:5px">`;
+          _rej.forEach(ax => {
+            html += `<div style="display:grid;grid-template-columns:148px 1fr;gap:8px;font-size:10.5px;align-items:baseline">
+              <span style="font-weight:600;color:var(--text-3)">${ax.label}</span>
+              <span style="color:var(--text-4);line-height:1.5">${ax.reason}</span>
+            </div>`;
+          });
+          html += `</div></div>`;
+        }
+
+        html += `</div>`; // end axis decisions panel
+      }
+    } // end r.axis_decisions
+
     // ── TRIANGULATION + MONTE CARLO + SENSITIVITY (D.3 / D.7) ─────────────────
     if (r.triangulation) {
       const _tri = r.triangulation;
@@ -6143,7 +6183,7 @@ async function downloadPDF() {
     const { jsPDF } = window.jspdf;
     const pdf = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
     const pageW=210, pageH=297, margin=14, contentW=pageW-margin*2;
-    const DARK=[13,27,42], BLUE=[8,145,178], INK=[30,41,59], SUB=[100,116,139], LINK=[26,79,214];
+    const DARK=[13,27,42], BLUE=[8,145,178], INK=[30,41,59], SUB=[100,116,139], LINK=[26,79,214], GRNG=[5,150,105];
     const dateStr = new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
     let y=0;
     // jsPDF's built-in helvetica is WinAnsi-only; characters like ≥ ≤ × – — ' " …
@@ -6324,6 +6364,38 @@ async function downloadPDF() {
       para(clean(r.market_geography.description), {size:9.3});
       if ((r.market_geography.top_states||[]).length)
         para('Top states: '+r.market_geography.top_states.join(', '), {size:8.3,color:SUB});
+    }
+
+    // Axis decisions (C.1/C.2)
+    if (r.axis_decisions) {
+      const _pad  = r.axis_decisions;
+      const _psel = _pad.selected || [];
+      const _prej = (_pad.rejected || []).filter(ax => ax.reason);
+      if (_psel.length > 0 || _prej.length > 0) {
+        subhead('Segmentation — axes used and rejected');
+        if (_psel.length > 0) {
+          ensure(5);
+          pdf.setFont('helvetica','bold'); pdf.setFontSize(8.5); pdf.setTextColor(GRNG[0],GRNG[1],GRNG[2]);
+          pdf.text('Used in this analysis ('+_psel.length+')', margin, y); y+=4.5;
+          pdf.setFont('helvetica','normal'); pdf.setFontSize(8.3); pdf.setTextColor(INK[0],INK[1],INK[2]);
+          _psel.forEach(ax => { bullet(clean(ax.label)+(ax.est_lift!=null?' ('+((ax.est_lift*100).toFixed(0))+'% lift)':'')); });
+          y+=1;
+        }
+        if (_prej.length > 0) {
+          ensure(5);
+          pdf.setFont('helvetica','bold'); pdf.setFontSize(8.5); pdf.setTextColor(SUB[0],SUB[1],SUB[2]);
+          pdf.text('Considered, not applicable ('+_prej.length+')', margin, y); y+=4.5;
+          pdf.setFont('helvetica','normal'); pdf.setFontSize(8.3); pdf.setTextColor(SUB[0],SUB[1],SUB[2]);
+          _prej.forEach(ax => {
+            ensure(4);
+            const _aline = clean(ax.label)+': '+clean(ax.reason);
+            const _asplit = pdf.splitTextToSize(_aline, contentW-6);
+            pdf.text(_asplit, margin+3, y); y+=_asplit.length*4+1;
+          });
+          pdf.setTextColor(INK[0],INK[1],INK[2]);
+          y+=1;
+        }
+      }
     }
 
     // Triangulation + Monte Carlo + Sensitivity
