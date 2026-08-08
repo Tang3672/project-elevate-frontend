@@ -6184,7 +6184,9 @@ async function downloadPDF() {
     const pdf = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
     const pageW=210, pageH=297, margin=14, contentW=pageW-margin*2;
     const DARK=[13,27,42], BLUE=[8,145,178], INK=[30,41,59], SUB=[100,116,139], LINK=[26,79,214], GRNG=[5,150,105];
-    const dateStr = new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
+    // C-06: use report's generation date, not the download date
+    const _genDate = (r && r.generated_at) ? new Date(r.generated_at) : new Date();
+    const dateStr = _genDate.toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
     let y=0;
     // jsPDF's built-in helvetica is WinAnsi-only; characters like ≥ ≤ × – — ' " …
     // corrupt glyph rendering AND throw off splitTextToSize width measurement (which is
@@ -6316,9 +6318,11 @@ async function downloadPDF() {
     if (ms.formula) para(ms.formula, {bold:true});
     (ms.steps||[]).forEach((s,i)=>{
       const v = (typeof s.value==='number')? s.value.toLocaleString() : clean(s.value);
-      // Strip any "Step N — " or "Step N - " prefix the LLM may have baked into the label
-      const _rawLabel = clean(s.label||'').replace(/^Step\s+\d+\s*[-–—]\s*/i,'');
-      bullet('Step '+(i+1)+' — '+_rawLabel+': '+v+(s.unit?(' '+clean(s.unit)):''));
+      // F-7: strip "Step N" or "Step N — desc" prefix to avoid "Step 1 — Step 1 — desc"
+      // The separator [-–—] is optional so bare "Step 1" labels are also stripped.
+      const _rawLabel = clean(s.label||'').replace(/^Step\s+\d+\s*[-–—]?\s*/i,'').trim();
+      const _labelPart = _rawLabel ? (' — '+_rawLabel) : '';
+      bullet('Step '+(i+1)+_labelPart+': '+v+(s.unit?(' '+clean(s.unit)):''));
       if(s.notes) para(clean(s.notes), {x:margin+6,w:contentW-6,size:8.3,color:SUB,gap:0.5});
       if(s.source||s.source_url) source(s.source, s.source_url);
     });
@@ -6490,10 +6494,11 @@ async function downloadPDF() {
       }
     } // end r.triangulation
 
-    // 3 — Regulatory (suppressed for non-regulated research tools)
+    // 3 — Regulatory (suppressed for non-regulated research tools and when no data)
     const _pdfIsResearch = (r.domain||'').toLowerCase().includes('research');
     const rp = r.regulatory_pathway||{};
-    if (!_pdfIsResearch) {
+    const _rpHasContent = !_pdfIsResearch && (rp.recommended_pathway || (rp.designations||[]).length || rp.pathway_rationale);
+    if (_rpHasContent) {
       heading(3,'Your Path to Approval');
       if (rp.recommended_pathway){ subhead('Recommended pathway'); para(rp.recommended_pathway); }
       if (rp.pathway_rationale) para(rp.pathway_rationale);
@@ -6521,9 +6526,10 @@ async function downloadPDF() {
       });
     }
 
-    // 5 — Market access (suppressed for research tools — no reimbursement pathway)
+    // 5 — Market access (suppressed for research tools and when no data)
     const ma = r.market_access||{};
-    if (!_pdfIsResearch) {
+    const _maHasContent = !_pdfIsResearch && (ma.primary_channel || (ma.buyer_segments||[]).length || ma.reimbursement_pathway);
+    if (_maHasContent) {
       heading(5,'Getting to Market');
       if (ma.primary_channel){ subhead('Primary channel'); para(ma.primary_channel); }
       (ma.buyer_segments||[]).slice(0,8).forEach(b=>{
@@ -6657,7 +6663,7 @@ async function downloadPDF() {
     }
 
     footer();
-    const filename = (cond||'Medlevate').replace(/[^a-zA-Z0-9 ]/g,'').trim().replace(/\s+/g,'-').slice(0,50) + '-' + new Date().toISOString().slice(0,10) + '.pdf';
+    const filename = (cond||'Medlevate').replace(/[^a-zA-Z0-9 ]/g,'').trim().replace(/\s+/g,'-').slice(0,50) + '-' + _genDate.toISOString().slice(0,10) + '.pdf';
     pdf.save(filename);
   } catch(e) {
     console.error('PDF error:', e);
