@@ -88,7 +88,7 @@
     .cb{padding:18px 20px}
 
     /* PRODUCT TYPE SELECTOR */
-    .type-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:16px;overflow:hidden}
+    .type-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:16px;overflow:hidden}
     .type-btn{padding:8px 4px;border:1.5px solid var(--border);background:var(--bg-3);cursor:pointer;text-align:center;transition:all .12s;font-family:var(--body);min-width:0;overflow:hidden}
     .type-btn:hover{border-color:var(--blue);background:var(--blue-lite)}
     .type-btn.active{border-color:var(--blue);background:var(--blue-lite);box-shadow:0 0 0 3px rgba(26,79,214,.1)}
@@ -831,7 +831,9 @@
         <div class="card">
           <div class="ch"><span class="ct">Product Submission</span><span class="cb-badge" id="pt-badge">Select type below</span></div>
           <div class="cb">
-            <span class="lbl" style="margin-bottom:10px">Select product type</span>
+            <span class="lbl" style="margin-bottom:6px">Select product type</span>
+
+            <div style="font-family:var(--body);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--blue);padding:4px 0 6px;border-bottom:1px solid var(--border);margin-bottom:6px">Life Sciences Clinical</div>
             <div class="type-grid">
               <button class="type-btn active" onclick="selectType('drug_small_molecule',this)">
                 <span class="type-icon">💊</span>
@@ -875,6 +877,20 @@
               </button>
             </div>
 
+            <div style="font-family:var(--body);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--blue);padding:12px 0 6px;border-bottom:1px solid var(--border);margin-bottom:6px">Life Sciences Research</div>
+            <div class="type-grid">
+              <button class="type-btn" onclick="selectType('research_tool_non_clinical',this)">
+                <span class="type-icon">🖥️</span>
+                <span class="type-name">Research Tool</span>
+                <span class="type-desc">Lab instruments, hardware, data acquisition</span>
+              </button>
+              <button class="type-btn" onclick="selectType('research_infrastructure_saas',this)">
+                <span class="type-icon">☁️</span>
+                <span class="type-name">Lab Infrastructure SaaS</span>
+                <span class="type-desc">ELN, LIMS, data management, cloud sync</span>
+              </button>
+            </div>
+
             <div style="margin-top:14px">
               <label class="lbl" for="idea">Describe your product</label>
               <textarea id="idea" placeholder="Describe your product - what it does, who it targets, what problem it solves. For antibiotics, include the target pathogen and indication."></textarea>
@@ -897,6 +913,9 @@
                 <button class="chip" onclick="setEx(6)">Rural CGM — next-gen device</button>
                 <button class="chip" onclick="setEx(7)">Sepsis — AI early detection</button>
                 <button class="chip" onclick="setEx(8)">Rapid AST — point-of-care diagnostic</button>
+                <button class="chip" onclick="setEx(12)">Neurotech lab — wearable data sync</button>
+                <button class="chip" onclick="setEx(13)">Behavioral science — lab data mgmt</button>
+                <button class="chip" onclick="setEx(14)">ELN / protocol mgmt — lab SaaS</button>
               </div>
             </div>
 
@@ -1112,6 +1131,9 @@ const EXAMPLES = [
   { type:'vaccine_immunotherapy', idea:'A personalized mRNA neoantigen vaccine for stage III melanoma patients, encoding patient-specific tumor mutations identified by whole exome sequencing, administered in combination with pembrolizumab.', pathogen:'' },
   { type:'gene_cell_therapy', idea:'An exon-skipping antisense oligonucleotide for Duchenne muscular dystrophy patients with exon 51-amenable mutations, designed to restore partial dystrophin expression and slow disease progression.', pathogen:'' },
   { type:'other_platform', idea:'An in vivo base editing therapy using adenine base editors delivered via LNP to permanently reduce PCSK9 expression in hepatocytes, providing lifelong LDL cholesterol reduction with a single dose.', pathogen:'' },
+  { type:'research_tool_non_clinical', idea:'A cloud-based data sync and session management platform for academic neurotech labs, automating wearable sensor data ingestion from ActiGraph and custom embedded devices into a unified lab database with experiment-level metadata tagging and multi-site sharing for NIH-funded research groups.', pathogen:'' },
+  { type:'research_tool_non_clinical', idea:'A research data management SaaS for NIH-funded behavioral science labs, replacing manual SD-card and script-based workflows with automated device sync, multi-lab sharing, and experiment replay — targeting core facility administrators and PIs managing longitudinal cohorts across 3–12 sites.', pathogen:'' },
+  { type:'research_infrastructure_saas', idea:'An electronic lab notebook (ELN) and protocol management platform for academic biomedical labs, with built-in version control, automated audit trails for NIH data sharing compliance, and one-click export to figshare and Zenodo — targeting lab managers and PIs at R1 universities managing multi-member research groups.', pathogen:'' },
 ];
 
 const SRC_NAMES = {
@@ -1144,9 +1166,11 @@ function selectType(type, el) {
     diagnostic: 'Describe your diagnostic - what it detects, technology platform, clinical gap.',
     digital_health: 'Describe your software - clinical problem, data it uses, how clinicians use it.',
     vaccine_immunotherapy: 'Describe your vaccine or immunotherapy - target antigen, platform (mRNA, protein subunit, viral vector).',
-    other_platform: 'Describe your platform - what it does, diseases it addresses, what makes it novel.'
+    other_platform: 'Describe your platform - what it does, diseases it addresses, what makes it novel.',
+    research_tool_non_clinical: 'Describe your research tool — what it does, who uses it (PIs, core facilities, institutions), what problem it solves for academic or biotech labs.',
+    research_infrastructure_saas: 'Describe your lab infrastructure software — ELN, LIMS, data management, cloud sync, or compute platform for academic or biotech research labs.'
   };
-  document.getElementById('idea').placeholder = placeholders[type] || placeholders.other;
+  document.getElementById('idea').placeholder = placeholders[type] || placeholders.other_platform;
 }
 
 function setEx(i) {
@@ -1154,12 +1178,15 @@ function setEx(i) {
   if (!ex) return;
   document.getElementById('idea').value    = ex.idea;
   document.getElementById('pathogen').value = ex.pathogen || '';
-  const typeOrder = ['drug_small_molecule','biologic','gene_cell_therapy','medical_device',
-                     'diagnostic','digital_health','vaccine_immunotherapy','other_platform'];
+  // Find the matching button by its onclick attribute value (stable across layout changes)
   const btns = document.querySelectorAll('.type-btn');
-  const idx  = typeOrder.indexOf(ex.type);
   btns.forEach(b => b.classList.remove('active'));
-  const btn = btns[idx >= 0 ? idx : 7];
+  let matched = null;
+  btns.forEach(b => {
+    const fn = b.getAttribute('onclick') || '';
+    if (fn.includes("'" + ex.type + "'") || fn.includes('"' + ex.type + '"')) matched = b;
+  });
+  const btn = matched || btns[0];
   if (btn) btn.classList.add('active');
   selectedType = ex.type;
   document.getElementById('pt-badge').textContent = btn?.querySelector('.type-name')?.textContent || ex.type;
@@ -1517,16 +1544,18 @@ function buildVerificationBadgesHTML(r) {
   if (_val.pending || _trust.pending) {
     return `<div style="margin-top:10px;padding:7px 12px;background:var(--bg);border:1px solid var(--border);border-radius:3px;font-size:11px;color:var(--text-3)">⏳ Verifying claims, FDA/market facts, and source coverage… <span style="color:var(--text-4)">— this fills in here in a few seconds</span></div>`;
   }
-  const _valColor = {ERROR:'#dc2626', FLAG:'#d97706', REVIEW:'#0891b2', PASS:'#059669'}[_val.status] || '#6366f1';
-  const _valIcon  = {ERROR:'✗', FLAG:'⚠', REVIEW:'ℹ', PASS:'✓'}[_val.status] || '…';
+  const _isBlocking = _val.status === 'BLOCKING';
+  const _valColor = {BLOCKING:'#7c3aed', ERROR:'#dc2626', FLAG:'#d97706', REVIEW:'#0891b2', PASS:'#059669'}[_val.status] || '#6366f1';
+  const _valIcon  = {BLOCKING:'⛔', ERROR:'✗', FLAG:'⚠', REVIEW:'ℹ', PASS:'✓'}[_val.status] || '…';
   const _valBadge = (_val.status && _val.status !== 'PENDING')
     ? `<div style="margin-top:10px;padding:7px 12px;background:${_valColor}11;border:1px solid ${_valColor}33;border-radius:3px;display:flex;gap:8px;align-items:flex-start">
         <span style="font-size:14px;color:${_valColor};font-weight:800;flex-shrink:0">${_valIcon}</span>
-        <div>
-          <div style="font-size:11px;font-weight:700;color:${_valColor}">Verification — ${_val.status}</div>
+        <div style="flex:1">
+          <div style="font-size:11px;font-weight:700;color:${_valColor}">Verification — ${_val.status}${_isBlocking ? ' · PDF export blocked' : ''}</div>
           <div style="font-size:11px;color:var(--text-2);margin-top:1px">${_val.summary || ''}</div>
           ${(_val.errors||[]).length ? `<div style="font-size:10px;color:#dc2626;margin-top:4px">${_val.errors.map(e=>`<strong>${e.agent}:</strong> ${e.issue}`).join('<br>')}</div>` : ''}
           ${(_val.warnings||[]).length && !(_val.errors||[]).length ? `<div style="font-size:10px;color:#d97706;margin-top:4px">${_val.warnings.slice(0,2).map(w=>`<strong>${w.agent}:</strong> ${w.issue}`).join('<br>')}</div>` : ''}
+          ${_isBlocking ? `<div style="margin-top:6px;font-size:10px;color:#7c3aed;font-weight:600">Correct the arithmetic errors above, then regenerate to unlock export.</div>` : ''}
         </div>
       </div>` : '';
   const _tpct = v => (v == null ? '—' : Math.round(v * 100) + '%');
@@ -1611,7 +1640,7 @@ function renderPIReport(r) {
   html += `
     <div style="border-left:4px solid var(--blue);padding:16px 20px;background:var(--bg-2);margin-bottom:28px">
       <div style="font-family:var(--display);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--blue);margin-bottom:6px">${_isResearchDomain ? 'Commercialization Intelligence Report' : 'Market Intelligence Report'}</div>
-      <div style="font-family:var(--display);font-size:20px;font-weight:700;color:var(--text);margin-bottom:8px">${r.disease_intelligence ? r.disease_intelligence.condition : 'Analysis'}</div>
+      <div style="font-family:var(--display);font-size:20px;font-weight:700;color:var(--text);margin-bottom:8px">${r.product_name || (r.disease_intelligence ? r.disease_intelligence.condition : '') || 'Analysis'}</div>
       <div style="font-family:var(--body);font-size:13px;color:var(--text-2);line-height:1.7">${r.executive_summary}</div>
       <div id="verification-slot">${buildVerificationBadgesHTML(r)}</div>
     </div>`;
@@ -1842,12 +1871,12 @@ function renderPIReport(r) {
     html += `<div class="ms-totals">
       <div class="ms-total-cell">
         <div class="ms-total-lbl">Total Addressable Market (TAM)</div>
-        <div class="ms-total-val">${tamVal}</div>
+        <div class="ms-total-val" id="ms-headline-tam">${tamVal}</div>
         <div class="ms-total-sub">${_isResearchDomain ? 'Full buyer population at observed spend' : 'Full market if 100% penetration'}</div>
       </div>
       <div class="ms-total-cell">
         <div class="ms-total-lbl">Serviceable Market (SAM)</div>
-        <div class="ms-total-val" style="color:var(--green)">${samVal}</div>
+        <div class="ms-total-val" style="color:var(--green)" id="ms-headline-sam">${samVal}</div>
         <div class="ms-total-sub">Realistic capture scenario</div>
       </div>
     </div>`;
@@ -1903,28 +1932,272 @@ function renderPIReport(r) {
         html += `</div></div>`;
       }
       if (_prov.waterfall && _prov.waterfall.length) {
-        html += `<div style="margin-top:16px"><div class="ms-total-lbl" style="margin-bottom:8px">Provenance Waterfall — every input typed, scored, and source-linked</div><div class="ms-steps">`;
+        // Capture original aggregates for recompute (set before the loop so JS can read them)
+        const _wfRun = _prov.run || {};
+        window._msWfState = {
+          tam: _wfRun.tam_usd || 0,
+          sam: _wfRun.sam_usd || 0,
+          som: _wfRun.som_usd || 0,
+          reportId: window._currentReportId,
+        };
+        let _wIdx = 0;
+        html += `<div style="margin-top:16px" id="ms-waterfall-container">
+          <div class="ms-total-lbl" style="margin-bottom:8px">Provenance Waterfall — click any input value to adjust; TAM/SAM/SOM update live</div>
+          <div class="ms-steps">`;
         _prov.waterfall.forEach(w => {
           const rc = {TAM:'#6366f1', SAM:'#0891b2', SOM:'#059669'}[w.used_in_formula] || '#6b7280';
           const src = w.source_url
             ? `<a href="${w.source_url}" target="_blank">${w.source_name}</a>`
             : `<span style="color:var(--text-4)">${w.source_name || 'No source'}</span>`;
           const conf = (w.confidence == null) ? '' : ` · <span style="color:var(--text-4)">confidence ${Math.round(w.confidence*100)}%</span>`;
-          html += `<div class="ms-step"${w.is_aggregate?' style="background:var(--bg-2)"':''}>
-            <div>
-              <div class="ms-step-label">${w.label} <span style="background:${rc}1a;color:${rc};font-size:9px;font-weight:700;padding:1px 5px;border-radius:2px;margin-left:4px">${w.used_in_formula}</span></div>
-              <div class="ms-step-source">Source: ${src}${conf}</div>
-            </div>
-            <div class="ms-step-value">${_wval(w.value, w.unit)}</div>
-            <div class="ms-step-unit">${w.unit || ''}</div>
-          </div>`;
+          const roleBadge = `<span style="background:${rc}1a;color:${rc};font-size:9px;font-weight:700;padding:1px 5px;border-radius:2px;margin-left:4px">${w.used_in_formula}</span>`;
+          if (w.is_aggregate) {
+            // Aggregate rows — display only, updated by _msRecompute
+            const aggId = `ms-agg-val-${w.used_in_formula}`;
+            html += `<div class="ms-step" id="ms-agg-row-${w.used_in_formula}" style="background:var(--bg-2)">
+              <div>
+                <div class="ms-step-label">${w.label} ${roleBadge}</div>
+                <div class="ms-step-source"><span style="color:var(--text-4)">${w.source_name || 'Bottom-up derivation'}</span></div>
+              </div>
+              <div class="ms-step-value" id="${aggId}" style="font-variant-numeric:tabular-nums">${_wval(w.value, w.unit)}</div>
+              <div class="ms-step-unit"><span id="ms-delta-${w.used_in_formula}" style="display:none;font-size:10px;font-weight:700;padding:1px 6px;border-radius:3px;margin-right:4px"></span>${w.unit || ''}</div>
+            </div>`;
+          } else {
+            // Input steps — editable
+            const isRatio = typeof w.value === 'number' && w.value > 0 && w.value < 1;
+            const displayVal = isRatio ? (w.value * 100).toFixed(1) : (w.value != null ? Math.round(w.value) : '');
+            const displayUnit = isRatio ? '%' : (w.unit || '');
+            const safeLabel = (w.label || '').replace(/"/g, '&quot;');
+            html += `<div class="ms-step">
+              <div>
+                <div class="ms-step-label">${w.label} ${roleBadge}</div>
+                <div class="ms-step-source">Source: ${src}${conf}</div>
+              </div>
+              <div class="ms-step-value">
+                <input class="ms-gate-input"
+                       id="ms-gate-${_wIdx}"
+                       type="number"
+                       value="${displayVal}"
+                       data-orig="${w.value}"
+                       data-is-ratio="${isRatio}"
+                       data-role="${w.used_in_formula}"
+                       data-label="${safeLabel}"
+                       oninput="_msOnGateEdit(this)"
+                       title="Edit this value — TAM/SAM/SOM will recompute automatically"
+                       style="width:90px;font-family:var(--display);font-size:14px;font-weight:700;
+                              text-align:right;border:1px dashed var(--border);background:var(--bg-2);
+                              color:var(--text);padding:2px 6px;border-radius:3px;cursor:text">
+              </div>
+              <div class="ms-step-unit">${displayUnit}</div>
+            </div>`;
+            _wIdx++;
+          }
         });
-        html += `</div></div>`;
+        html += `</div>
+          <div id="ms-save-bar" style="display:none;margin-top:10px;padding:12px 14px;
+               background:var(--bg-2);border:1px solid var(--border);border-left:3px solid var(--blue)">
+            <div style="font-family:var(--display);font-size:11px;font-weight:700;color:var(--blue);margin-bottom:6px"
+                 id="ms-save-bar-label">Adjusted assumptions — not yet saved</div>
+            <textarea id="ms-rationale"
+                      placeholder="Why are you adjusting these numbers? Cite your source (e.g. 'Our lab survey found 1,800 active rigs, not 5,500')."
+                      style="width:100%;min-height:56px;font-family:var(--body);font-size:12px;color:var(--text);
+                             background:var(--bg);border:1px solid var(--border);padding:8px;resize:vertical;
+                             box-sizing:border-box;margin-bottom:8px"></textarea>
+            <div style="display:flex;gap:8px;align-items:center">
+              <button onclick="_msSaveOverrides()"
+                      style="font-family:var(--display);font-size:11px;font-weight:700;background:var(--blue);
+                             color:#fff;border:none;padding:6px 14px;cursor:pointer;border-radius:2px">Save Overrides</button>
+              <button onclick="_msRevertOverrides()"
+                      style="font-family:var(--display);font-size:11px;font-weight:700;background:transparent;
+                             color:var(--text-3);border:1px solid var(--border);padding:6px 14px;cursor:pointer;border-radius:2px">Revert to Model</button>
+              <span id="ms-save-status" style="font-size:11px;color:var(--green)"></span>
+            </div>
+          </div>
+        </div>`;
       }
     }
 
     // Anchor for the derivation panel — inserted here by _renderDerivationPanel
     html += `<div id="derivation-anchor" style="margin-top:4px"></div>`;
+
+    // ── AXIS DECISIONS (C.1/C.2) — which axes were selected and which rejected ─
+    if (r.axis_decisions) {
+      const _ad  = r.axis_decisions;
+      const _sel = _ad.selected || [];
+      const _rej = (_ad.rejected || []).filter(ax => ax.reason);
+      if (_sel.length > 0 || _rej.length > 0) {
+        html += `<div style="margin-top:22px;padding-top:18px;border-top:1px solid var(--border)">
+          <div style="font-family:var(--display);font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--text-4);margin-bottom:3px">Segmentation Methodology</div>
+          <div style="font-family:var(--display);font-size:15px;font-weight:800;color:var(--text);margin-bottom:6px">Which Axes We Used — and Which We Rejected</div>
+          <div style="font-size:11.5px;color:var(--text-3);line-height:1.65;max-width:660px;margin-bottom:14px">A consultant doesn't segment every market the same way. The axes below were selected because they discriminate meaningfully for this product's buyer. Axes that were considered but excluded are listed with the reason — the exclusion list is what signals expertise.</div>`;
+
+        if (_sel.length > 0) {
+          const _famC = {patient_demographic:'#ec4899',geographic:'#f59e0b',institutional:'#6366f1',firmographic:'#0891b2',payer:'#059669',clinical:'#ef4444',behavioral:'#8b5cf6',operational:'#64748b'};
+          html += `<div style="margin-bottom:14px">
+            <div style="font-family:var(--display);font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--green);margin-bottom:8px">Used in this analysis (${_sel.length})</div>
+            <div style="display:flex;flex-wrap:wrap;gap:6px">`;
+          _sel.forEach(ax => {
+            const _c = _famC[ax.family] || '#6b7280';
+            html += `<span style="display:inline-flex;align-items:center;gap:5px;background:var(--bg-2);border:1px solid var(--border);padding:4px 10px;border-radius:3px;font-size:10.5px;color:var(--text)"><span style="width:6px;height:6px;border-radius:50%;background:${_c};flex-shrink:0"></span><span style="font-weight:600">${ax.label}</span>${ax.est_lift != null ? `<span style="color:var(--text-4);font-size:9px">&nbsp;·&nbsp;${(ax.est_lift*100).toFixed(0)}% lift</span>` : ''}</span>`;
+          });
+          html += `</div></div>`;
+        }
+
+        if (_rej.length > 0) {
+          html += `<div>
+            <div style="font-family:var(--display);font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--text-4);margin-bottom:8px">Considered, not applicable (${_rej.length})</div>
+            <div style="display:flex;flex-direction:column;gap:5px">`;
+          _rej.forEach(ax => {
+            html += `<div style="display:grid;grid-template-columns:148px 1fr;gap:8px;font-size:10.5px;align-items:baseline">
+              <span style="font-weight:600;color:var(--text-3)">${ax.label}</span>
+              <span style="color:var(--text-4);line-height:1.5">${ax.reason}</span>
+            </div>`;
+          });
+          html += `</div></div>`;
+        }
+
+        html += `</div>`; // end axis decisions panel
+      }
+    } // end r.axis_decisions
+
+    // ── TRIANGULATION + MONTE CARLO + SENSITIVITY (D.3 / D.7) ─────────────────
+    if (r.triangulation) {
+      const _tri = r.triangulation;
+      const _mc  = _tri.monte_carlo;
+      const _sns = r.sensitivity || [];
+      const _fM  = v => v == null ? '—' : (v >= 1e9 ? `$${(v/1e9).toFixed(1)}B` : `$${(v/1e6).toFixed(0)}M`);
+
+      html += `<div style="margin-top:28px;padding-top:20px;border-top:1px solid var(--border)">
+        <div style="font-family:var(--display);font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--text-4);margin-bottom:3px">Methodology Transparency</div>
+        <div style="font-family:var(--display);font-size:16px;font-weight:800;color:var(--text);margin-bottom:6px">Market Sizing — How We Got Here</div>
+        <div style="font-size:11.5px;color:var(--text-3);line-height:1.65;max-width:660px;margin-bottom:18px">The TAM figure above is not a single model's output. Three independent estimation methods were run, then reconciled by weighted average. This section shows each method's reasoning so you can pressure-test the assumptions that drive the number.</div>
+      </div>`;
+
+      // Three method cards
+      const _triMethods = [
+        {key:'bottom_up',   label:'Bottom-Up Funnel',  weight:50, color:'#6366f1'},
+        {key:'top_down',    label:'Top-Down Proxy',     weight:25, color:'#0891b2'},
+        {key:'value_based', label:'Value-Based (WTP)',  weight:25, color:'#059669'},
+      ];
+
+      html += `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);margin-bottom:1px">`;
+      _triMethods.forEach(tm => {
+        const d = _tri[tm.key];
+        if (!d) { html += `<div style="background:var(--bg-2);padding:14px"><span style="color:var(--text-4);font-size:10px">No data</span></div>`; return; }
+        html += `<div style="background:var(--bg-2);padding:14px">
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px">
+            <span style="font-family:var(--display);font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:${tm.color}">${tm.label}</span>
+            <span style="margin-left:auto;background:${tm.color}22;color:${tm.color};font-family:var(--display);font-size:8px;font-weight:800;padding:2px 6px;border-radius:2px">weight ${tm.weight}%</span>
+          </div>
+          <div style="font-family:var(--display);font-size:19px;font-weight:800;color:var(--text)">${_fM(d.tam_usd)}</div>
+          <div style="font-size:9px;color:var(--text-4);margin-bottom:10px">range ${_fM(d.low_usd)} – ${_fM(d.high_usd)}</div>
+          <div style="font-size:10.5px;color:var(--text-2);line-height:1.55">${d.description||''}</div>`;
+        if (tm.key === 'bottom_up') {
+          const tb = d.tier_breakdown || {};
+          if (tb.academic_usd != null || tb.core_facility_usd != null || tb.site_license_usd != null) {
+            html += `<div style="margin-top:10px;border-top:1px solid var(--border);padding-top:8px">
+              <div style="font-family:var(--display);font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-4);margin-bottom:5px">Revenue split by tier</div>`;
+            if (tb.academic_usd      != null) html += `<div style="display:flex;justify-content:space-between;font-size:10px;padding:2px 0;color:var(--text-2)"><span>Academic labs</span><span style="font-weight:700">${_fM(tb.academic_usd)}</span></div>`;
+            if (tb.core_facility_usd != null) html += `<div style="display:flex;justify-content:space-between;font-size:10px;padding:2px 0;color:var(--text-2)"><span>Core facilities</span><span style="font-weight:700">${_fM(tb.core_facility_usd)}</span></div>`;
+            if (tb.site_license_usd  != null) html += `<div style="display:flex;justify-content:space-between;font-size:10px;padding:2px 0;color:var(--text-2)"><span>Site licenses</span><span style="font-weight:700">${_fM(tb.site_license_usd)}</span></div>`;
+            html += `</div>`;
+          }
+          if (d.addressable_labs) html += `<div style="font-size:9.5px;color:var(--text-3);margin-top:6px">N = ${Number(d.addressable_labs).toLocaleString()} addressable labs</div>`;
+        }
+        if (tm.key === 'top_down' && d.adjacent_tam_usd) {
+          const slo = d.defensible_share_low  != null ? (d.defensible_share_low  * 100).toFixed(0) : '?';
+          const shi = d.defensible_share_high != null ? (d.defensible_share_high * 100).toFixed(0) : '?';
+          html += `<div style="font-size:9.5px;color:var(--text-3);margin-top:8px">Adjacent NIH spend: ${_fM(d.adjacent_tam_usd)} × ${slo}–${shi}% defensible share</div>`;
+        }
+        if (tm.key === 'value_based' && d.labor_value_per_lab_usd != null) {
+          html += `<div style="margin-top:10px;border-top:1px solid var(--border);padding-top:8px">
+            <div style="font-family:var(--display);font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-4);margin-bottom:5px">WTP derivation per lab</div>
+            <div style="display:flex;justify-content:space-between;font-size:10px;padding:2px 0;color:var(--text-2)"><span>Labor savings</span><span style="font-weight:700">${_fM(d.labor_value_per_lab_usd)}</span></div>`;
+          if (d.data_loss_value_per_lab_usd != null) html += `<div style="display:flex;justify-content:space-between;font-size:10px;padding:2px 0;color:var(--text-2)"><span>Data integrity value</span><span style="font-weight:700">${_fM(d.data_loss_value_per_lab_usd)}</span></div>`;
+          html += `<div style="display:flex;justify-content:space-between;font-size:10px;padding:3px 0;border-top:1px solid var(--border);margin-top:3px;color:var(--text)"><span style="font-weight:600">WTP midpoint / lab</span><span style="font-weight:800">${_fM(d.wtp_mid_per_lab_usd)}</span></div></div>`;
+          const ss = d.survey_signals || {};
+          if (ss.pct_cite_manual_burden != null) html += `<div style="font-size:9.5px;color:var(--text-3);margin-top:6px">${Math.round(ss.pct_cite_manual_burden*100)}% of surveyed labs cite manual burden as top pain point</div>`;
+        }
+        html += `</div>`;
+      });
+      html += `</div>`; // end 3-col grid
+
+      // Reconciliation
+      if (_tri.reconciled) {
+        const rec = _tri.reconciled;
+        const _rcBdr = rec.divergence_flag ? '#f59e0b' : 'var(--green)';
+        html += `<div style="background:var(--bg-2);padding:14px 16px;border-left:3px solid ${_rcBdr};margin-bottom:20px">
+          <div style="display:flex;align-items:flex-start;gap:20px;flex-wrap:wrap">
+            <div>
+              <div style="font-family:var(--display);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-4)">Reconciled Estimate</div>
+              <div style="font-family:var(--display);font-size:24px;font-weight:800;color:var(--text);line-height:1.1">${_fM(rec.tam_usd)}</div>
+              <div style="font-size:9.5px;color:var(--text-3)">range ${_fM(rec.low_usd)} – ${_fM(rec.high_usd)}</div>
+            </div>
+            <div style="flex:1;min-width:200px;font-size:10.5px;color:var(--text-2);line-height:1.6;padding-top:2px">
+              <strong>Weights:</strong> Bottom-up 50% · Top-down 25% · Value-based 25%<br>${rec.description||''}
+            </div>
+          </div>
+          ${rec.divergence_flag ? `<div style="margin-top:10px;padding:8px 10px;background:#fef3c7;color:#92400e;border-radius:3px;font-size:10.5px;line-height:1.5"><strong>⚠ Methods diverge${rec.divergence_ratio != null ? ` (${rec.divergence_ratio.toFixed(1)}×)` : ''}</strong> — ${rec.divergence_note||'Verify assumptions before citing this estimate.'}</div>` : ''}
+        </div>`;
+      }
+
+      // Monte Carlo
+      if (_mc) {
+        const _p10f = _fM(_mc.p10), _p50f = _fM(_mc.p50), _p90f = _fM(_mc.p90);
+        const _mcR  = (_mc.p90||0) - (_mc.p10||0);
+        const _midP = _mcR > 0 ? Math.round(((_mc.p50||0) - (_mc.p10||0)) / _mcR * 100) : 50;
+        const _prms = _mc.uncertain_parameters || [];
+        html += `<div style="margin-bottom:22px">
+          <div style="font-family:var(--display);font-size:12px;font-weight:800;color:var(--text);margin-bottom:4px">Monte Carlo Uncertainty Envelope</div>
+          <div style="font-size:11px;color:var(--text-3);line-height:1.6;margin-bottom:12px">${(_mc.n_iterations||10000).toLocaleString()} simulations. Each uncertain input was drawn from a PERT distribution on every iteration; the spread below reflects assumption uncertainty, not model error. Seed ${_mc.seed} — results are fully reproducible.</div>
+          <div style="position:relative;height:52px;background:var(--bg-2);border-radius:4px;overflow:hidden;margin-bottom:10px">
+            <div style="position:absolute;top:0;bottom:0;left:0;width:${_midP}%;background:var(--blue);opacity:.12"></div>
+            <div style="position:absolute;top:0;bottom:0;left:${_midP}%;right:0;background:var(--blue);opacity:.06"></div>
+            <div style="position:absolute;top:0;bottom:0;left:${_midP}%;width:2px;background:var(--blue);opacity:.5"></div>
+            <div style="position:absolute;inset:0;display:flex;align-items:center;padding:0 16px">
+              <div style="text-align:center;flex:1">
+                <div style="font-family:var(--display);font-size:8.5px;font-weight:700;color:var(--text-4);text-transform:uppercase;letter-spacing:.05em">P10 — pessimistic</div>
+                <div style="font-family:var(--display);font-size:15px;font-weight:800;color:var(--text)">${_p10f}</div>
+              </div>
+              <div style="text-align:center;flex:1">
+                <div style="font-family:var(--display);font-size:8.5px;font-weight:700;color:var(--text);text-transform:uppercase;letter-spacing:.05em">P50 — median</div>
+                <div style="font-family:var(--display);font-size:15px;font-weight:800;color:var(--text)">${_p50f}</div>
+              </div>
+              <div style="text-align:center;flex:1">
+                <div style="font-family:var(--display);font-size:8.5px;font-weight:700;color:var(--text-4);text-transform:uppercase;letter-spacing:.05em">P90 — optimistic</div>
+                <div style="font-family:var(--display);font-size:15px;font-weight:800;color:var(--text)">${_p90f}</div>
+              </div>
+            </div>
+          </div>
+          ${_prms.length > 0 ? `<div style="font-size:10px;color:var(--text-3);line-height:1.8"><strong style="color:var(--text-2)">Uncertain parameters sampled:</strong> ${_prms.map(p=>`<code style="background:var(--bg-2);color:var(--text-2);padding:1px 5px;border-radius:2px;font-size:9.5px;margin:0 2px">${p}</code>`).join('')}</div>` : ''}
+        </div>`;
+      }
+
+      // Sensitivity tornado
+      if (_sns.length > 0) {
+        const _topS = _sns.slice(0, 8);
+        const _maxI = _topS[0]?.impact_usd || 1;
+        html += `<div style="margin-bottom:8px">
+          <div style="font-family:var(--display);font-size:12px;font-weight:800;color:var(--text);margin-bottom:4px">Sensitivity Analysis — What Moves the Number Most</div>
+          <div style="font-size:11px;color:var(--text-3);line-height:1.6;margin-bottom:14px">Each assumption was varied ±50% while all others were held fixed. The longest bar is your highest-leverage assumption — the one worth the most diligence effort before citing this TAM.</div>
+          <div style="display:flex;flex-direction:column;gap:8px">`;
+        _topS.forEach((s, i) => {
+          const _bw  = Math.max(4, Math.round((s.impact_usd / _maxI) * 100));
+          const _ipc = ((s.impact_pct||0) * 100).toFixed(0);
+          const _col = i === 0 ? 'var(--blue)' : (i < 3 ? '#6366f199' : 'var(--border)');
+          html += `<div>
+            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px">
+              <span style="font-size:10.5px;font-weight:600;color:var(--text)">${s.label||s.node_id}</span>
+              <span style="font-size:9px;color:var(--text-4)">±${_ipc}% TAM impact · ${_fM(s.tam_low_usd)} – ${_fM(s.tam_high_usd)}</span>
+            </div>
+            <div style="height:9px;background:var(--bg-2);border-radius:2px;overflow:hidden">
+              <div style="width:${_bw}%;height:100%;background:${_col};border-radius:2px"></div>
+            </div>
+          </div>`;
+        });
+        html += `</div></div>`;
+      }
+    } // end r.triangulation
 
     // Market geography inline
     if (r.market_geography) {
@@ -2297,11 +2570,235 @@ function renderPIReport(r) {
     </div>`;
   }
 
+  // CHAPTER 8: STRATEGIC INTELLIGENCE — S-01…S-09
+  // Evidence base, value drivers, segment fit, feature posture, pricing model,
+  // positioning, risks, guiding question, adversarial review.
+  const _hasStrategicContent = !!(
+    r.positioning_statement || r.guiding_question ||
+    (r.value_driver_ranking && r.value_driver_ranking.length) ||
+    (r.segment_fit_table && r.segment_fit_table.length) ||
+    (r.feature_investment_posture && r.feature_investment_posture.length) ||
+    (r.pricing_model_analysis && (r.pricing_model_analysis.model_comparison || []).length) ||
+    (r.strategic_risks && r.strategic_risks.length) ||
+    (r.adversarial_review && r.adversarial_review.length) ||
+    (r.evidence_base && Object.keys(r.evidence_base).length)
+  );
+  if (_hasStrategicContent) {
+    html += chapterHeader('8', 'Strategic Intelligence', 'Positioning, segment choices, feature priorities, pricing trade-offs, and adversarial review');
+
+    // S-01 Evidence Base
+    const _eb = r.evidence_base;
+    if (_eb && (_eb.source_types_used || _eb.evidence_gap_block || _eb.limitations)) {
+      html += `<div style="border:1px solid var(--border);border-radius:4px;padding:14px 16px;margin-bottom:20px;background:var(--bg-2)">
+        <div style="font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Evidence Base</div>`;
+      if (_eb.source_types_used && _eb.source_types_used.length) {
+        html += `<div style="font-size:11px;color:var(--text-2);margin-bottom:5px"><strong>Sources used:</strong> ${_eb.source_types_used.join(', ')}</div>`;
+      }
+      if (_eb.sample_composition) {
+        html += `<div style="font-size:11px;color:var(--text-2);margin-bottom:5px"><strong>Sample:</strong> ${_eb.sample_composition}</div>`;
+      }
+      if (_eb.decision_authority_profile) {
+        html += `<div style="font-size:11px;color:var(--text-2);margin-bottom:5px"><strong>Purchase authority:</strong> ${_eb.decision_authority_profile}</div>`;
+      }
+      if ((_eb.limitations || []).length) {
+        html += `<div style="font-size:11px;color:#d97706;margin-top:8px"><strong>Limitations:</strong> ${_eb.limitations.join(' · ')}</div>`;
+      }
+      if (_eb.evidence_gap_block) {
+        html += `<div style="font-size:11px;color:#dc2626;margin-top:8px;padding:8px 12px;background:#fef2f2;border-left:3px solid #dc2626">${_eb.evidence_gap_block}</div>`;
+      }
+      html += `</div>`;
+    }
+
+    // S-02 Value Driver Ranking
+    const _vdr = r.value_driver_ranking || [];
+    if (_vdr.length) {
+      html += `<div style="margin-bottom:20px">
+        <div style="font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Value Driver Ranking</div>
+        <div style="border:1px solid var(--border);border-radius:4px;overflow:hidden">
+          <table style="width:100%;border-collapse:collapse;font-size:12px">
+            <thead><tr style="background:var(--bg-2)">
+              <th style="text-align:left;padding:7px 12px;font-weight:700;color:var(--text-3)">Driver</th>
+              <th style="text-align:center;padding:7px 12px;font-weight:700;color:var(--text-3);white-space:nowrap">Importance</th>
+              <th style="text-align:left;padding:7px 12px;font-weight:700;color:var(--text-3)">Product Implication</th>
+            </tr></thead>
+            <tbody>
+              ${_vdr.map(v => {
+                const imp = (v.relative_importance||'').toUpperCase();
+                const impColor = imp==='HIGH' ? 'var(--green)' : imp==='LOW' ? 'var(--text-4)' : 'var(--text-2)';
+                return `<tr style="border-top:1px solid var(--border)">
+                  <td style="padding:7px 12px;color:var(--text);font-weight:600">${v.value_driver||v.driver||''}</td>
+                  <td style="padding:7px 12px;text-align:center;color:${impColor};font-weight:700;font-size:10px;text-transform:uppercase">${imp}</td>
+                  <td style="padding:7px 12px;color:var(--text-2)">${v.product_implication||v.rationale||''}</td>
+                </tr>`;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>`;
+    }
+
+    // S-03 Segment Fit Table
+    const _sft = r.segment_fit_table || [];
+    if (_sft.length) {
+      html += `<div style="margin-bottom:20px">
+        <div style="font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Segment Fit</div>
+        <div style="border:1px solid var(--border);border-radius:4px;overflow:hidden">
+          <table style="width:100%;border-collapse:collapse;font-size:12px">
+            <thead><tr style="background:var(--bg-2)">
+              <th style="text-align:left;padding:7px 12px;font-weight:700;color:var(--text-3)">Segment</th>
+              <th style="text-align:center;padding:7px 12px;font-weight:700;color:var(--text-3)">Fit</th>
+              <th style="text-align:center;padding:7px 12px;font-weight:700;color:var(--text-3)">Stance</th>
+              <th style="text-align:left;padding:7px 12px;font-weight:700;color:var(--text-3)">Rationale</th>
+            </tr></thead>
+            <tbody>
+              ${_sft.map(s => {
+                const stance = s.strategic_stance || s.fit || '';
+                const isNonTarget = stance.toLowerCase().includes('non-target');
+                const isTarget = stance.toLowerCase() === 'target';
+                const stanceColor = isNonTarget ? '#dc2626' : isTarget ? 'var(--green)' : 'var(--text-2)';
+                const fit = s.relative_fit || '';
+                const fitColor = fit === 'Strong' ? 'var(--green)' : fit === 'Weak' ? '#dc2626' : 'var(--text-2)';
+                return `<tr style="border-top:1px solid var(--border);${isNonTarget?'opacity:.8':''}">
+                  <td style="padding:7px 12px;color:var(--text);font-weight:600">${s.segment||s.segment_name||''}</td>
+                  <td style="padding:7px 12px;text-align:center;color:${fitColor};font-size:11px;font-weight:700">${fit}</td>
+                  <td style="padding:7px 12px;text-align:center;color:${stanceColor};font-size:10px;font-weight:700;white-space:nowrap">${stance}</td>
+                  <td style="padding:7px 12px;color:var(--text-2)">${s.rationale||''}</td>
+                </tr>`;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>`;
+    }
+
+    // S-04 Feature Investment Posture
+    const _fip = r.feature_investment_posture || [];
+    if (_fip.length) {
+      html += `<div style="margin-bottom:20px">
+        <div style="font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Feature Investment Posture</div>
+        <div style="border:1px solid var(--border);border-radius:4px;overflow:hidden">
+          <table style="width:100%;border-collapse:collapse;font-size:12px">
+            <thead><tr style="background:var(--bg-2)">
+              <th style="text-align:left;padding:7px 12px;font-weight:700;color:var(--text-3)">Feature Area</th>
+              <th style="text-align:center;padding:7px 12px;font-weight:700;color:var(--text-3)">Posture</th>
+              <th style="text-align:left;padding:7px 12px;font-weight:700;color:var(--text-3)">Rationale</th>
+            </tr></thead>
+            <tbody>
+              ${_fip.map(f => {
+                const posture = f.posture || '';
+                const isExclude = posture.toLowerCase() === 'exclude';
+                const isBuild = posture.toLowerCase().includes('build and prioritize');
+                const postureColor = isExclude ? '#dc2626' : isBuild ? 'var(--green)' : 'var(--text-2)';
+                return `<tr style="border-top:1px solid var(--border)">
+                  <td style="padding:7px 12px;color:var(--text);font-weight:600">${f.feature_area||f.feature||''}</td>
+                  <td style="padding:7px 12px;text-align:center;color:${postureColor};font-size:10px;font-weight:700;white-space:nowrap">${posture}</td>
+                  <td style="padding:7px 12px;color:var(--text-2)">${f.rationale||''}</td>
+                </tr>`;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>`;
+    }
+
+    // S-05 Pricing Model Analysis
+    const _pma = r.pricing_model_analysis || {};
+    const _modelComp = _pma.model_comparison || [];
+    const _ctxAnal = _pma.contextual_analysis || [];
+    if (_modelComp.length || _ctxAnal.length) {
+      html += `<div style="margin-bottom:20px">
+        <div style="font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Pricing Model Analysis</div>`;
+      if (_modelComp.length) {
+        html += `<div style="border:1px solid var(--border);border-radius:4px;overflow:hidden;margin-bottom:12px">
+          <table style="width:100%;border-collapse:collapse;font-size:12px">
+            <thead><tr style="background:var(--bg-2)">
+              <th style="text-align:left;padding:7px 12px;font-weight:700;color:var(--text-3)">Model</th>
+              <th style="text-align:center;padding:7px 12px;font-weight:700;color:var(--text-3)">User Appeal</th>
+              <th style="text-align:center;padding:7px 12px;font-weight:700;color:var(--text-3)">Sustainability</th>
+              <th style="text-align:center;padding:7px 12px;font-weight:700;color:var(--text-3)">Stance</th>
+            </tr></thead>
+            <tbody>
+              ${_modelComp.map(m => {
+                const stance = m.strategic_stance || '';
+                const isRec = stance.toLowerCase() === 'recommended';
+                const isAvoid = stance.toLowerCase() === 'avoid';
+                const sc = isRec ? 'var(--green)' : isAvoid ? '#dc2626' : 'var(--text-2)';
+                return `<tr style="border-top:1px solid var(--border)${isRec?';background:var(--bg-2)':''}">
+                  <td style="padding:7px 12px;color:var(--text);font-weight:600">${m.pricing_model||''}</td>
+                  <td style="padding:7px 12px;text-align:center;color:var(--text-2)">${m.user_appeal||''}</td>
+                  <td style="padding:7px 12px;text-align:center;color:var(--text-2)">${m.business_sustainability||''}</td>
+                  <td style="padding:7px 12px;text-align:center;color:${sc};font-size:10px;font-weight:700">${stance}</td>
+                </tr>`;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>`;
+      }
+      if (_ctxAnal.length) {
+        html += `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:8px">
+          ${_ctxAnal.map(c => `<div style="border:1px solid var(--border);border-radius:4px;padding:10px 12px;background:var(--bg-2)">
+            <div style="font-size:11px;font-weight:700;color:var(--text);margin-bottom:4px">${c.context||''}</div>
+            <div style="font-size:11px;color:var(--text-2);margin-bottom:4px">${c.why_this_model_works||''}</div>
+            ${c.structural_risk?`<div style="font-size:11px;color:#d97706"><strong>Risk:</strong> ${c.structural_risk}</div>`:''}
+          </div>`).join('')}
+        </div>`;
+      }
+      html += `</div>`;
+    }
+
+    // S-07 Positioning Statement
+    if (r.positioning_statement) {
+      html += `<div style="margin-bottom:20px;padding:16px 20px;border-left:4px solid var(--blue);background:var(--bg-2)">
+        <div style="font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Positioning Statement</div>
+        <div style="font-size:13px;color:var(--text);line-height:1.7;font-style:italic">${r.positioning_statement}</div>
+      </div>`;
+    }
+
+    // S-09 Guiding Question
+    if (r.guiding_question) {
+      html += `<div style="margin-bottom:20px;padding:14px 18px;border:1.5px solid var(--blue);border-radius:4px;background:var(--bg)">
+        <div style="font-size:10px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Guiding Question</div>
+        <div style="font-size:14px;font-weight:700;color:var(--text);line-height:1.5">${r.guiding_question}</div>
+      </div>`;
+    }
+
+    // S-08 Strategic Risks
+    const _sr = r.strategic_risks || [];
+    if (_sr.length) {
+      html += `<div style="margin-bottom:20px">
+        <div style="font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Strategic Risks</div>
+        <ol style="margin:0;padding:0 0 0 18px">
+          ${_sr.map(risk => `<li style="font-size:12px;color:var(--text-2);padding:4px 0;line-height:1.5">${risk}</li>`).join('')}
+        </ol>
+      </div>`;
+    }
+
+    // S-06 Adversarial Review
+    const _adv = r.adversarial_review || [];
+    if (_adv.length) {
+      html += `<div style="margin-bottom:20px">
+        <div style="font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">Adversarial Review</div>
+        <div style="font-size:11px;color:var(--text-3);margin-bottom:10px">Independent critic pass — each recommendation evaluated for structural risk and disconfirming evidence.</div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          ${_adv.map(item => `<div style="border:1px solid var(--border);border-radius:4px;padding:12px 14px;background:var(--bg-2)">
+            <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:6px">${item.recommendation||''}</div>
+            ${item.supporting_case?`<div style="font-size:11px;color:var(--text-2);margin-bottom:4px"><strong>Supporting case:</strong> ${item.supporting_case}</div>`:''}
+            ${item.structural_risk?`<div style="font-size:11px;color:#d97706;margin-bottom:4px"><strong>Structural risk:</strong> ${item.structural_risk}</div>`:''}
+            ${item.disconfirming_evidence?`<div style="font-size:11px;color:#dc2626;margin-bottom:4px"><strong>Disconfirming evidence:</strong> ${item.disconfirming_evidence}</div>`:''}
+            ${item.what_would_change_this?`<div style="font-size:11px;color:var(--text-3)"><strong>What would change this:</strong> ${item.what_would_change_this}</div>`:''}
+          </div>`).join('')}
+        </div>
+      </div>`;
+    }
+  }
+
   html += '<div class="rmeta">Generated ' + new Date(r.generated_at).toLocaleString() + ' · ' + fmt(r.signals_searched) + ' signals searched · Model v' + r.model_version + '</div>';
   html += '</div>';
 
   document.getElementById('results').innerHTML = html;
   lastReport = r;
+  // Load any saved gate overrides after DOM is ready
+  setTimeout(_msLoadOverrides, 0);
   // Competitive landscape now comes from the report (server-side sweep), patched in
   // by the verification poll — no separate, flaky client fetch.
 
@@ -2311,8 +2808,10 @@ function renderPIReport(r) {
 
 function _renderPostReportTools(r) {
   const idea      = document.getElementById('idea')?.value || r.idea_submitted || '';
-  const disease   = (r.disease_intelligence?.condition || idea).slice(0,80);
+  const disease   = (r.product_name || r.disease_intelligence?.condition || idea).slice(0,80);
   const ptype     = r.product_type || selectedType || 'other';
+  // B-10: gate CTAs by archetype — research/non-clinical products have no clinical trial pathway
+  const _isResearchProduct = (r.domain || '').toLowerCase().includes('research');
   const existingPanel = document.getElementById('post-report-tools');
   if (existingPanel) existingPanel.remove();
 
@@ -2333,8 +2832,8 @@ function _renderPostReportTools(r) {
         <div id="pr-save-status" style="font-size:11px;color:var(--text-3);margin-top:6px"></div>
       </div>
 
-      <!-- Trial Sites -->
-      <div style="border:1px solid var(--border);background:var(--bg-2);padding:14px 16px">
+      <!-- Trial Sites — clinical products only (B-10: gate CTAs by archetype) -->
+      ${_isResearchProduct ? '' : `<div style="border:1px solid var(--border);background:var(--bg-2);padding:14px 16px">
         <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">🏥 Find Trial Sites</div>
         <div style="font-size:11px;color:var(--text-3);margin-bottom:10px">Identify top hospitals and research centres for running clinical trials in this indication.</div>
         <button onclick="_runTrialSitesInline('${disease.replace(/'/g,"\\'")}'')"
@@ -2342,7 +2841,7 @@ function _renderPostReportTools(r) {
           Find Sites for ${disease.slice(0,30)}${disease.length>30?'…':''}
         </button>
         <div id="pr-trials-result" style="margin-top:10px;font-size:11px;color:var(--text-3)"></div>
-      </div>
+      </div>`}
 
       <!-- Dev Timeline -->
       <div style="border:1px solid var(--border);background:var(--bg-2);padding:14px 16px">
@@ -2768,10 +3267,11 @@ function renderCompetitiveLandscape(data) {
     data.competitors.slice(0,8).forEach(c => {
       const brand = c.brand_name ? ` (${c.brand_name})` : '';
       const route = c.route ? ` · ${c.route}` : '';
+      const stageLbl = stageLabel[c.stage] || c.stage || '';
       html += `<div style="background:var(--bg-2);border:1px solid var(--border);padding:10px 12px">
-        <div style="font-size:11px;color:var(--text-4);margin-bottom:4px">${stageIcon[c.stage]||'⚪'} ${stageLabel[c.stage]||c.stage}${route}</div>
-        <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:2px">${c.name}${brand}</div>
-        <div style="font-size:11px;color:var(--text-3);margin-bottom:6px">${c.company}</div>
+        <div style="font-size:11px;color:var(--text-4);margin-bottom:4px">${stageIcon[c.stage]||'⚪'} ${stageLbl}${route}</div>
+        <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:2px">${c.name||''}${brand}</div>
+        <div style="font-size:11px;color:var(--text-3);margin-bottom:6px">${c.company||''}</div>
         ${(c.advantages||[]).slice(0,2).map(a=>`<div style="font-size:11px;color:#059669;padding:1px 0">▲ ${a}</div>`).join('')}
         ${(c.vulnerabilities||[]).slice(0,1).map(v=>`<div style="font-size:11px;color:#dc2626;padding:1px 0">▽ ${v}</div>`).join('')}
         ${c.positioning_signal?`<div style="font-size:10px;color:var(--text-4);margin-top:4px;font-style:italic">→ ${c.positioning_signal.slice(0,120)}${c.positioning_signal.length>120?'…':''}</div>`:''}
@@ -3078,8 +3578,8 @@ function googleSignIn() {
 // SAVE REPORT
 function showSaveBar(idea, pathogen) {
   lastIdea = {idea, pathogen};
-  // Suggest a name from idea text
-  const suggest = idea.slice(0, 60).trim();
+  // Suggest name from product_name (classification) > idea text
+  const suggest = (window._classification?.product_name || lastReport?.product_name || idea).slice(0, 60).trim();
   document.getElementById('save-name').value = suggest;
   document.getElementById('save-bar').classList.add('show');
 }
@@ -3883,6 +4383,184 @@ async function loadGrantDeadlines() {
   } catch(e) { /* silent */ }
 }
 
+// ── Market-sizing gate editing (Part D) ─────────────────────────────────────
+
+function _msOnGateEdit(input) {
+  _msRecompute();
+  const bar = document.getElementById('ms-save-bar');
+  if (bar) bar.style.display = 'block';
+  const statusEl = document.getElementById('ms-save-status');
+  if (statusEl) statusEl.textContent = '';
+}
+
+function _msRecompute() {
+  const st = window._msWfState;
+  if (!st || !st.tam) return;
+
+  let tamR = 1, samR = 1, somR = 1;
+  document.querySelectorAll('.ms-gate-input').forEach(inp => {
+    const orig = parseFloat(inp.dataset.orig);
+    if (!orig) return;
+    const isRatio = inp.dataset.isRatio === 'true';
+    const cur = isRatio ? parseFloat(inp.value) / 100 : parseFloat(inp.value);
+    if (isNaN(cur) || cur === orig) return;
+    const ratio = cur / orig;
+    const role = inp.dataset.role;
+    if (role === 'TAM') tamR *= ratio;
+    else if (role === 'SAM') samR *= ratio;
+    else if (role === 'SOM') somR *= ratio;
+  });
+
+  const newTam = st.tam * tamR;
+  const newSam = Math.min(st.sam * tamR * samR, newTam);
+  const newSom = Math.min(st.som * tamR * samR * somR, newSam);
+
+  const _setAgg = (role, origVal, newVal) => {
+    const el = document.getElementById(`ms-agg-val-${role}`);
+    if (el) el.textContent = fmtUSD(newVal);
+    const delta = document.getElementById(`ms-delta-${role}`);
+    if (!delta) return;
+    const pct = origVal ? (newVal - origVal) / origVal * 100 : 0;
+    if (Math.abs(pct) > 0.5) {
+      const sign = pct > 0 ? '+' : '';
+      delta.textContent = `${sign}${Math.round(pct)}%`;
+      delta.style.display = 'inline';
+      delta.style.background = pct > 0 ? '#d1fae5' : '#fee2e2';
+      delta.style.color = pct > 0 ? '#065f46' : '#991b1b';
+    } else {
+      delta.style.display = 'none';
+    }
+  };
+  _setAgg('TAM', st.tam, newTam);
+  _setAgg('SAM', st.sam, newSam);
+  _setAgg('SOM', st.som, newSom);
+
+  // Update headline values
+  const ht = document.getElementById('ms-headline-tam');
+  if (ht) ht.textContent = fmtUSD(newTam);
+  const hs = document.getElementById('ms-headline-sam');
+  if (hs) hs.textContent = fmtUSD(newSam);
+
+  // Verifier: amber border when value is implausibly far from model
+  document.querySelectorAll('.ms-gate-input').forEach(inp => {
+    const orig = parseFloat(inp.dataset.orig);
+    if (!orig) return;
+    const isRatio = inp.dataset.isRatio === 'true';
+    const cur = isRatio ? parseFloat(inp.value) / 100 : parseFloat(inp.value);
+    if (isNaN(cur)) return;
+    const ratio = cur / orig;
+    if (ratio > 4 || ratio < 0.1) {
+      inp.style.borderColor = '#f59e0b';
+      inp.title = `Value is ${ratio > 4 ? ratio.toFixed(1) + '× larger' : (ratio * 100).toFixed(0) + '% of'} the model estimate — confirm your source before saving.`;
+    } else {
+      inp.style.borderColor = '';
+      inp.title = 'Edit this value — TAM/SAM/SOM will recompute automatically';
+    }
+  });
+}
+
+async function _msSaveOverrides() {
+  const st = window._msWfState;
+  const statusEl = document.getElementById('ms-save-status');
+  if (!st?.reportId) {
+    if (statusEl) statusEl.textContent = 'Save the report first to persist overrides.';
+    return;
+  }
+
+  const stepOverrides = {};
+  let tamR = 1, samR = 1, somR = 1;
+  document.querySelectorAll('.ms-gate-input').forEach(inp => {
+    const orig = parseFloat(inp.dataset.orig);
+    if (!orig) return;
+    const isRatio = inp.dataset.isRatio === 'true';
+    const cur = isRatio ? parseFloat(inp.value) / 100 : parseFloat(inp.value);
+    if (isNaN(cur) || cur === orig) return;
+    stepOverrides[inp.dataset.label] = {orig, override: cur, role: inp.dataset.role};
+    const ratio = cur / orig;
+    if (inp.dataset.role === 'TAM') tamR *= ratio;
+    else if (inp.dataset.role === 'SAM') samR *= ratio;
+    else if (inp.dataset.role === 'SOM') somR *= ratio;
+  });
+
+  const newTam = st.tam * tamR;
+  const newSam = Math.min(st.sam * tamR * samR, newTam);
+  const newSom = Math.min(st.som * tamR * samR * somR, newSam);
+  const rationale = document.getElementById('ms-rationale')?.value || '';
+
+  try {
+    const tok = localStorage.getItem('jwt') || sessionStorage.getItem('jwt') || '';
+    const headers = {'Content-Type': 'application/json'};
+    if (tok) headers['Authorization'] = `Bearer ${tok}`;
+    const res = await fetch(`${API}/alignment/market-sizing-override`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        report_id: st.reportId,
+        step_overrides: stepOverrides,
+        rationale,
+        tam_usd: Math.round(newTam),
+        sam_usd: Math.round(newSam),
+        som_usd: Math.round(newSom),
+      }),
+    });
+    if (res.ok) {
+      if (statusEl) { statusEl.textContent = '✓ Saved'; setTimeout(() => { if (statusEl) statusEl.textContent = ''; }, 3000); }
+      const barLabel = document.getElementById('ms-save-bar-label');
+      if (barLabel) { barLabel.style.color = 'var(--green)'; barLabel.textContent = 'Overrides saved'; }
+    } else {
+      if (statusEl) statusEl.textContent = 'Save failed — try again.';
+    }
+  } catch(e) {
+    if (statusEl) statusEl.textContent = 'Save failed — check connection.';
+  }
+}
+
+function _msRevertOverrides() {
+  document.querySelectorAll('.ms-gate-input').forEach(inp => {
+    const orig = parseFloat(inp.dataset.orig);
+    const isRatio = inp.dataset.isRatio === 'true';
+    inp.value = isRatio ? (orig * 100).toFixed(1) : Math.round(orig);
+    inp.style.borderColor = '';
+    inp.title = 'Edit this value — TAM/SAM/SOM will recompute automatically';
+  });
+  _msRecompute();
+  const bar = document.getElementById('ms-save-bar');
+  if (bar) bar.style.display = 'none';
+}
+
+async function _msLoadOverrides() {
+  const rid = window._currentReportId;
+  if (!rid) return;
+  try {
+    const tok = localStorage.getItem('jwt') || sessionStorage.getItem('jwt') || '';
+    const headers = {};
+    if (tok) headers['Authorization'] = `Bearer ${tok}`;
+    const res = await fetch(`${API}/alignment/market-sizing-override/${rid}`, {headers});
+    if (!res.ok) return;
+    const data = await res.json();
+    if (!data.has_override) return;
+
+    let anyChanged = false;
+    Object.entries(data.step_overrides || {}).forEach(([label, {orig, override}]) => {
+      const inp = document.querySelector(`.ms-gate-input[data-label="${CSS.escape(label)}"]`);
+      if (!inp) return;
+      const isRatio = inp.dataset.isRatio === 'true';
+      inp.value = isRatio ? (override * 100).toFixed(1) : Math.round(override);
+      anyChanged = true;
+    });
+
+    if (anyChanged) {
+      _msRecompute();
+      const bar = document.getElementById('ms-save-bar');
+      if (bar) bar.style.display = 'block';
+      const barLabel = document.getElementById('ms-save-bar-label');
+      if (barLabel) { barLabel.style.color = 'var(--green)'; barLabel.textContent = 'Saved overrides applied'; }
+      const ratEl = document.getElementById('ms-rationale');
+      if (ratEl && data.rationale) ratEl.value = data.rationale;
+    }
+  } catch(e) { /* non-fatal */ }
+}
+
 // Init
 loadIndex();
 // Hide pathogen field for non-antibiotic on load
@@ -4461,7 +5139,7 @@ window.tab = function(name) {
             </div>
             <div style="font-size:10px;color:var(--text-4)">
               Score = (Opportunity^0.35 × Probability^0.28 × Value^0.25 × Innovation^0.12) — geometric model prevents any single near-zero factor from masking real opportunity.
-              Confidence interval ±18–23% (Weibull DoT uncertainty + IQVIA 71% forecast error). Sources: EVIDEM v3.0 (PMC3192743) · BIO/Informa 2021 · Wong et al. Biostatistics 2019 · Goetghebeur 2012 MDMA · Mauskopf ISPOR 2012.
+              Confidence interval ±18–23% (Weibull DoT uncertainty). Sources: EVIDEM v3.0 (PMC3192743) · BIO/Informa 2021 · Wong et al. Biostatistics 2019 · Goetghebeur 2012 MDMA · Mauskopf ISPOR 2012.
             </div>
           </div>
         </div>
@@ -5493,11 +6171,22 @@ async function downloadPDF() {
     const r = (typeof lastReport !== 'undefined' && lastReport) ? lastReport : null;
     if (!r) { alert('Please run an analysis first.'); if (btn){btn.textContent=origText;btn.disabled=false;} return; }
 
+    // B-02: Block export when the Math Verifier found an arithmetic inconsistency.
+    const _valStatus = (r.validation || {}).status;
+    if (_valStatus === 'BLOCKING' || (r.validation || {}).export_blocked) {
+      const _msg = (r.validation || {}).summary || 'The Math Verifier found an arithmetic error in the market model.';
+      alert('⛔ PDF export is blocked.\n\n' + _msg + '\n\nCorrect the flagged errors and regenerate before exporting.');
+      if (btn) { btn.textContent = origText; btn.disabled = false; }
+      return;
+    }
+
     const { jsPDF } = window.jspdf;
     const pdf = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
     const pageW=210, pageH=297, margin=14, contentW=pageW-margin*2;
-    const DARK=[13,27,42], BLUE=[8,145,178], INK=[30,41,59], SUB=[100,116,139], LINK=[26,79,214];
-    const dateStr = new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
+    const DARK=[13,27,42], BLUE=[8,145,178], INK=[30,41,59], SUB=[100,116,139], LINK=[26,79,214], GRNG=[5,150,105];
+    // C-06: use report's generation date, not the download date
+    const _genDate = (r && r.generated_at) ? new Date(r.generated_at) : new Date();
+    const dateStr = _genDate.toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
     let y=0;
     // jsPDF's built-in helvetica is WinAnsi-only; characters like ≥ ≤ × – — ' " …
     // corrupt glyph rendering AND throw off splitTextToSize width measurement (which is
@@ -5549,13 +6238,55 @@ async function downloadPDF() {
     header();
 
     // Title block
-    const cond = clean((r.disease_intelligence&&r.disease_intelligence.condition) || r.idea_submitted || 'Market Intelligence Report');
+    const cond = clean(r.product_name || (r.disease_intelligence&&r.disease_intelligence.condition) || r.idea_submitted || 'Market Intelligence Report');
     const _reportTypeLabel = (r && (r.domain||'').toLowerCase().includes('research')) ? 'COMMERCIALIZATION INTELLIGENCE REPORT' : 'MARKET INTELLIGENCE REPORT';
     pdf.setTextColor(BLUE[0],BLUE[1],BLUE[2]); pdf.setFont('helvetica','bold'); pdf.setFontSize(8); pdf.text(_reportTypeLabel, margin, y); y+=6;
     pdf.setTextColor(DARK[0],DARK[1],DARK[2]); pdf.setFontSize(17);
     pdf.splitTextToSize(cond, contentW).forEach(l=>{ ensure(8); pdf.text(l,margin,y); y+=7.5; }); y+=1;
     if (r.expert_name) para('Expert model: '+clean(r.expert_name), {size:8,color:SUB,gap:2});
     if (r.executive_summary){ subhead('Executive Summary'); para(r.executive_summary, {size:9.8}); }
+
+    // Verification summary
+    const _val = r.validation||{};
+    const _trust = r.trust||{};
+    if (_val.status && _val.status !== 'PENDING') {
+      const _vIcon = {ERROR:'[ERROR]', FLAG:'[FLAG]', REVIEW:'[REVIEW]', PASS:'[PASS]'}[_val.status]||'';
+      ensure(10); y+=3;
+      para(_vIcon+' Verification: '+clean(_val.summary||''), {bold:true, size:9, gap:0.5});
+      (_val.errors||[]).forEach(e=>para('  '+clean(e.agent)+': '+clean(e.issue), {size:8.3,color:SUB,gap:0.3}));
+      (_val.warnings||[]).slice(0,3).forEach(w=>para('  '+clean(w.agent)+': '+clean(w.issue), {size:8.3,color:SUB,gap:0.3}));
+    }
+    if (_trust.citation_support_score!=null) {
+      const _pctTrust = Math.round(_trust.citation_support_score*100);
+      para('Source coverage: '+_pctTrust+'% of factual claims linked to a retrieved source'+
+           (_trust.checkable_claims?' ('+_trust.checkable_claims+' claims checked)':''), {size:8.5,color:SUB});
+    }
+
+    // Commercialization assessment
+    const _cs = r.commercialization_scores;
+    if (_cs&&_cs.commercialization_scores) {
+      const _sc = _cs.commercialization_scores;
+      const _rat = _cs.score_rationales||{};
+      const _dimLabels = {
+        regulatory_feasibility:'Regulatory feasibility', sbir_fit:'Non-dilutive (SBIR/STTR) fit',
+        competitive_whitespace:'Competitive whitespace', patentability:'Patentability',
+        reimbursement_feasibility:'Reimbursement', investor_attractiveness:'Investor appeal',
+        licensing_likelihood:'Licensing', spinout_likelihood:'Spinout', acquisition_potential:'Acquisition potential'
+      };
+      const _dimOrder = ['regulatory_feasibility','competitive_whitespace','sbir_fit','patentability',
+                         'reimbursement_feasibility','investor_attractiveness','licensing_likelihood','spinout_likelihood','acquisition_potential'];
+      ensure(12); y+=3;
+      subhead('Commercialization Assessment'+((_sc.overall_priority!=null)?' — overall '+Math.round(_sc.overall_priority*100)+'%':''));
+      _dimOrder.forEach(k=>{
+        if(_sc[k]==null) return;
+        const dim = _rat[k]||{};
+        const drivers = dim.drivers||[];
+        para((_dimLabels[k]||k)+' '+Math.round(_sc[k]*100)+'%', {bold:true,size:9,gap:0.5});
+        drivers.slice(0,2).forEach(d=>para('  '+clean(d.fact)+' — '+clean(d.source||''), {size:8.3,color:SUB,gap:0.3}));
+        if(!drivers.length) para('  No specific retrieved signals.', {size:8.3,color:SUB,gap:0.3});
+      });
+      if(_cs.recommendation) para('Recommended next action: '+clean(_cs.recommendation), {bold:true,size:9});
+    }
 
     // 1 — Opportunity
     const di = r.disease_intelligence||{};
@@ -5567,24 +6298,207 @@ async function downloadPDF() {
     });
     if (di.pipeline_status){ subhead('Current pipeline'); para(di.pipeline_status); }
 
+    // Literature citations
+    if ((r.literature_citations||[]).length) {
+      subhead('Supporting literature');
+      r.literature_citations.slice(0,8).forEach(p=>{
+        const auth = clean((p.authors||'').split(',').slice(0,3).join(',')+((p.authors||'').split(',').length>3?' et al.':''));
+        para(auth+(p.year?' ('+p.year+')':'')+(p.title?'. '+clean(p.title):'')+(p.journal?'. '+clean(p.journal):'.'), {size:8.5,gap:0.3});
+        if(p.relevance) para(clean(p.relevance), {size:8.3,color:SUB,x:margin+4,w:contentW-4,gap:0.5});
+        const purl = p.url||p.source_url||(p.pmid?'https://pubmed.ncbi.nlm.nih.gov/'+p.pmid+'/':'');
+        if(purl){ pdf.setTextColor(LINK[0],LINK[1],LINK[2]); pdf.setFontSize(7.5);
+          ensure(3.5); pdf.textWithLink(clean(purl),margin+4,y,{url:purl}); y+=3.7; pdf.setTextColor(INK[0],INK[1],INK[2]); }
+        y+=1;
+      });
+    }
+
     // 2 — Market
     const ms = r.market_sizing||{};
     heading(2,'The Market');
     if (ms.formula) para(ms.formula, {bold:true});
     (ms.steps||[]).forEach((s,i)=>{
       const v = (typeof s.value==='number')? s.value.toLocaleString() : clean(s.value);
-      // Strip any "Step N — " or "Step N - " prefix the LLM may have baked into the label
-      const _rawLabel = clean(s.label||'').replace(/^Step\s+\d+\s*[-–—]\s*/i,'');
-      bullet('Step '+(i+1)+' — '+_rawLabel+': '+v+(s.unit?(' '+clean(s.unit)):''));
+      // F-7: strip "Step N" or "Step N — desc" prefix to avoid "Step 1 — Step 1 — desc"
+      // The separator [-–—] is optional so bare "Step 1" labels are also stripped.
+      const _rawLabel = clean(s.label||'').replace(/^Step\s+\d+\s*[-–—]?\s*/i,'').trim();
+      const _labelPart = _rawLabel ? (' — '+_rawLabel) : '';
+      bullet('Step '+(i+1)+_labelPart+': '+v+(s.unit?(' '+clean(s.unit)):''));
       if(s.notes) para(clean(s.notes), {x:margin+6,w:contentW-6,size:8.3,color:SUB,gap:0.5});
       if(s.source||s.source_url) source(s.source, s.source_url);
     });
     if (ms.methodology_note) para('Methodology: '+clean(ms.methodology_note), {size:8.3,color:SUB});
 
-    // 3 — Regulatory (suppressed for non-regulated research tools)
+    // Scenarios (conservative / base / aggressive)
+    const _prov = r.market_sizing_provenance;
+    if (_prov&&(_prov.scenarios||[]).length) {
+      subhead('Adoption scenarios');
+      _prov.scenarios.forEach(sc=>{
+        const isBase = sc.scenario==='base';
+        para(clean(sc.scenario.toUpperCase()+(isBase?' (base case)':''))+': SOM '+clean(sc.som_fmt)+
+             ' / SAM '+clean(sc.sam_fmt)+' / TAM '+clean(sc.tam_fmt), {bold:isBase,size:9,gap:0.3});
+        if(sc.narrative) para(clean(sc.narrative), {size:8.3,color:SUB,x:margin+4,w:contentW-4,gap:1});
+      });
+    }
+
+    // Provenance waterfall
+    if (_prov&&(_prov.waterfall||[]).length) {
+      subhead('Provenance waterfall');
+      const _wFmt = (v,u)=>{
+        if(v==null) return '-';
+        if((u||'').toLowerCase()==='usd') return '$'+Math.round(v/1e3)+'K';
+        if(Math.abs(v)<1) return (v*100).toFixed(0)+'%';
+        return Number(v).toLocaleString();
+      };
+      _prov.waterfall.forEach(w=>{
+        if(w.is_aggregate){
+          ensure(6);
+          pdf.setFont('helvetica','bold'); pdf.setFontSize(9.3); pdf.setTextColor(BLUE[0],BLUE[1],BLUE[2]);
+          pdf.text(clean(w.label)+': '+clean(_wFmt(w.value,w.unit)), margin, y); y+=5.5;
+          pdf.setTextColor(INK[0],INK[1],INK[2]);
+        } else {
+          bullet(clean(w.label)+': '+clean(_wFmt(w.value,w.unit))+(w.unit&&w.unit.toLowerCase()!=='usd'?' '+clean(w.unit):''));
+          if(w.source_name) source(w.source_name, w.source_url||'');
+        }
+      });
+    }
+
+    // Geography
+    if (r.market_geography&&r.market_geography.description) {
+      subhead('Geographic concentration');
+      para(clean(r.market_geography.description), {size:9.3});
+      if ((r.market_geography.top_states||[]).length)
+        para('Top states: '+r.market_geography.top_states.join(', '), {size:8.3,color:SUB});
+    }
+
+    // Axis decisions (C.1/C.2)
+    if (r.axis_decisions) {
+      const _pad  = r.axis_decisions;
+      const _psel = _pad.selected || [];
+      const _prej = (_pad.rejected || []).filter(ax => ax.reason);
+      if (_psel.length > 0 || _prej.length > 0) {
+        subhead('Segmentation — axes used and rejected');
+        if (_psel.length > 0) {
+          ensure(5);
+          pdf.setFont('helvetica','bold'); pdf.setFontSize(8.5); pdf.setTextColor(GRNG[0],GRNG[1],GRNG[2]);
+          pdf.text('Used in this analysis ('+_psel.length+')', margin, y); y+=4.5;
+          pdf.setFont('helvetica','normal'); pdf.setFontSize(8.3); pdf.setTextColor(INK[0],INK[1],INK[2]);
+          _psel.forEach(ax => { bullet(clean(ax.label)+(ax.est_lift!=null?' ('+((ax.est_lift*100).toFixed(0))+'% lift)':'')); });
+          y+=1;
+        }
+        if (_prej.length > 0) {
+          ensure(5);
+          pdf.setFont('helvetica','bold'); pdf.setFontSize(8.5); pdf.setTextColor(SUB[0],SUB[1],SUB[2]);
+          pdf.text('Considered, not applicable ('+_prej.length+')', margin, y); y+=4.5;
+          pdf.setFont('helvetica','normal'); pdf.setFontSize(8.3); pdf.setTextColor(SUB[0],SUB[1],SUB[2]);
+          _prej.forEach(ax => {
+            ensure(4);
+            const _aline = clean(ax.label)+': '+clean(ax.reason);
+            const _asplit = pdf.splitTextToSize(_aline, contentW-6);
+            pdf.text(_asplit, margin+3, y); y+=_asplit.length*4+1;
+          });
+          pdf.setTextColor(INK[0],INK[1],INK[2]);
+          y+=1;
+        }
+      }
+    }
+
+    // Triangulation + Monte Carlo + Sensitivity
+    if (r.triangulation) {
+      const _ptri = r.triangulation;
+      const _pmc  = _ptri.monte_carlo;
+      const _psns = r.sensitivity || [];
+      const _pfM  = v => v == null ? '-' : (v >= 1e9 ? '$'+(v/1e9).toFixed(1)+'B' : '$'+Math.round(v/1e6)+'M');
+
+      subhead('Market Sizing — How We Got Here');
+      para('Three independent methods were triangulated and reconciled by weighted average. The weights (bottom-up 50%, top-down 25%, value-based 25%) are explicit so you can interrogate the assumptions.', {size:9,color:SUB});
+
+      const _pmethods = [
+        {key:'bottom_up',   label:'Bottom-Up Funnel',  weight:'50%'},
+        {key:'top_down',    label:'Top-Down Proxy',     weight:'25%'},
+        {key:'value_based', label:'Value-Based (WTP)',  weight:'25%'},
+      ];
+      _pmethods.forEach(tm => {
+        const d = _ptri[tm.key];
+        if (!d) return;
+        ensure(5);
+        pdf.setFont('helvetica','bold'); pdf.setFontSize(9.3); pdf.setTextColor(INK[0],INK[1],INK[2]);
+        pdf.text(clean(tm.label)+' [weight '+tm.weight+']: '+clean(_pfM(d.tam_usd))+
+                 ' (range '+clean(_pfM(d.low_usd))+' – '+clean(_pfM(d.high_usd))+')', margin, y); y+=5;
+        pdf.setFont('helvetica','normal'); pdf.setFontSize(8.5); pdf.setTextColor(SUB[0],SUB[1],SUB[2]);
+        const _desc = d.description||'';
+        if (_desc) { const _dl = pdf.splitTextToSize(clean(_desc), contentW-4); pdf.text(_dl, margin+4, y); y+=_dl.length*4+1; }
+        if (tm.key==='bottom_up'&&d.tier_breakdown) {
+          const tb = d.tier_breakdown;
+          if (tb.academic_usd      != null) { pdf.text('  Academic labs: '+clean(_pfM(tb.academic_usd)),      margin+4, y); y+=4; }
+          if (tb.core_facility_usd != null) { pdf.text('  Core facilities: '+clean(_pfM(tb.core_facility_usd)),margin+4, y); y+=4; }
+          if (tb.site_license_usd  != null) { pdf.text('  Site licenses: '+clean(_pfM(tb.site_license_usd)),  margin+4, y); y+=4; }
+          if (d.addressable_labs) { pdf.text('  N = '+Number(d.addressable_labs).toLocaleString()+' addressable labs', margin+4, y); y+=4; }
+        }
+        if (tm.key==='top_down'&&d.adjacent_tam_usd) {
+          const slo=(d.defensible_share_low !=null?(d.defensible_share_low*100).toFixed(0):'?');
+          const shi=(d.defensible_share_high!=null?(d.defensible_share_high*100).toFixed(0):'?');
+          pdf.text('  Adjacent NIH spend: '+clean(_pfM(d.adjacent_tam_usd))+' × '+slo+'–'+shi+'% defensible share', margin+4, y); y+=4;
+        }
+        if (tm.key==='value_based'&&d.labor_value_per_lab_usd!=null) {
+          pdf.text('  Labor savings/lab: '+clean(_pfM(d.labor_value_per_lab_usd)), margin+4, y); y+=4;
+          if (d.data_loss_value_per_lab_usd!=null) { pdf.text('  Data integrity value/lab: '+clean(_pfM(d.data_loss_value_per_lab_usd)), margin+4, y); y+=4; }
+          if (d.wtp_mid_per_lab_usd!=null) { pdf.text('  WTP midpoint/lab: '+clean(_pfM(d.wtp_mid_per_lab_usd)), margin+4, y); y+=4; }
+        }
+        pdf.setTextColor(INK[0],INK[1],INK[2]);
+        y+=2;
+      });
+
+      if (_ptri.reconciled) {
+        const rec = _ptri.reconciled;
+        ensure(10);
+        pdf.setFont('helvetica','bold'); pdf.setFontSize(10); pdf.setTextColor(BLUE[0],BLUE[1],BLUE[2]);
+        pdf.text('Reconciled estimate: '+clean(_pfM(rec.tam_usd))+
+                 ' (range '+clean(_pfM(rec.low_usd))+' – '+clean(_pfM(rec.high_usd))+')', margin, y); y+=5.5;
+        pdf.setFont('helvetica','normal'); pdf.setFontSize(8.5); pdf.setTextColor(SUB[0],SUB[1],SUB[2]);
+        if (rec.description) { const _rl=pdf.splitTextToSize(clean(rec.description),contentW); pdf.text(_rl,margin,y); y+=_rl.length*4+1; }
+        if (rec.divergence_flag) {
+          pdf.setTextColor(220,100,0);
+          const _dv='⚠ Methods diverge'+(rec.divergence_ratio!=null?' ('+rec.divergence_ratio.toFixed(1)+'×)':'')+': '+(rec.divergence_note||'Verify assumptions before citing.');
+          const _dl2=pdf.splitTextToSize(clean(_dv),contentW); pdf.text(_dl2,margin,y); y+=_dl2.length*4+3;
+          pdf.setTextColor(INK[0],INK[1],INK[2]);
+        }
+      }
+
+      if (_pmc) {
+        ensure(12);
+        pdf.setFont('helvetica','bold'); pdf.setFontSize(9.3); pdf.setTextColor(INK[0],INK[1],INK[2]);
+        pdf.text('Monte Carlo Uncertainty Envelope', margin, y); y+=5;
+        pdf.setFont('helvetica','normal'); pdf.setFontSize(8.5); pdf.setTextColor(SUB[0],SUB[1],SUB[2]);
+        pdf.text((_pmc.n_iterations||10000).toLocaleString()+' simulations · seed '+clean(String(_pmc.seed||''))+' (reproducible)', margin+2, y); y+=4.5;
+        pdf.text('P10: '+clean(_pfM(_pmc.p10))+'   P50 (median): '+clean(_pfM(_pmc.p50))+'   P90: '+clean(_pfM(_pmc.p90)), margin+2, y); y+=4.5;
+        if ((_pmc.uncertain_parameters||[]).length) {
+          const _up='Uncertain parameters: '+(_pmc.uncertain_parameters||[]).join(', ');
+          const _ul=pdf.splitTextToSize(clean(_up),contentW-4); pdf.text(_ul,margin+2,y); y+=_ul.length*4+1;
+        }
+        pdf.setTextColor(INK[0],INK[1],INK[2]);
+        y+=2;
+      }
+
+      if (_psns.length > 0) {
+        ensure(8);
+        pdf.setFont('helvetica','bold'); pdf.setFontSize(9.3); pdf.setTextColor(INK[0],INK[1],INK[2]);
+        pdf.text('Sensitivity Analysis (top drivers, ±50% each)', margin, y); y+=5;
+        pdf.setFont('helvetica','normal'); pdf.setFontSize(8.3); pdf.setTextColor(SUB[0],SUB[1],SUB[2]);
+        _psns.slice(0,8).forEach((s,i)=>{
+          ensure(4);
+          const _sp=clean('#'+(i+1)+' '+clean(s.label||s.node_id)+': '+clean(_pfM(s.tam_low_usd))+' – '+clean(_pfM(s.tam_high_usd))+' (±'+((s.impact_pct||0)*100).toFixed(0)+'% impact)');
+          pdf.text(_sp, margin+2, y); y+=4;
+        });
+        pdf.setTextColor(INK[0],INK[1],INK[2]);
+        y+=2;
+      }
+    } // end r.triangulation
+
+    // 3 — Regulatory (suppressed for non-regulated research tools and when no data)
     const _pdfIsResearch = (r.domain||'').toLowerCase().includes('research');
     const rp = r.regulatory_pathway||{};
-    if (!_pdfIsResearch) {
+    const _rpHasContent = !_pdfIsResearch && (rp.recommended_pathway || (rp.designations||[]).length || rp.pathway_rationale);
+    if (_rpHasContent) {
       heading(3,'Your Path to Approval');
       if (rp.recommended_pathway){ subhead('Recommended pathway'); para(rp.recommended_pathway); }
       if (rp.pathway_rationale) para(rp.pathway_rationale);
@@ -5612,9 +6526,10 @@ async function downloadPDF() {
       });
     }
 
-    // 5 — Market access (suppressed for research tools — no reimbursement pathway)
+    // 5 — Market access (suppressed for research tools and when no data)
     const ma = r.market_access||{};
-    if (!_pdfIsResearch) {
+    const _maHasContent = !_pdfIsResearch && (ma.primary_channel || (ma.buyer_segments||[]).length || ma.reimbursement_pathway);
+    if (_maHasContent) {
       heading(5,'Getting to Market');
       if (ma.primary_channel){ subhead('Primary channel'); para(ma.primary_channel); }
       (ma.buyer_segments||[]).slice(0,8).forEach(b=>{
@@ -5643,22 +6558,112 @@ async function downloadPDF() {
     if (hasCL){
       heading(7,'Competitive Landscape');
       if(cl.summary) para(cl.summary);
-      (cl.competitors||[]).slice(0,12).forEach(c=> bullet(clean(c.name)+(c.company?(' — '+clean(c.company)):'')+(c.stage?(' ['+clean(c.stage)+']'):'')));
+      // Research tools use a different schema (overlap/where_you_win/switching_cost instead of approval_status/pipeline counts)
+      const isResearchCL = (cl.competitors||[]).some(c=>c.overlap||c.where_you_win||c.switching_cost);
+      (cl.competitors||[]).slice(0,12).forEach(c=>{
+        if(isResearchCL){
+          para(clean(c.name)+(c.category?' ['+clean(c.category)+']':''), {bold:true,gap:0.5});
+          if(c.overlap) para('Overlap: '+clean(c.overlap), {size:9,x:margin+4,w:contentW-4,gap:0.3});
+          if(c.where_you_win) para('Advantage: '+clean(c.where_you_win), {size:9,x:margin+4,w:contentW-4,gap:0.3});
+          if(c.where_you_lose) para('Disadvantage: '+clean(c.where_you_lose), {size:9,x:margin+4,w:contentW-4,color:SUB,gap:0.3});
+          if(c.switching_cost) para('Switching cost: '+clean(c.switching_cost), {size:9,x:margin+4,w:contentW-4,gap:0.3});
+          if(c.price_point) para('Price: '+clean(c.price_point), {size:8.3,x:margin+4,w:contentW-4,color:SUB,gap:0.5});
+        } else {
+          bullet(clean(c.name)+(c.company?(' — '+clean(c.company)):'')+(c.stage?(' ['+clean(c.stage)+']'):''));
+          if(c.approval_status) para('Status: '+clean(c.approval_status)+(c.approval_count!=null?' ('+c.approval_count+' approved)':''), {size:8.5,x:margin+6,w:contentW-6,color:SUB,gap:0.3});
+        }
+      });
     }
 
-    // Sources & citations (clickable)
-    const srcs = r.sources||[];
+    // Sources & citations — aggregate the same way the web renderer does
+    // (r.sources + literature + strategies + buyer segments → identical count to web)
+    const srcs = (r.sources||[]).slice();
+    const _seenUrls = new Set(srcs.map(s=>s.url).filter(Boolean));
+    const _today = new Date().toISOString().slice(0,10);
+    function _addSrc(name,url){
+      if(!url||_seenUrls.has(url)) return;
+      _seenUrls.add(url);
+      srcs.push({number:srcs.length+1, name:clean(name||''), url:url, accessed:_today});
+    }
+    (r.literature_citations||[]).forEach(p=>{
+      const url = p.url||p.source_url||(p.pmid?'https://pubmed.ncbi.nlm.nih.gov/'+p.pmid+'/':'');
+      _addSrc((p.authors||'')+(p.year?' ('+p.year+')':'')+(p.title?'. '+p.title:'')+(p.journal?'. '+p.journal:''), url);
+    });
+    (r.strategic_playbook||[]).forEach(s=>{ if(s.source_url) _addSrc((s.example||'')+' - '+(s.strategy||''), s.source_url); });
+    ((r.market_access||{}).buyer_segments||[]).forEach(b=>{ if(b.source_url) _addSrc((b.source||'')+' - '+(b.segment||b.segment_name||b.name||''), b.source_url); });
+    if(r.market_access&&r.market_access.reimbursement_source_url) _addSrc('Reimbursement pathway', r.market_access.reimbursement_source_url);
+    srcs.forEach((s,i)=>s.number=i+1);
+
+    // §8 Strategic Intelligence — S-01…S-09
+    const _pdfSIC = !!(
+      r.positioning_statement || r.guiding_question ||
+      (r.value_driver_ranking||[]).length || (r.segment_fit_table||[]).length ||
+      (r.feature_investment_posture||[]).length || (r.strategic_risks||[]).length ||
+      (r.adversarial_review||[]).length || ((r.pricing_model_analysis||{}).model_comparison||[]).length
+    );
+    if (_pdfSIC) {
+      heading(hasCL?9:8,'Strategic Intelligence');
+
+      if (r.positioning_statement) {
+        subhead('Positioning'); para(r.positioning_statement);
+      }
+      if (r.guiding_question) {
+        subhead('Guiding Question'); para(r.guiding_question, {bold:true});
+      }
+
+      const _vdr = r.value_driver_ranking||[];
+      if (_vdr.length) {
+        subhead('Value Driver Ranking');
+        _vdr.forEach(v=>{ bullet((v.value_driver||v.driver||'') + ' — ' + (v.relative_importance||'') + '. ' + (v.product_implication||v.rationale||'')); });
+      }
+
+      const _sft = r.segment_fit_table||[];
+      if (_sft.length) {
+        subhead('Segment Fit');
+        _sft.forEach(s=>{ bullet((s.segment||s.segment_name||'') + ' [' + (s.strategic_stance||s.fit||'') + '] — ' + (s.rationale||'')); });
+      }
+
+      const _fip = r.feature_investment_posture||[];
+      if (_fip.length) {
+        subhead('Feature Investment Posture');
+        _fip.forEach(f=>{ bullet((f.feature_area||f.feature||'') + ' [' + (f.posture||'') + '] — ' + (f.rationale||'')); });
+      }
+
+      const _mc = (r.pricing_model_analysis||{}).model_comparison||[];
+      if (_mc.length) {
+        subhead('Pricing Model Analysis');
+        _mc.forEach(m=>{ bullet((m.pricing_model||'') + ' — ' + (m.strategic_stance||'') + '. User appeal: ' + (m.user_appeal||'') + '. Sustainability: ' + (m.business_sustainability||'')); });
+        ((r.pricing_model_analysis||{}).contextual_analysis||[]).forEach(c=>{ bullet((c.context||'') + ': ' + (c.structural_risk||'')); });
+      }
+
+      const _sr = r.strategic_risks||[];
+      if (_sr.length) {
+        subhead('Strategic Risks');
+        _sr.forEach(risk=>{ bullet(risk); });
+      }
+
+      const _adv = r.adversarial_review||[];
+      if (_adv.length) {
+        subhead('Adversarial Review');
+        _adv.forEach(item=>{
+          if (item.recommendation) para(item.recommendation, {bold:true, size:9, gap:0.5});
+          if (item.structural_risk) para('Structural risk: ' + item.structural_risk, {size:8.5, color:SUB, gap:0.3});
+          if (item.what_would_change_this) para('What would change this: ' + item.what_would_change_this, {size:8.5, color:SUB, gap:1});
+        });
+      }
+    }
+
     if (srcs.length){
       heading(hasCL?8:7,'Sources & Citations');
       srcs.forEach(s=>{
-        para((s.number!=null?('['+s.number+'] '):'')+clean(s.name), {size:8.5, gap:0.3});
+        para((s.number!=null?('['+s.number+'] '):'')+clean(s.name||''), {size:8.5, gap:0.3});
         if(s.url){ pdf.setTextColor(LINK[0],LINK[1],LINK[2]); pdf.setFont('helvetica','normal'); pdf.setFontSize(8);
           pdf.splitTextToSize(clean(s.url),contentW).forEach(l=>{ ensure(3.8); pdf.textWithLink(l,margin,y,{url:s.url}); y+=3.7; }); y+=1.5; }
       });
     }
 
     footer();
-    const filename = (cond||'Medlevate').replace(/[^a-zA-Z0-9 ]/g,'').trim().replace(/\s+/g,'-').slice(0,50) + '-' + new Date().toISOString().slice(0,10) + '.pdf';
+    const filename = (cond||'Medlevate').replace(/[^a-zA-Z0-9 ]/g,'').trim().replace(/\s+/g,'-').slice(0,50) + '-' + _genDate.toISOString().slice(0,10) + '.pdf';
     pdf.save(filename);
   } catch(e) {
     console.error('PDF error:', e);
@@ -5781,11 +6786,46 @@ function _renderClassificationCard(cls, panel) {
         </div>
         <div style="text-align:right;font-size:10px;opacity:.75;white-space:nowrap">${confPct}% confidence</div>
       </div>
-      <div style="padding:10px 14px;background:var(--bg-2);display:flex;gap:8px;flex-wrap:wrap">
+      <div style="padding:10px 14px;background:var(--bg-2);display:flex;gap:8px;flex-wrap:wrap;align-items:center">
         <span style="background:var(--bg-1);border:1px solid var(--border);border-radius:12px;padding:3px 9px;font-size:11px;font-weight:600;color:var(--blue)">${domainLabel}</span>
         <span style="background:var(--bg-1);border:1px solid var(--border);border-radius:12px;padding:3px 9px;font-size:11px;color:var(--text-2)">${archLabel}</span>
         <span style="background:var(--bg-1);border:1px solid var(--border);border-radius:12px;padding:3px 9px;font-size:11px;color:var(--text-3)">${trlLabel}</span>
+        <button onclick="_toggleClsEdit()" style="margin-left:auto;background:none;border:none;color:var(--blue);font-size:11px;cursor:pointer;text-decoration:underline;padding:0">Not right? Edit</button>
       </div>
+
+      <!-- Inline correction panel (hidden by default) -->
+      <div id="cls-edit-panel" style="display:none;padding:10px 14px;background:var(--bg-2);border-top:1px solid var(--border)">
+        <div style="font-size:10px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Correct classification</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+          <div>
+            <div style="font-size:10px;color:var(--text-3);margin-bottom:3px">Domain</div>
+            <select id="cls-domain-sel" style="width:100%;padding:5px 8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:11px">
+              <option value="LIFE_SCIENCES_CLINICAL" ${!isResearch?'selected':''}>Life Sciences Clinical</option>
+              <option value="LIFE_SCIENCES_RESEARCH" ${isResearch?'selected':''}>Life Sciences Research</option>
+              <option value="ENGINEERING_HARDWARE">Engineering / Hardware</option>
+            </select>
+          </div>
+          <div>
+            <div style="font-size:10px;color:var(--text-3);margin-bottom:3px">Archetype</div>
+            <select id="cls-arch-sel" style="width:100%;padding:5px 8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:11px">
+              <option value="research_tool_non_clinical" ${cls.archetype==='research_tool_non_clinical'?'selected':''}>Non-Clinical Research Tool</option>
+              <option value="research_infrastructure_saas" ${cls.archetype==='research_infrastructure_saas'?'selected':''}>Research Infrastructure SaaS</option>
+              <option value="therapeutic_small_molecule" ${cls.archetype==='therapeutic_small_molecule'?'selected':''}>Small Molecule Drug</option>
+              <option value="therapeutic_biologic" ${cls.archetype==='therapeutic_biologic'?'selected':''}>Biologic / mAb</option>
+              <option value="gene_cell_therapy" ${cls.archetype==='gene_cell_therapy'?'selected':''}>Gene / Cell Therapy</option>
+              <option value="device_class_ii" ${cls.archetype==='device_class_ii'?'selected':''}>Class II Medical Device</option>
+              <option value="device_class_iii" ${cls.archetype==='device_class_iii'?'selected':''}>Class III Medical Device</option>
+              <option value="samd_clinical" ${cls.archetype==='samd_clinical'?'selected':''}>Clinical SaMD</option>
+              <option value="diagnostic_ivd" ${cls.archetype==='diagnostic_ivd'?'selected':''}>In Vitro Diagnostic</option>
+              <option value="vaccine" ${cls.archetype==='vaccine'?'selected':''}>Vaccine</option>
+              <option value="clinical_workflow_saas" ${cls.archetype==='clinical_workflow_saas'?'selected':''}>Clinical Workflow SaaS</option>
+              <option value="platform" ${cls.archetype==='platform'?'selected':''}>Platform Technology</option>
+            </select>
+          </div>
+        </div>
+        <button onclick="_applyClsCorrection()" style="padding:5px 14px;background:var(--blue);color:#fff;border:none;border-radius:3px;font-size:11px;font-weight:600;cursor:pointer">Apply correction</button>
+      </div>
+
       ${cls.ambiguities && cls.ambiguities.length ? `
       <div style="padding:8px 14px 10px;background:var(--bg-2);border-top:1px solid var(--border)">
         <div style="font-size:10px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">Gaps we still need to answer</div>
@@ -5795,6 +6835,28 @@ function _renderClassificationCard(cls, panel) {
       </div>` : ''}
     </div>
     <div id="q-container"></div>`;
+}
+
+function _toggleClsEdit() {
+  const p = document.getElementById('cls-edit-panel');
+  if (p) p.style.display = p.style.display === 'none' ? 'block' : 'none';
+}
+
+function _applyClsCorrection() {
+  const domainSel = document.getElementById('cls-domain-sel');
+  const archSel   = document.getElementById('cls-arch-sel');
+  if (!domainSel || !archSel || !window._classification) return;
+  window._classification.domain    = domainSel.value;
+  window._classification.archetype = archSel.value;
+  // Close the edit panel and reflect the new labels in the chips
+  const card = document.getElementById('cls-card');
+  if (card) {
+    const chips = card.querySelectorAll('div[style*="border-radius:12px"]');
+    if (chips[0]) chips[0].textContent = _domainLabel(domainSel.value);
+    if (chips[1]) chips[1].textContent = _archetypeLabel(archSel.value);
+  }
+  const p = document.getElementById('cls-edit-panel');
+  if (p) p.style.display = 'none';
 }
 
 async function _showMandatoryQuestions(idea) {
