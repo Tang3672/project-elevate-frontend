@@ -2884,6 +2884,13 @@ function _renderPostReportTools(r) {
 }
 
 async function _loadMarketSizingDerivation(idea, ptype, disease, report) {
+  // Part C: research-tool buyer model uses the derivation already in the report
+  const msd = report?.market_sizing_derivation;
+  if (msd && msd.archetype === 'research_tool_non_clinical') {
+    _renderBuyerModelPanel(msd, window._currentJobId);
+    return;
+  }
+
   // Find the market sizing chapter in the rendered report and append the full derivation
   // below it — rendered from structured API data, not Claude's text (prevents hallucination)
   const token = localStorage.getItem('pe_token');
@@ -2903,6 +2910,252 @@ async function _loadMarketSizingDerivation(idea, ptype, disease, report) {
     const d = await res.json();
     _renderDerivationPanel(d);
   } catch(e) { console.debug('Derivation panel skipped:', e.message); }
+}
+
+// ── Part C: Editable buyer-model panel for research-tool reports ─────────────
+
+function _renderBuyerModelPanel(d, reportId) {
+  const anchor = document.getElementById('derivation-anchor');
+  if (!anchor) return;
+
+  function _fmt(v) {
+    if (!v && v !== 0) return '—';
+    v = parseFloat(v);
+    if (v >= 1e9) return '$' + (v/1e9).toFixed(1) + 'B';
+    if (v >= 1e6) return '$' + (v/1e6).toFixed(1) + 'M';
+    if (v >= 1e3) return '$' + Math.round(v/1e3) + 'K';
+    return '$' + v.toLocaleString();
+  }
+  function _pct(v) { return v != null ? (parseFloat(v)*100).toFixed(0) + '%' : '—'; }
+  function _num(v) { return v != null ? parseFloat(v).toLocaleString(undefined,{maximumFractionDigits:0}) : '—'; }
+
+  const steps = d.steps || [];
+  const tam = _fmt(d.us_tam_usd);
+  const sam = _fmt(d.us_sam_usd);
+  const som = _fmt(d.us_som_usd);
+
+  const nodeIds = ['pop','sp','sam_rate','som_rate'];
+  const nodeLabels = {
+    pop:      'Lab population',
+    sp:       'Spend / lab / yr',
+    sam_rate: 'SAM rate',
+    som_rate: 'SOM rate (5-yr)',
+  };
+
+  function _stepRow(step, i, d) {
+    const isInput  = i < 2;
+    const editNode = ['pop','sp','sam_rate','som_rate'][i] || null;
+    const val = step.value != null
+      ? (i < 2 ? (i===0 ? _num(step.value)+' labs' : _fmt(step.value)+'/yr') : _fmt(step.value))
+      : '—';
+    return `
+      <div style="display:grid;grid-template-columns:28px 1fr auto;gap:8px;align-items:start;
+                  padding:10px 16px;border-bottom:1px solid var(--border)">
+        <div style="font-family:var(--mono);font-size:11px;color:var(--blue);font-weight:700;
+                    padding-top:2px">${step.step_num}</div>
+        <div>
+          <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:2px">${step.title}</div>
+          <div style="font-family:var(--mono);font-size:11px;color:var(--text-3)">${step.formula || ''}</div>
+          ${step.source_paper ? `<div style="font-size:10px;color:var(--text-4);margin-top:2px">Source: ${step.source_paper}</div>` : ''}
+          ${step.explanation ? `<div style="font-size:11px;color:var(--text-3);margin-top:4px;line-height:1.5">${step.explanation}</div>` : ''}
+        </div>
+        <div style="text-align:right;min-width:90px">
+          <div class="bm-step-val" data-step="${i}" style="font-family:var(--mono);font-size:13px;
+               font-weight:700;color:var(--text)">${val}</div>
+          ${editNode ? `<button onclick="_openNodeEdit('${editNode}','${reportId}')"
+            style="margin-top:4px;font-size:10px;font-family:var(--body);color:var(--blue);
+                   background:var(--blue-lite);border:1px solid #d0d9f5;padding:2px 8px;
+                   cursor:pointer;border-radius:2px">Edit ✎</button>` : ''}
+        </div>
+      </div>`;
+  }
+
+  const panel = document.createElement('div');
+  panel.id = 'buyer-model-panel';
+  panel.style.cssText = 'margin:16px 0;border:1px solid var(--border);border-radius:4px;overflow:hidden';
+  panel.innerHTML = `
+    <div style="background:var(--blue);color:#fff;padding:12px 16px;display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <div style="font-family:var(--display);font-size:12px;font-weight:700;letter-spacing:.04em">
+          BOTTOM-UP BUYER MODEL — EDITABLE
+        </div>
+        <div style="font-size:10px;opacity:.8;margin-top:2px">
+          TAM = ${tam} &nbsp;·&nbsp; SAM = ${sam} &nbsp;·&nbsp; SOM = ${som}
+        </div>
+      </div>
+      <button onclick="_showModelHistory('${reportId}')"
+        style="font-size:10px;font-family:var(--body);background:rgba(255,255,255,.15);
+               border:1px solid rgba(255,255,255,.3);color:#fff;padding:4px 10px;cursor:pointer;
+               border-radius:2px">Version history</button>
+    </div>
+    <div id="bm-steps-container">
+      ${steps.map((s, i) => _stepRow(s, i, d)).join('')}
+    </div>
+    <div id="bm-diff-bar" style="display:none;padding:10px 16px;background:#fef3c7;
+         font-size:11px;color:#92400e;font-family:var(--mono)"></div>
+    <!-- Edit modal (hidden) -->
+    <div id="bm-edit-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);
+         z-index:9999;align-items:center;justify-content:center">
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:6px;
+                  padding:24px;width:340px;max-width:90vw;box-shadow:0 8px 32px rgba(0,0,0,.2)">
+        <div id="bm-modal-title" style="font-family:var(--display);font-size:14px;font-weight:700;
+             color:var(--text);margin-bottom:4px"></div>
+        <div id="bm-modal-desc" style="font-size:11px;color:var(--text-3);margin-bottom:14px"></div>
+        <label style="font-family:var(--body);font-size:11px;font-weight:600;color:var(--text);
+                       display:block;margin-bottom:4px">New value (midpoint)</label>
+        <input id="bm-edit-value" type="number" min="0" step="any"
+               style="width:100%;box-sizing:border-box;padding:8px 10px;font-size:13px;
+                      border:1px solid var(--border);background:var(--bg);color:var(--text);
+                      border-radius:3px;margin-bottom:10px;font-family:var(--mono)"/>
+        <label style="font-family:var(--body);font-size:11px;font-weight:600;color:var(--text);
+                       display:block;margin-bottom:4px">Rationale (required)</label>
+        <textarea id="bm-edit-rationale" placeholder="Why are you changing this value?"
+               style="width:100%;box-sizing:border-box;padding:8px 10px;font-size:12px;
+                      border:1px solid var(--border);background:var(--bg);color:var(--text);
+                      border-radius:3px;min-height:64px;font-family:var(--body);resize:vertical"
+        ></textarea>
+        <div style="display:flex;gap:8px;margin-top:12px">
+          <button onclick="_submitNodeEdit()"
+            style="flex:1;padding:8px;background:var(--blue);color:#fff;border:none;
+                   border-radius:3px;font-size:12px;font-weight:600;cursor:pointer;
+                   font-family:var(--body)">Recompute →</button>
+          <button onclick="document.getElementById('bm-edit-modal').style.display='none'"
+            style="padding:8px 14px;background:var(--bg-2);border:1px solid var(--border);
+                   border-radius:3px;font-size:12px;cursor:pointer;font-family:var(--body)">Cancel</button>
+        </div>
+        <div id="bm-modal-status" style="margin-top:8px;font-size:11px;color:var(--text-3)"></div>
+      </div>
+    </div>
+  `;
+
+  anchor.after(panel);
+}
+
+let _bm_active_node = null;
+let _bm_active_report = null;
+
+function _openNodeEdit(nodeId, reportId) {
+  const labels = {
+    pop:      ['Lab population (number of labs)', 'Enter the midpoint number of eligible labs'],
+    sp:       ['Annual spend per lab ($/yr)', 'Enter the midpoint annual spend per lab in USD'],
+    sam_rate: ['SAM adoption rate (0–1)', 'Enter the fraction of eligible labs expected to adopt (e.g. 0.5 for 50%)'],
+    som_rate: ['SOM 5-yr penetration (0–1)', 'Enter the 5-year market penetration fraction (e.g. 0.15 for 15%)'],
+  };
+  _bm_active_node   = nodeId;
+  _bm_active_report = reportId;
+  const [title, desc] = labels[nodeId] || [nodeId, ''];
+  document.getElementById('bm-modal-title').textContent    = 'Edit: ' + title;
+  document.getElementById('bm-modal-desc').textContent     = desc;
+  document.getElementById('bm-edit-value').value           = '';
+  document.getElementById('bm-edit-rationale').value       = '';
+  document.getElementById('bm-modal-status').textContent   = '';
+  const modal = document.getElementById('bm-edit-modal');
+  modal.style.display = 'flex';
+  document.getElementById('bm-edit-value').focus();
+}
+
+async function _submitNodeEdit() {
+  const val = parseFloat(document.getElementById('bm-edit-value').value);
+  const rat = document.getElementById('bm-edit-rationale').value.trim();
+  const statusEl = document.getElementById('bm-modal-status');
+  if (!val || val <= 0) { statusEl.textContent = 'Enter a positive number.'; return; }
+  if (!rat) { statusEl.textContent = 'Rationale is required.'; return; }
+  statusEl.textContent = 'Recomputing…';
+  const token = localStorage.getItem('pe_token');
+  try {
+    const res = await fetch(`${API}/alignment/market-model/${_bm_active_report}/edit`, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json','Authorization':`Bearer ${token||''}`},
+      body: JSON.stringify({ node_id: _bm_active_node, value_mid: val, rationale: rat }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(()=>({}));
+      statusEl.textContent = err.detail || 'Edit failed.';
+      return;
+    }
+    const data = await res.json();
+    document.getElementById('bm-edit-modal').style.display = 'none';
+    _applyBuyerModelUpdate(data);
+  } catch(e) {
+    statusEl.textContent = 'Network error: ' + e.message;
+  }
+}
+
+function _applyBuyerModelUpdate(data) {
+  // Update summary bar
+  const panel = document.getElementById('buyer-model-panel');
+  if (!panel) return;
+
+  // Update the header totals
+  const hdr = panel.querySelector('div[style*="background:var(--blue)"] div:first-child div:last-child');
+  if (hdr) {
+    hdr.textContent = `TAM = ${data.tam_fmt} · SAM = ${data.sam_fmt} · SOM = ${data.som_fmt}`;
+  }
+
+  // Re-render steps
+  const container = document.getElementById('bm-steps-container');
+  if (container && data.steps) {
+    function _fmtStep(s, i) {
+      const isInput = i < 2;
+      const editNode = ['pop','sp','sam_rate','som_rate'][i];
+      const val = s.value != null
+        ? (i < 2 ? (i===0 ? s.value.toLocaleString()+' labs' : '$'+Math.round(s.value).toLocaleString()+'/yr') : (() => {
+            const v = s.value;
+            if (v >= 1e6) return '$'+(v/1e6).toFixed(1)+'M';
+            if (v >= 1e3) return '$'+Math.round(v/1e3)+'K';
+            return '$'+v.toLocaleString();
+          })())
+        : '—';
+      return `
+        <div style="display:grid;grid-template-columns:28px 1fr auto;gap:8px;align-items:start;
+                    padding:10px 16px;border-bottom:1px solid var(--border)">
+          <div style="font-family:var(--mono);font-size:11px;color:var(--blue);font-weight:700;padding-top:2px">${s.step_num}</div>
+          <div>
+            <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:2px">${s.title}</div>
+            <div style="font-family:var(--mono);font-size:11px;color:var(--text-3)">${s.formula||''}</div>
+          </div>
+          <div style="text-align:right;min-width:90px">
+            <div style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--text)">${val}</div>
+            ${editNode ? `<button onclick="_openNodeEdit('${editNode}','${_bm_active_report}')"
+              style="margin-top:4px;font-size:10px;font-family:var(--body);color:var(--blue);
+                     background:var(--blue-lite);border:1px solid #d0d9f5;padding:2px 8px;
+                     cursor:pointer;border-radius:2px">Edit ✎</button>` : ''}
+          </div>
+        </div>`;
+    }
+    container.innerHTML = data.steps.map((s,i) => _fmtStep(s,i)).join('');
+  }
+
+  // Show diff bar
+  if (data.diff && data.diff.length) {
+    const bar = document.getElementById('bm-diff-bar');
+    const changes = data.diff.filter(d => !d.computed).map(d => {
+      const labels = {pop_lo:'pop low',pop_hi:'pop high',sp_lo:'spend low',sp_hi:'spend high',
+                      sam_lo:'SAM rate low',sam_hi:'SAM rate high',som_lo:'SOM rate low',som_hi:'SOM rate high'};
+      const fmt = (v,k) => k.includes('lo')||k.includes('hi')&&!k.includes('sam')&&!k.includes('som')
+        ? v.toLocaleString() : v;
+      return `${labels[d.param]||d.param}: ${fmt(d.old,d.param)} → ${fmt(d.new,d.param)}`;
+    });
+    bar.textContent = `Version ${data.version}: ${data.rationale} | Changed: ${changes.join('; ')}`;
+    bar.style.display = 'block';
+  }
+}
+
+async function _showModelHistory(reportId) {
+  const token = localStorage.getItem('pe_token');
+  try {
+    const res = await fetch(`${API}/alignment/market-model/${reportId}/versions`, {
+      headers: {'Authorization':`Bearer ${token||''}`}
+    });
+    if (!res.ok) return;
+    const data = await res.json();
+    const versions = data.versions || [];
+    if (!versions.length) { alert('No version history yet.'); return; }
+    const rows = versions.map(v =>
+      `v${v.version}: ${v.rationale || 'Baseline'} (${new Date(v.created_at).toLocaleString()})`
+    ).join('\n');
+    alert(`Model version history:\n\n${rows}`);
+  } catch(e) { console.debug('Version history failed:', e); }
 }
 
 function _renderDerivationPanel(d) {
