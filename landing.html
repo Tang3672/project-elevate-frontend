@@ -1,377 +1,703 @@
 <!DOCTYPE html>
-
-<html class="scroll-smooth" lang="en"><head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Elevate | Biomedical Research Intelligence</title>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<script id="tailwind-config">
-      tailwind.config = {
-        darkMode: "class",
-        theme: {
-          extend: {
-            "colors": {
-                    "on-primary": "#ffffff",
-                    "on-primary-fixed": "#101c2e",
-                    "background": "#fbf8fa",
-                    "on-tertiary-fixed-variant": "#38485d",
-                    "surface-container-low": "#f5f3f5",
-                    "surface-bright": "#fbf8fa",
-                    "tertiary": "#000000",
-                    "on-secondary": "#ffffff",
-                    "primary": "#000000",
-                    "tertiary-fixed-dim": "#b7c8e1",
-                    "secondary-container": "#3e6af0",
-                    "error-container": "#ffdad6",
-                    "on-background": "#1b1b1d",
-                    "surface": "#fbf8fa",
-                    "surface-container-high": "#eae7e9",
-                    "surface-variant": "#e4e2e3",
-                    "on-primary-fixed-variant": "#3c475b",
-                    "on-error": "#ffffff",
-                    "surface-tint": "#535f74",
-                    "primary-fixed-dim": "#bbc7df",
-                    "on-surface": "#1b1b1d",
-                    "outline": "#75777d",
-                    "primary-fixed": "#d7e3fc",
-                    "on-surface-variant": "#45474c",
-                    "tertiary-fixed": "#d3e4fe",
-                    "surface-container": "#f0edef",
-                    "primary-container": "#101c2e",
-                    "on-secondary-container": "#fffbff",
-                    "on-tertiary-fixed": "#0b1c30",
-                    "on-primary-container": "#79849b",
-                    "on-secondary-fixed-variant": "#003ab1",
-                    "inverse-surface": "#303032",
-                    "on-tertiary": "#ffffff",
-                    "secondary": "#1a4fd6",
-                    "surface-container-lowest": "#ffffff",
-                    "inverse-on-surface": "#f3f0f2",
-                    "error": "#ba1a1a",
-                    "secondary-fixed": "#dce1ff",
-                    "surface-dim": "#dcd9db",
-                    "inverse-primary": "#bbc7df",
-                    "secondary-fixed-dim": "#b6c4ff",
-                    "on-secondary-fixed": "#001550",
-                    "surface-container-highest": "#e4e2e3",
-                    "on-tertiary-container": "#75859d",
-                    "on-error-container": "#93000a",
-                    "outline-variant": "#c5c6cd",
-                    "tertiary-container": "#0b1c30"
-            },
-            "borderRadius": {
-                    "DEFAULT": "0.125rem",
-                    "lg": "0.25rem",
-                    "xl": "0.5rem",
-                    "full": "0.75rem"
-            },
-            "spacing": {
-                    "section-gap": "120px",
-                    "gutter": "24px",
-                    "margin-desktop": "80px",
-                    "base": "8px",
-                    "margin-mobile": "20px"
-            },
-            "fontFamily": {
-                    "display-lg-mobile": ["Plus Jakarta Sans"],
-                    "body-md": ["Plus Jakarta Sans"],
-                    "display-lg": ["Plus Jakarta Sans"],
-                    "label-sm": ["Plus Jakarta Sans"],
-                    "headline-md": ["Plus Jakarta Sans"],
-                    "body-lg": ["Plus Jakarta Sans"]
-            },
-            "fontSize": {
-                    "display-lg-mobile": ["40px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700"}],
-                    "body-md": ["16px", {"lineHeight": "1.5", "letterSpacing": "0em", "fontWeight": "400"}],
-                    "display-lg": ["64px", {"lineHeight": "1.1", "letterSpacing": "-0.04em", "fontWeight": "700"}],
-                    "label-sm": ["12px", {"lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "600"}],
-                    "headline-md": ["32px", {"lineHeight": "1.3", "letterSpacing": "-0.02em", "fontWeight": "600"}],
-                    "body-lg": ["18px", {"lineHeight": "1.6", "letterSpacing": "0em", "fontWeight": "400"}]
-            }
-          },
-        },
-      }
-    </script>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Medlevate — market models you can audit</title>
+<meta name="description" content="FDA regulatory pathway, market sizing, and competitive landscape for any drug, device, or diagnostic. Every number sourced and labelled.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;1,6..72,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-        .material-symbols-outlined {
-            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-            vertical-align: middle;
-        }
-        .hero-gradient {
-            background: radial-gradient(circle at 50% 50%, #101c2e 0%, #000000 100%);
-        }
-        .glass-card {
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-    </style>
+  :root{
+    --paper:#FCFCFB;
+    --ink:#17181C;
+    --body:#33353C;
+    --muted:#6C6E74;
+    --faint:#9C9EA4;
+    --rule:#E5E5E1;
+    --hair:#EFEFEC;
+    --retrieved:#2F6B4F;
+    --derived:#3B4A7A;
+    --assumed:#9C6417;
+    --serif:'Newsreader',Georgia,serif;
+    --mono:'IBM Plex Mono',ui-monospace,SFMono-Regular,monospace;
+  }
+  *,*::before,*::after{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+  body{
+    margin:0;background:var(--paper);color:var(--ink);
+    font-family:var(--serif);font-size:18px;line-height:1.62;
+    font-weight:400;-webkit-font-smoothing:antialiased;
+  }
+  a{color:inherit}
+  :focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+
+  /* ---- audit rail ---- */
+  .shell{max-width:72rem;margin:0 auto;padding:0 1.75rem}
+  .railed{position:relative;padding-left:3.25rem}
+  .railed::before{
+    content:"";position:absolute;left:0;top:.35rem;bottom:.35rem;
+    width:1px;background:var(--rule);
+  }
+  .tick{
+    position:absolute;left:-3.25rem;top:.3rem;
+    font-family:var(--mono);font-size:.62rem;letter-spacing:.12em;
+    text-transform:uppercase;color:var(--faint);
+  }
+  .tick::after{
+    content:"";position:absolute;left:2.55rem;top:.42rem;
+    width:.55rem;height:1px;background:var(--rule);
+  }
+
+  /* ---- masthead ---- */
+  header.top{
+    display:flex;align-items:center;justify-content:space-between;
+    gap:1rem;padding:2rem 0 6rem;flex-wrap:wrap;
+  }
+  .mark{
+    font-family:var(--mono);font-size:.82rem;letter-spacing:.22em;
+    text-transform:uppercase;text-decoration:none;font-weight:500;flex-shrink:0;
+  }
+  .mark span{color:var(--retrieved)}
+  .topnav{
+    display:flex;gap:1.75rem;font-family:var(--mono);
+    font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);
+  }
+  .topnav a{text-decoration:none;border-bottom:1px solid transparent;padding-bottom:2px}
+  .topnav a:hover{border-bottom-color:var(--ink);color:var(--ink)}
+  .topactions{display:flex;align-items:center;gap:1.25rem;flex-shrink:0}
+  .topact-login{
+    font-family:var(--mono);font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--muted);text-decoration:none;padding-bottom:2px;
+    border-bottom:1px solid transparent;transition:border-color .16s,color .16s;
+  }
+  .topact-login:hover{color:var(--ink);border-bottom-color:var(--ink)}
+
+  /* ---- hero ---- */
+  h1{
+    font-family:var(--serif);font-weight:300;
+    font-size:clamp(2rem,4.4vw,3.15rem);line-height:1.14;
+    letter-spacing:-.015em;margin:0 0 1.75rem;max-width:19ch;
+  }
+  h1 em{font-style:italic;font-weight:400}
+  .lede{max-width:33rem;color:var(--body);font-size:1.02rem}
+  .lede p{margin:0 0 1.15rem}
+  .lede p:last-child{margin-bottom:0}
+
+  /* ---- stats strip ---- */
+  .stats-strip{
+    border-top:1px solid var(--rule);padding:3rem 0;
+  }
+  .stats-row{
+    display:grid;grid-template-columns:repeat(3,1fr);gap:2.5rem;
+  }
+  .stat-n{
+    display:block;font-family:var(--mono);font-size:2.4rem;
+    font-variant-numeric:tabular-nums;letter-spacing:-.03em;line-height:1;
+    margin-bottom:.55rem;
+  }
+  .stat-l{
+    display:block;font-size:.9rem;color:var(--muted);font-style:italic;
+    border-left:1px solid var(--rule);padding-left:.7rem;line-height:1.45;
+  }
+
+  /* ---- sections ---- */
+  section{padding:5.5rem 0;border-top:1px solid var(--rule)}
+  .section-compact{padding:0}
+  .secnum{
+    font-family:var(--mono);font-size:.68rem;letter-spacing:.18em;
+    text-transform:uppercase;color:var(--faint);margin:0 0 2.25rem;
+  }
+  h2{
+    font-family:var(--serif);font-weight:400;font-size:1.65rem;
+    line-height:1.28;letter-spacing:-.01em;margin:0 0 1.15rem;max-width:24ch;
+  }
+  .sub{max-width:33rem;color:var(--muted);font-size:.98rem;margin:0 0 2.5rem}
+
+  /* ---- archetype switcher ---- */
+  .switch{display:flex;flex-wrap:wrap;gap:0;margin-bottom:1.75rem;border:1px solid var(--rule)}
+  .switch button{
+    font-family:var(--mono);font-size:.7rem;letter-spacing:.11em;text-transform:uppercase;
+    padding:.75rem 1.1rem;background:transparent;border:none;border-right:1px solid var(--rule);
+    color:var(--muted);cursor:pointer;transition:background .16s,color .16s;
+  }
+  .switch button:last-child{border-right:none}
+  .switch button:hover{color:var(--ink)}
+  .switch button[aria-selected="true"]{background:var(--ink);color:var(--paper)}
+
+  /* ---- model ---- */
+  .model{border:1px solid var(--rule);background:#fff}
+  .model-head{
+    padding:1.4rem 1.6rem;border-bottom:1px solid var(--hair);
+    display:flex;flex-wrap:wrap;gap:.4rem 1.5rem;justify-content:space-between;align-items:baseline;
+  }
+  .model-title{font-family:var(--mono);font-size:.74rem;letter-spacing:.13em;text-transform:uppercase}
+  .model-meta{font-family:var(--mono);font-size:.68rem;color:var(--faint)}
+  .model-body{padding:0 1.6rem 1.6rem}
+
+  table{width:100%;border-collapse:collapse}
+  th{
+    font-family:var(--mono);font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--faint);font-weight:400;text-align:left;padding:1.1rem .5rem .65rem 0;
+    border-bottom:1px solid var(--hair);
+  }
+  th.num,td.num{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums;padding-right:0}
+  th.num{padding-left:.75rem}
+  td{padding:.9rem .5rem .9rem 0;border-bottom:1px solid var(--hair);vertical-align:top;font-size:.92rem}
+  td.num{font-size:.88rem;padding-top:.95rem}
+  tbody tr:last-child td{border-bottom:none}
+  .cnote{display:block;font-size:.82rem;color:var(--muted);margin-top:.15rem;line-height:1.5;font-style:italic}
+
+  .badge{
+    font-family:var(--mono);font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;
+    padding:.18rem .4rem;border:1px solid currentColor;white-space:nowrap;
+  }
+  .b-retrieved{color:var(--retrieved)}
+  .b-derived{color:var(--derived)}
+  .b-assumed{color:var(--assumed)}
+
+  tr.gate{background:#FDFAF5}
+  .ctrl{display:flex;align-items:center;gap:.85rem;margin-top:.65rem}
+  input[type=range]{-webkit-appearance:none;appearance:none;width:180px;height:2px;background:var(--rule);cursor:pointer}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:14px;height:14px;background:var(--assumed);border-radius:50%;cursor:pointer}
+  input[type=range]::-moz-range-thumb{width:14px;height:14px;background:var(--assumed);border:none;border-radius:50%;cursor:pointer}
+  .readout{font-family:var(--mono);font-size:.78rem;color:var(--assumed);font-variant-numeric:tabular-nums;min-width:3.2rem}
+
+  .totals{display:flex;flex-wrap:wrap;gap:2.25rem;padding-top:1.5rem;border-top:1px solid var(--rule);margin-top:.25rem}
+  .totals dt{font-family:var(--mono);font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);margin-bottom:.35rem}
+  .totals dd{margin:0;font-family:var(--mono);font-size:1.4rem;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+  .verdict{margin:1.5rem 0 0;padding-top:1.25rem;border-top:1px solid var(--hair);font-size:.94rem;color:var(--body)}
+  .verdict b{font-weight:500;color:var(--ink)}
+  .cap{font-family:var(--mono);font-size:.68rem;color:var(--faint);line-height:1.65;margin:1.15rem 0 0}
+
+  /* ---- rejected ---- */
+  .tally{
+    font-family:var(--mono);font-size:.72rem;letter-spacing:.05em;color:var(--muted);
+    padding:.85rem 0;border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);margin-bottom:1.75rem;
+  }
+  .tally b{color:var(--ink);font-weight:500}
+  .rej{list-style:none;padding:0;margin:0;max-width:48rem}
+  .rej li{display:grid;grid-template-columns:14rem 1fr;gap:1.5rem;padding:.9rem 0;border-bottom:1px solid var(--hair);font-size:.92rem}
+  .rej .d{font-family:var(--mono);font-size:.74rem;letter-spacing:.03em}
+  .rej .w{color:var(--muted);font-style:italic}
+  .more{font-family:var(--mono);font-size:.7rem;color:var(--faint);margin-top:1.1rem}
+
+  /* ---- steps ---- */
+  .steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(14rem,1fr));gap:2.25rem;max-width:58rem}
+  .step .k{font-family:var(--mono);font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);display:block;padding-bottom:.75rem;margin-bottom:.85rem;border-bottom:1px solid var(--rule)}
+  .step h3{font-family:var(--serif);font-size:1.08rem;font-weight:500;margin:0 0 .45rem}
+  .step p{margin:0;font-size:.9rem;color:var(--muted);line-height:1.6}
+
+  /* ---- pricing ---- */
+  .plans{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(16rem,1fr));
+    gap:1px;
+    background:var(--rule);
+    border:1px solid var(--rule);
+    max-width:56rem;
+    margin-top:2.25rem;
+  }
+  .plan{background:var(--paper);padding:2rem 1.75rem 2.25rem}
+  .plan-featured{background:#fff}
+  .plan-badge{
+    font-family:var(--mono);font-size:.6rem;letter-spacing:.16em;
+    text-transform:uppercase;color:var(--faint);display:block;margin-bottom:.65rem;
+  }
+  .plan-tier{
+    font-family:var(--mono);font-size:.68rem;letter-spacing:.18em;
+    text-transform:uppercase;color:var(--muted);display:block;margin-bottom:1.2rem;
+  }
+  .plan-price{margin-bottom:1.75rem;line-height:1}
+  .plan-amt{
+    font-family:var(--mono);font-size:2.2rem;
+    font-variant-numeric:tabular-nums;letter-spacing:-.03em;
+  }
+  .plan-per{font-family:var(--mono);font-size:.74rem;color:var(--muted)}
+  .plan-feats{list-style:none;padding:0;margin:0 0 1.85rem;font-style:italic}
+  .plan-feats li{
+    font-size:.88rem;color:var(--muted);
+    padding:.45rem 0;border-bottom:1px solid var(--hair);
+  }
+  .plan-feats li:first-child{border-top:1px solid var(--hair)}
+
+  /* ---- sources ---- */
+  .srcgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(13rem,1fr));gap:1.75rem 2.5rem;max-width:56rem}
+  .srcgrid h4{font-family:var(--mono);font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);font-weight:400;margin:0 0 .6rem}
+  .srcgrid ul{list-style:none;margin:0;padding:0;font-size:.88rem;color:var(--body)}
+  .srcgrid li{padding:.22rem 0}
+
+  /* ---- cta ---- */
+  .cta{display:flex;flex-wrap:wrap;gap:.75rem;margin-top:2rem}
+  .btn{
+    font-family:var(--mono);font-size:.72rem;letter-spacing:.13em;text-transform:uppercase;
+    padding:.9rem 1.5rem;text-decoration:none;border:1px solid var(--ink);
+    transition:background .16s,color .16s;display:inline-block;cursor:pointer;
+  }
+  .btn-sm{padding:.55rem 1rem;font-size:.68rem}
+  .solid{background:var(--ink);color:var(--paper)}
+  .solid:hover{background:transparent;color:var(--ink)}
+  .ghost{background:transparent;color:var(--ink)}
+  .ghost:hover{background:var(--ink);color:var(--paper)}
+
+  /* ---- footer ---- */
+  footer{
+    border-top:1px solid var(--rule);padding:3rem 0 4rem;
+    font-family:var(--mono);font-size:.68rem;color:var(--faint);
+    display:flex;flex-wrap:wrap;gap:2.5rem 4rem;justify-content:space-between;
+  }
+  footer a{text-decoration:none}
+  footer a:hover{color:var(--ink)}
+  .footer-brand{display:flex;flex-direction:column;gap:.5rem}
+  .footer-brand-name{font-size:.76rem;letter-spacing:.2em;text-transform:uppercase;color:var(--ink);font-weight:500}
+  .footer-links{display:flex;flex-wrap:wrap;gap:2rem 3rem}
+  .footer-col{display:flex;flex-direction:column;gap:.6rem}
+  .footer-col-h{letter-spacing:.16em;text-transform:uppercase;font-size:.62rem;color:var(--ink);margin-bottom:.1rem}
+  .footer-legal{
+    border-top:1px solid var(--hair);margin-top:1.5rem;padding-top:1.25rem;
+    font-family:var(--mono);font-size:.64rem;color:var(--faint);
+  }
+
+  /* ---- responsive ---- */
+  @media (max-width:860px){
+    .topnav{display:none}
+  }
+  @media (max-width:720px){
+    body{font-size:17px}
+    .shell{padding:0 1.15rem}
+    .railed{padding-left:0}
+    .railed::before{display:none}
+    .tick{position:static;display:block;margin-bottom:.9rem}
+    .tick::after{display:none}
+    header.top{padding-bottom:3rem}
+    section{padding:3.5rem 0}
+    .stats-strip{padding:2rem 0}
+    .stats-row{grid-template-columns:1fr;gap:1.75rem}
+    .topactions .btn{display:none}
+    .model-head,.model-body{padding-left:1.05rem;padding-right:1.05rem}
+    th.hide,td.hide{display:none}
+    td{font-size:.86rem}
+    .rej li{grid-template-columns:1fr;gap:.25rem}
+    .totals{gap:1.5rem}
+    .totals dd{font-size:1.2rem}
+    .plans{grid-template-columns:1fr;gap:0}
+    .footer-links{gap:1.75rem 2.5rem}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
 </head>
-<body class="bg-background text-on-background font-body-md antialiased">
-<!-- TopNavBar -->
-<nav class="fixed top-0 w-full z-50 bg-surface/80 dark:bg-surface/80 backdrop-blur-md border-b border-outline-variant/30 transition-all duration-300 ease-in-out">
-<div class="max-w-7xl mx-auto px-margin-desktop flex justify-between items-center h-20">
-<div class="flex items-center gap-12">
-<a class="font-headline-md text-headline-md font-bold text-primary dark:text-on-primary-fixed tracking-tight" href="#">Elevate</a>
-<div class="hidden md:flex items-center gap-8">
-<a class="font-body-md text-body-md text-secondary dark:text-secondary-fixed font-semibold hover:text-secondary transition-colors duration-200" href="#">Product</a>
-<a class="font-body-md text-body-md text-on-surface-variant dark:text-on-surface-variant hover:text-secondary transition-colors duration-200" href="#">Pricing</a>
-<a class="font-body-md text-body-md text-on-surface-variant dark:text-on-surface-variant hover:text-secondary transition-colors duration-200" href="#">Resources</a>
-</div>
-</div>
-<div class="flex items-center gap-4">
-<button class="font-body-md text-body-md text-on-surface hover:text-secondary transition-colors duration-200 px-4">Login</button>
-<button class="bg-primary-container text-on-primary font-semibold px-6 py-2.5 rounded-lg hover:opacity-90 transition-all">Get Started</button>
-</div>
-</div>
-</nav>
-<!-- (1) Hero Section -->
-<header class="hero-gradient min-h-screen flex items-center pt-20 relative overflow-hidden">
-<!-- Abstract light leak for Stripe-like feel -->
-<div class="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-secondary/10 blur-[120px] rounded-full"></div>
-<div class="max-w-7xl mx-auto px-margin-desktop w-full grid md:grid-cols-2 gap-16 items-center relative z-10">
-<div class="text-left">
-<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-secondary-container/20 border border-secondary-container/30 mb-8">
-<span class="text-secondary-fixed text-[10px] font-bold uppercase tracking-widest">Biomedical Intelligence v4.0</span>
-</div>
-<h1 class="font-display-lg text-display-lg text-white mb-6 leading-[1.1]">
-                    From lab bench to market strategy <span class="text-secondary-fixed">in 90 seconds.</span>
-</h1>
-<p class="font-body-lg text-body-lg text-on-primary-container/80 mb-10 max-w-xl">
-                    FDA regulatory pathway, market sizing, and competitive landscape for any drug, device, or diagnostic. Sourced from live FDA, CDC, and PubMed data.
-                </p>
-<div class="flex flex-col sm:flex-row gap-4">
-<button class="bg-secondary text-white font-semibold px-8 py-4 rounded-lg text-lg hover:shadow-xl hover:shadow-secondary/20 transition-all">Get Your Free Report</button>
-<button class="border border-white/20 text-white font-semibold px-8 py-4 rounded-lg text-lg hover:bg-white/5 transition-all">See Pricing</button>
-</div>
-</div>
-<div class="relative hidden md:block">
-<div class="glass-card p-base rounded-xl">
-<img alt="Advanced Biotech Analytics" class="rounded-lg shadow-2xl grayscale-[0.2] opacity-90" data-alt="A high-tech biomedical laboratory visualization showing clean glass surfaces and blue-tinted laboratory equipment. Soft glowing interfaces display complex data visualizations of molecular structures and regulatory progress bars. The lighting is clinical yet sophisticated, evoking a sense of high-precision scientific advancement in a dark navy and electric blue aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB_9UyICguB8NVQL04f8pnR4GDkfvhy2qyd609H6tq8atf8RbqCXOPLYAJnLMdqI6fhcUpuvatRz7LGVlI3E-DtTCmsY4eRNPLt4bI8pUuAWQgjGOTG7GTE8wAfXRFEFhMkNbg_9fnkV8aWJtrCJ-UXTTk0ZdgYXVjVhXa4VdZzj5PGJCe43zKZwE8MinmpF9c7we5R5T4tUVMyMePNuABu_3X74eAo1BPutmR5yciRbZ212qy3-WznVBMiLgMPO-LXntNfP_xe1kc"/>
-<div class="absolute -bottom-6 -left-6 glass-card p-6 rounded-xl shadow-2xl">
-<div class="flex items-center gap-4">
-<div class="w-12 h-12 rounded-full bg-secondary-container/40 flex items-center justify-center">
-<span class="material-symbols-outlined text-white">analytics</span>
-</div>
-<div>
-<p class="text-white font-bold text-sm">Market Indexing</p>
-<p class="text-secondary-fixed text-xs font-semibold">98.4% Accuracy Rate</p>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div>
+<body>
+
+<div class="shell">
+
+<header class="top">
+  <a href="#" class="mark">Med<span>levate</span></a>
+  <nav class="topnav">
+    <a href="#model">Model</a>
+    <a href="#judgment">Judgment</a>
+    <a href="#pricing">Pricing</a>
+    <a href="#sources">Sources</a>
+    <a href="#access">Access</a>
+  </nav>
+  <div class="topactions">
+    <a href="app.html" class="topact-login">Login</a>
+    <a href="app.html" class="btn solid btn-sm">Get started</a>
+  </div>
 </header>
-<!-- (2) Trust Section -->
-<section class="py-24 bg-white border-b border-outline-variant/20">
-<div class="max-w-7xl mx-auto px-margin-desktop">
-<div class="grid grid-cols-1 md:grid-cols-3 gap-12 text-center md:text-left">
-<div class="flex flex-col gap-2 group">
-<span class="text-display-lg text-primary font-bold">19+</span>
-<p class="text-on-surface-variant font-semibold tracking-wide border-l-2 border-secondary pl-4 group-hover:border-primary transition-all">Cited sources per report</p>
+
+<div class="railed" style="padding-bottom:5.5rem">
+  <span class="tick">Thesis</span>
+  <h1>A market estimate is worth exactly what its <em>weakest assumption</em> is worth.</h1>
+  <div class="lede">
+    <p>Most sizing hands you a number and buries the reasoning. Medlevate shows the whole derivation — every population count, every price band, every adoption rate — marked by where it came from and how far we'd trust it.</p>
+    <p>Then it lets you argue. You know your field better than any retrieval pipeline. Correct an assumption and the model recomputes, including the recommendation that depended on it.</p>
+  </div>
 </div>
-<div class="flex flex-col gap-2 group">
-<span class="text-display-lg text-primary font-bold">12,788</span>
-<p class="text-on-surface-variant font-semibold tracking-wide border-l-2 border-secondary pl-4 group-hover:border-primary transition-all">Federal demand signals indexed</p>
+
+</div><!-- /shell -->
+
+<!-- stats strip -->
+<div class="stats-strip">
+<div class="shell">
+  <div class="stats-row">
+    <div>
+      <span class="stat-n">19+</span>
+      <span class="stat-l">Cited sources per report</span>
+    </div>
+    <div>
+      <span class="stat-n">12,788</span>
+      <span class="stat-l">Federal demand signals indexed</span>
+    </div>
+    <div>
+      <span class="stat-n">32</span>
+      <span class="stat-l">Biomedical sub-expert profiles</span>
+    </div>
+  </div>
 </div>
-<div class="flex flex-col gap-2 group">
-<span class="text-display-lg text-primary font-bold">32</span>
-<p class="text-on-surface-variant font-semibold tracking-wide border-l-2 border-secondary pl-4 group-hover:border-primary transition-all">Biomedical sub-expert profiles</p>
 </div>
-</div>
-</div>
+
+<div class="shell">
+
+<section id="model">
+  <div class="railed">
+    <span class="tick">01</span>
+    <p class="secnum">Worked example</p>
+    <h2>The dimensions change with the product. That's the whole job.</h2>
+    <p class="sub">There is no universal segmentation. A therapy sold through payers, a diagnostic sold to labs, and an instrument bought on a grant have almost nothing in common structurally. Switch the product and watch the model rebuild itself.</p>
+
+    <div class="switch" role="tablist" aria-label="Product archetype">
+      <button role="tab" id="tab-rx" aria-selected="true" data-k="rx">Therapeutic</button>
+      <button role="tab" id="tab-dx" aria-selected="false" data-k="dx">Diagnostic</button>
+      <button role="tab" id="tab-tool" aria-selected="false" data-k="tool">Research tool</button>
+    </div>
+
+    <div class="model">
+      <div class="model-head">
+        <span class="model-title" id="mTitle"></span>
+        <span class="model-meta" id="mMeta"></span>
+      </div>
+      <div class="model-body">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Cell</th>
+              <th scope="col" class="hide">Basis</th>
+              <th scope="col" class="num" id="hUnit"></th>
+              <th scope="col" class="num">Price</th>
+              <th scope="col" class="num">Cell value</th>
+            </tr>
+          </thead>
+          <tbody id="rows"></tbody>
+        </table>
+
+        <dl class="totals">
+          <div><dt>Total addressable</dt><dd id="tam"></dd></div>
+          <div><dt>Serviceable</dt><dd id="sam"></dd></div>
+          <div><dt>Year-3 obtainable</dt><dd id="som"></dd></div>
+          <div><dt>P10 – P90</dt><dd id="rng"></dd></div>
+        </dl>
+
+        <p class="verdict" id="verdict"></p>
+        <p class="cap" id="cap"></p>
+      </div>
+    </div>
+  </div>
 </section>
-<!-- (3) Features Section -->
-<section class="py-section-gap bg-surface">
-<div class="max-w-7xl mx-auto px-margin-desktop">
-<div class="mb-20">
-<h2 class="font-headline-md text-headline-md text-primary mb-4">Precision Intelligence</h2>
-<p class="text-on-surface-variant max-w-2xl">Leveraging multi-layered data verification to provide the industry's most reliable biomedical market forecasts.</p>
-</div>
-<div class="grid md:grid-cols-3 gap-gutter">
-<!-- Card 1 -->
-<div class="bg-white p-10 rounded-xl border border-outline-variant/30 hover:shadow-lg transition-shadow duration-300">
-<div class="w-14 h-14 bg-secondary-fixed/30 rounded-lg flex items-center justify-center mb-8">
-<span class="material-symbols-outlined text-secondary text-3xl">verified</span>
-</div>
-<h3 class="font-headline-md text-2xl text-primary mb-4">FDA Regulatory Intelligence</h3>
-<p class="text-on-surface-variant font-body-md leading-relaxed">
-                        32 domain-specific expert profiles analyzing classification pathways, 510(k) precedents, and PMA requirements automatically.
-                    </p>
-</div>
-<!-- Card 2 -->
-<div class="bg-white p-10 rounded-xl border border-outline-variant/30 hover:shadow-lg transition-shadow duration-300">
-<div class="w-14 h-14 bg-secondary-fixed/30 rounded-lg flex items-center justify-center mb-8">
-<span class="material-symbols-outlined text-secondary text-3xl">database</span>
-</div>
-<h3 class="font-headline-md text-2xl text-primary mb-4">Live Market Data</h3>
-<p class="text-on-surface-variant font-body-md leading-relaxed">
-                        Continuous integration with CDC datasets, ClinicalTrials.gov, and openFDA repositories updated every 24 hours.
-                    </p>
-</div>
-<!-- Card 3 -->
-<div class="bg-white p-10 rounded-xl border border-outline-variant/30 hover:shadow-lg transition-shadow duration-300">
-<div class="w-14 h-14 bg-secondary-fixed/30 rounded-lg flex items-center justify-center mb-8">
-<span class="material-symbols-outlined text-secondary text-3xl">menu_book</span>
-</div>
-<h3 class="font-headline-md text-2xl text-primary mb-4">PubMed Literature</h3>
-<p class="text-on-surface-variant font-body-md leading-relaxed">
-                        Deep indexing of landmark papers, clinical outcomes, and academic citations integrated into every strategy report.
-                    </p>
-</div>
-</div>
-</div>
+
+<section id="judgment">
+  <div class="railed">
+    <span class="tick">02</span>
+    <p class="secnum">Dimensions considered and rejected</p>
+    <h2>Refusing to segment on something is a finding, not an omission.</h2>
+    <p class="sub">A dimension earns a place only if it explains variance in price or adoption. Everything else is a label, and labels dressed as segments manufacture precision that isn't there. The registry holds several hundred; each report draws from the subset your buyer makes eligible.</p>
+
+    <p class="tally" id="tally"></p>
+    <ul class="rej" id="rejlist"></ul>
+    <p class="more" id="rejmore"></p>
+  </div>
 </section>
-<!-- (4) How it Works Section -->
-<section class="py-section-gap bg-primary-container relative">
-<div class="max-w-7xl mx-auto px-margin-desktop text-white">
-<h2 class="font-display-lg text-[48px] text-center mb-20">The 90-Second Workflow</h2>
-<div class="grid md:grid-cols-3 gap-16 relative">
-<!-- Step 1 -->
-<div class="flex flex-col items-center text-center relative">
-<div class="w-16 h-16 rounded-full border border-secondary text-secondary flex items-center justify-center text-2xl font-bold mb-6 bg-primary-container z-10">1</div>
-<h4 class="text-xl font-bold mb-3">Describe Product</h4>
-<p class="text-on-primary-container">Enter your mechanism of action, intended use, and target clinical outcome.</p>
-</div>
-<!-- Step 2 -->
-<div class="flex flex-col items-center text-center relative">
-<div class="w-16 h-16 rounded-full border border-secondary text-secondary flex items-center justify-center text-2xl font-bold mb-6 bg-primary-container z-10">2</div>
-<h4 class="text-xl font-bold mb-3">Select Category</h4>
-<p class="text-on-primary-container">Specify drug class, device category, or diagnostic type for localized analysis.</p>
-</div>
-<!-- Step 3 -->
-<div class="flex flex-col items-center text-center relative">
-<div class="w-16 h-16 rounded-full bg-secondary text-white flex items-center justify-center text-2xl font-bold mb-6 z-10">3</div>
-<h4 class="text-xl font-bold mb-3">Instant Insights</h4>
-<p class="text-on-primary-container">Download your comprehensive FDA strategy and market sizing report in seconds.</p>
-</div>
-</div>
-</div>
+
+<section>
+  <div class="railed">
+    <span class="tick">03</span>
+    <p class="secnum">How a report is built</p>
+    <div class="steps">
+      <div class="step">
+        <span class="k">Classify</span>
+        <h3>Establish what it is</h3>
+        <p>Product type, who signs the purchase order, whether it's regulated at all. Get this wrong and every section downstream inherits the error — so you confirm it before anything runs.</p>
+      </div>
+      <div class="step">
+        <span class="k">Retrieve</span>
+        <h3>Find the denominator</h3>
+        <p>Prevalence registries, facility rosters, federal awards, patents, literature. Which source is even valid depends on the buyer. Each fact carries the source it was fetched with.</p>
+      </div>
+      <div class="step">
+        <span class="k">Derive</span>
+        <h3>Build the cells</h3>
+        <p>Choose dimensions that measurably change price or adoption, then price each cell on its own terms. Arithmetic runs in code, never in prose.</p>
+      </div>
+      <div class="step">
+        <span class="k">Contest</span>
+        <h3>Check it, then correct it</h3>
+        <p>A verifier flags what doesn't reconcile and says so plainly rather than claiming it fixed it. You override what you know better, and everything downstream moves.</p>
+      </div>
+    </div>
+  </div>
 </section>
-<!-- (5) Pricing Section -->
-<section class="py-section-gap bg-white">
-<div class="max-w-7xl mx-auto px-margin-desktop">
-<div class="text-center mb-16">
-<h2 class="font-display-lg text-[48px] text-primary mb-4">Strategic Investment</h2>
-<p class="text-on-surface-variant">Scalable intelligence for researchers, startups, and global enterprises.</p>
-</div>
-<div class="grid md:grid-cols-3 gap-gutter items-end">
-<!-- Basic -->
-<div class="border border-outline-variant/30 rounded-xl p-10 flex flex-col h-full">
-<span class="font-bold text-on-surface-variant uppercase tracking-widest text-xs mb-4">Researcher</span>
-<div class="mb-8">
-<span class="text-4xl font-bold text-primary">$20</span>
-<span class="text-on-surface-variant">/month</span>
-</div>
-<ul class="space-y-4 mb-10 flex-grow">
-<li class="flex items-center gap-3 text-on-surface-variant">
-<span class="material-symbols-outlined text-secondary text-lg">check_circle</span>
-                            3 Reports per month
-                        </li>
-<li class="flex items-center gap-3 text-on-surface-variant">
-<span class="material-symbols-outlined text-secondary text-lg">check_circle</span>
-                            Standard Data Latency
-                        </li>
-<li class="flex items-center gap-3 text-on-surface-variant">
-<span class="material-symbols-outlined text-secondary text-lg">check_circle</span>
-                            Email Support
-                        </li>
-</ul>
-<button class="w-full py-4 border border-primary text-primary font-bold rounded-lg hover:bg-primary hover:text-white transition-all">Start Basic</button>
-</div>
-<!-- Starter -->
-<div class="border-2 border-secondary rounded-xl p-10 flex flex-col h-full relative bg-surface shadow-2xl">
-<div class="absolute -top-4 left-1/2 -translate-x-1/2 bg-secondary text-white text-[10px] font-bold uppercase tracking-widest px-4 py-1.5 rounded-full">
-                        Most Popular
-                    </div>
-<span class="font-bold text-secondary uppercase tracking-widest text-xs mb-4">Professional</span>
-<div class="mb-8">
-<span class="text-5xl font-bold text-primary">$79</span>
-<span class="text-on-surface-variant">/month</span>
-</div>
-<ul class="space-y-4 mb-10 flex-grow">
-<li class="flex items-center gap-3 text-on-surface">
-<span class="material-symbols-outlined text-secondary text-lg">check_circle</span>
-                            15 Reports per month
-                        </li>
-<li class="flex items-center gap-3 text-on-surface">
-<span class="material-symbols-outlined text-secondary text-lg">check_circle</span>
-                            Real-time Data Updates
-                        </li>
-<li class="flex items-center gap-3 text-on-surface">
-<span class="material-symbols-outlined text-secondary text-lg">check_circle</span>
-                            Advanced Competitive Tracking
-                        </li>
-<li class="flex items-center gap-3 text-on-surface">
-<span class="material-symbols-outlined text-secondary text-lg">check_circle</span>
-                            Priority Support
-                        </li>
-</ul>
-<button class="w-full py-4 bg-secondary text-white font-bold rounded-lg hover:opacity-90 transition-all">Start 14-Day Trial</button>
-</div>
-<!-- Professional -->
-<div class="border border-outline-variant/30 rounded-xl p-10 flex flex-col h-full">
-<span class="font-bold text-on-surface-variant uppercase tracking-widest text-xs mb-4">Enterprise</span>
-<div class="mb-8">
-<span class="text-4xl font-bold text-primary">$299</span>
-<span class="text-on-surface-variant">/month</span>
-</div>
-<ul class="space-y-4 mb-10 flex-grow">
-<li class="flex items-center gap-3 text-on-surface-variant">
-<span class="material-symbols-outlined text-secondary text-lg">check_circle</span>
-                            Unlimited Reports
-                        </li>
-<li class="flex items-center gap-3 text-on-surface-variant">
-<span class="material-symbols-outlined text-secondary text-lg">check_circle</span>
-                            API Access &amp; Integrations
-                        </li>
-<li class="flex items-center gap-3 text-on-surface-variant">
-<span class="material-symbols-outlined text-secondary text-lg">check_circle</span>
-                            White-labeling Options
-                        </li>
-<li class="flex items-center gap-3 text-on-surface-variant">
-<span class="material-symbols-outlined text-secondary text-lg">check_circle</span>
-                            Dedicated Account Manager
-                        </li>
-</ul>
-<button class="w-full py-4 border border-primary text-primary font-bold rounded-lg hover:bg-primary hover:text-white transition-all">Contact Sales</button>
-</div>
-</div>
-</div>
+
+<section id="pricing">
+  <div class="railed">
+    <span class="tick">04</span>
+    <p class="secnum">Pricing</p>
+    <h2>Pick the level of depth your project needs.</h2>
+    <p class="sub">Every tier produces the same auditable derivation — labelled sources, explicit assumptions, sensitivity ranking. The difference is volume and how deep you need to go.</p>
+
+    <div class="plans">
+      <div class="plan">
+        <span class="plan-tier">Researcher</span>
+        <div class="plan-price">
+          <span class="plan-amt">$20</span><span class="plan-per"> /month</span>
+        </div>
+        <ul class="plan-feats">
+          <li>3 reports per month</li>
+          <li>Standard data latency</li>
+          <li>Email support</li>
+        </ul>
+        <a href="app.html" class="btn ghost">Get started</a>
+      </div>
+      <div class="plan plan-featured">
+        <span class="plan-badge">Most popular</span>
+        <span class="plan-tier">Professional</span>
+        <div class="plan-price">
+          <span class="plan-amt">$79</span><span class="plan-per"> /month</span>
+        </div>
+        <ul class="plan-feats">
+          <li>15 reports per month</li>
+          <li>Real-time data updates</li>
+          <li>Advanced competitive tracking</li>
+          <li>Priority support</li>
+        </ul>
+        <a href="app.html" class="btn solid">Start 14-day trial</a>
+      </div>
+      <div class="plan">
+        <span class="plan-tier">Enterprise</span>
+        <div class="plan-price">
+          <span class="plan-amt">$299</span><span class="plan-per"> /month</span>
+        </div>
+        <ul class="plan-feats">
+          <li>Unlimited reports</li>
+          <li>API access &amp; integrations</li>
+          <li>White-labeling options</li>
+          <li>Dedicated account manager</li>
+        </ul>
+        <a href="app.html" class="btn ghost">Contact sales</a>
+      </div>
+    </div>
+  </div>
 </section>
-<!-- Footer -->
-<footer class="bg-surface dark:bg-surface-container-lowest border-t border-outline-variant/20">
-<div class="max-w-7xl mx-auto px-margin-desktop py-section-gap flex flex-col md:flex-row justify-between gap-12">
-<div class="max-w-sm">
-<a class="font-headline-md text-headline-md font-bold text-primary dark:text-on-primary-fixed tracking-tight block mb-6" href="#">Elevate</a>
-<p class="text-on-surface-variant text-body-md">Precision data for global biotech strategy. Accelerating the transition from discovery to market delivery through intelligent automated research.</p>
-</div>
-<div class="grid grid-cols-2 sm:grid-cols-3 gap-12">
-<div class="flex flex-col gap-4">
-<p class="font-bold text-primary">Platform</p>
-<a class="text-on-surface-variant hover:text-secondary transition-colors" href="#">Product</a>
-<a class="text-on-surface-variant hover:text-secondary transition-colors" href="#">Pricing</a>
-<a class="text-on-surface-variant hover:text-secondary transition-colors" href="#">Case Studies</a>
-</div>
-<div class="flex flex-col gap-4">
-<p class="font-bold text-primary">Company</p>
-<a class="text-on-surface-variant hover:text-secondary transition-colors" href="#">Documentation</a>
-<a class="text-on-surface-variant hover:text-secondary transition-colors" href="#">About Us</a>
-<a class="text-on-surface-variant hover:text-secondary transition-colors" href="#">Careers</a>
-</div>
-<div class="flex flex-col gap-4">
-<p class="font-bold text-primary">Legal</p>
-<a class="text-on-surface-variant hover:text-secondary transition-colors" href="#">Privacy Policy</a>
-<a class="text-on-surface-variant hover:text-secondary transition-colors" href="#">Terms of Service</a>
-</div>
-</div>
-</div>
-<div class="max-w-7xl mx-auto px-margin-desktop py-8 border-t border-outline-variant/10 text-center md:text-left">
-<p class="text-on-surface-variant text-sm">© 2024 Elevate Biomedical. All rights reserved. Precision data for global biotech strategy.</p>
-</div>
+
+<section id="sources">
+  <div class="railed">
+    <span class="tick">05</span>
+    <p class="secnum">Primary sources</p>
+    <h2>Every number resolves to something you can open.</h2>
+    <p class="sub">Sources bind to claims at fetch time, so a citation can't drift from the figure it supports. Anything unsourced is marked assumed and surfaces in the sensitivity ranking rather than hiding in a footnote.</p>
+    <div class="srcgrid">
+      <div><h4>Population</h4><ul><li>CDC WONDER</li><li>SEER</li><li>NHANES · BRFSS</li><li>US Census ACS</li></ul></div>
+      <div><h4>Care delivery</h4><ul><li>AHA Annual Survey</li><li>CMS Provider of Service</li><li>NPPES</li><li>CLIA registry</li></ul></div>
+      <div><h4>Payer</h4><ul><li>CMS coverage data</li><li>Medicare Part B utilization</li><li>Fee schedules</li></ul></div>
+      <div><h4>Research funding</h4><ul><li>NIH RePORTER</li><li>NSF Awards</li><li>USASpending</li><li>NCSES HERD</li></ul></div>
+      <div><h4>Regulatory · IP</h4><ul><li>openFDA</li><li>ClinicalTrials.gov</li><li>Google Patents</li><li>SEC EDGAR</li></ul></div>
+      <div><h4>Literature</h4><ul><li>PubMed E-utilities</li><li>bioRxiv · medRxiv</li></ul></div>
+    </div>
+  </div>
+</section>
+
+<section id="access">
+  <div class="railed">
+    <span class="tick">06</span>
+    <h2>For the people who have to defend the number in the room.</h2>
+    <p class="sub">Tech transfer offices, research PIs, and founders writing the commercialization section. In limited release while the verification layer hardens — if you want to put a report through its paces, ideally by trying to break it, get in touch.</p>
+    <div class="cta">
+      <a class="btn solid" href="app.html">Request access</a>
+      <a class="btn ghost" href="#model">See the model</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-brand">
+    <span class="footer-brand-name">Medlevate</span>
+    <span>St. Louis, Missouri</span>
+    <span><a href="mailto:hello@medlevate.com">hello@medlevate.com</a></span>
+  </div>
+  <div class="footer-links">
+    <div class="footer-col">
+      <span class="footer-col-h">Platform</span>
+      <a href="#model">Method</a>
+      <a href="#pricing">Pricing</a>
+      <a href="app.html">App</a>
+      <a href="#sources">Sources</a>
+    </div>
+    <div class="footer-col">
+      <span class="footer-col-h">Company</span>
+      <a href="#">About</a>
+      <a href="#">Documentation</a>
+      <a href="#">Careers</a>
+    </div>
+    <div class="footer-col">
+      <span class="footer-col-h">Legal</span>
+      <a href="privacy.html">Privacy Policy</a>
+      <a href="terms.html">Terms of Service</a>
+    </div>
+  </div>
 </footer>
-</body></html>
+
+<p class="footer-legal">© 2024 Medlevate. Illustrative figures · Not investment advice.</p>
+
+</div><!-- /shell -->
+
+<script>
+(function(){
+  var M = {
+    rx:{
+      title:'Bottom-up segmentation — oral therapeutic, chronic indication',
+      unit:'Patients',
+      dims:'3 dimensions · line of therapy × payer × site of care',
+      counts:'27 considered · 3 selected · 24 rejected',
+      cells:[
+        {n:'First line · commercial · specialty clinic', note:'Widest eligible pool, tightest formulary scrutiny.', u:184000, p:1180, b:'retrieved'},
+        {n:'Second line · Medicare Part D · community', note:'Coverage gap drives abandonment at the pharmacy counter.', u:96500, p:940, b:'retrieved'},
+        {n:'Third line+ · commercial · academic center', note:'Small, high-intensity, prior-auth heavy.', u:31200, p:1420, b:'derived'}
+      ],
+      gate:{label:'Share diagnosed and actively treated', note:'Claims-derived treatment rates vary widely by region. This gate multiplies every cell.', v:38, min:15, max:70},
+      samRate:.31, somRate:.14,
+      src:'Populations from SEER and claims-derived prevalence; price bands from net-of-rebate analogues in the same class; the highlighted gate is unsourced and shown as such.',
+      rej:[
+        ['Rural / urban','Specialty distribution is centralised; the split does not change realised net price.','1.9%'],
+        ['Race and ethnicity','Material for access equity analysis, but no measured effect on price or adoption in this class.','1.4%'],
+        ['Practice size','Collapses into site of care once prescribing volume is controlled for.','0.9%'],
+        ['Funding agency','Not a candidate — the buyer is a payer and prescriber, not a grantee.','—']
+      ],
+      rejmore:'20 further dimensions rejected below threshold. Full list in the report appendix.',
+      verdicts:{
+        low:'<b>Recommendation changed — narrow to a subpopulation.</b> Below roughly 25% treated share the broad-label economics stop clearing. Two recommendations drop: primary-care detailing and open-formulary pursuit.',
+        base:'<b>Recommendation — pursue broad label with payer-first sequencing.</b> The model supports contracting ahead of promotional spend.',
+        high:'<b>Recommendation changed — expand promotional footprint.</b> Above roughly 58% treated share, sales capacity rather than eligible population becomes the binding constraint.'
+      }
+    },
+    dx:{
+      title:'Bottom-up segmentation — laboratory diagnostic',
+      unit:'Labs',
+      dims:'3 dimensions · lab type × annual volume × reimbursement status',
+      counts:'19 considered · 3 selected · 16 rejected',
+      cells:[
+        {n:'Reference lab · high volume · covered', note:'Few buyers, long contracts, brutal per-test pricing.', u:34, p:412000, b:'retrieved'},
+        {n:'Hospital lab · mid volume · covered', note:'The volume core. Send-out displacement is the pitch.', u:1420, p:38500, b:'retrieved'},
+        {n:'Physician office lab · low volume · cash-pay', note:'Fast to close, small and churn-prone.', u:3960, p:6200, b:'derived'}
+      ],
+      gate:{label:'Share with in-house platform compatibility', note:'Instrument install base is not centrally published. This gate multiplies every cell.', v:44, min:18, max:80},
+      samRate:.27, somRate:.11,
+      src:'Facility counts from the CLIA registry and CMS Provider of Service files; price bands from published list pricing on comparable assays; the highlighted gate is unsourced and shown as such.',
+      rej:[
+        ['Patient demographics','The buyer is the laboratory. Patient mix affects test volume, already captured by the volume band.','2.6%'],
+        ['Line of therapy','Not a candidate — no therapeutic sequencing applies to a diagnostic purchase.','—'],
+        ['Certificate-of-need state','Applies to capital imaging and beds, not to assay adoption.','0.6%'],
+        ['Award size band','Not a candidate — purchases come from operating budgets, not grants.','—']
+      ],
+      rejmore:'12 further dimensions rejected below threshold. Full list in the report appendix.',
+      verdicts:{
+        low:'<b>Recommendation changed — lead with instrument-agnostic chemistry.</b> Below roughly 28% compatibility the install-base strategy fails and reagent-rental economics stop working.',
+        base:'<b>Recommendation — hospital-lab beachhead, reference labs second.</b> Send-out displacement is the shortest path to volume.',
+        high:'<b>Recommendation changed — go direct to reference labs first.</b> Above roughly 68% compatibility the concentrated high-volume segment is reachable without an install campaign.'
+      }
+    },
+    tool:{
+      title:'Bottom-up segmentation — research instrument, academic buyer',
+      unit:'Labs',
+      dims:'3 dimensions · funding agency × award band × current solution',
+      counts:'23 considered · 3 selected · 20 rejected',
+      cells:[
+        {n:'NIH · award >$750K · no incumbent tooling', note:'Best funded, nothing to displace.', u:1840, p:9400, b:'retrieved'},
+        {n:'NIH · award >$750K · existing in-house build', note:'Same budget, far harder sell. Switching cost, not price, is the barrier.', u:2610, p:9400, b:'retrieved'},
+        {n:'NSF · award $250–750K · no incumbent tooling', note:'Lower ceiling; core-facility bundling likely.', u:3120, p:4100, b:'derived'}
+      ],
+      gate:{label:'Share running long-duration instrumented work', note:'No source. This gate multiplies every cell and is the least-known number in the model.', v:24, min:8, max:60},
+      samRate:.35, somRate:.155,
+      src:'Populations from NIH RePORTER and NSF award data; price bands from comparable instrument pricing; the highlighted gate is unsourced and shown as such.',
+      rej:[
+        ['Patient demographics','The buyer is an institutional purchaser on a grant cycle, not a patient population.','—'],
+        ['Payer mix','Not a candidate — no reimbursement pathway. Purchases come from grant direct costs.','—'],
+        ['Carnegie tier','Collapses almost entirely into award band. Kept as a reporting cut, dropped as a pricing dimension.','2.1%'],
+        ['Rural / urban','Federal research funding concentrates in metropolitan institutions; the split does not discriminate.','0.8%']
+      ],
+      rejmore:'16 further dimensions rejected below threshold. Full list in the report appendix.',
+      verdicts:{
+        low:'<b>Recommendation changed — narrow the wedge.</b> Below roughly 15% the base is too thin for a broad launch. Institutional site licensing and multi-agency expansion both drop out.',
+        base:'<b>Recommendation — non-dilutive first.</b> The model supports an SBIR-funded path to revenue. It does not support a priced equity round.',
+        high:'<b>Recommendation changed — equity becomes defensible.</b> Above roughly 42% a priced round is worth the dilution, and sales capacity replaces market size as the constraint.'
+      }
+    }
+  };
+
+  var key = 'rx';
+  var $ = function(id){ return document.getElementById(id); };
+
+  function usd(v){
+    if(v >= 1e9) return '$' + (v/1e9).toFixed(1) + 'B';
+    if(v >= 1e6) return '$' + (v/1e6).toFixed(1) + 'M';
+    if(v >= 1e3) return '$' + Math.round(v/1e3) + 'K';
+    return '$' + Math.round(v).toLocaleString();
+  }
+  function num(v){ return v.toLocaleString(); }
+
+  function build(){
+    var m = M[key];
+    $('mTitle').textContent = m.title;
+    $('mMeta').textContent = m.dims + ' · ' + m.counts.split(' · ')[1];
+    $('hUnit').textContent = m.unit;
+    $('cap').textContent = m.src;
+    $('tally').innerHTML = 'Registry queried for this buyer — <b>' + m.counts.replace(/ · /g, '</b> · <b>') + '</b>';
+
+    var html = '';
+    m.cells.forEach(function(c, i){
+      html += '<tr><td>' + c.n + '<span class="cnote">' + c.note + '</span></td>'
+            + '<td class="hide"><span class="badge b-' + c.b + '">' + c.b + '</span></td>'
+            + '<td class="num">' + num(c.u) + '</td>'
+            + '<td class="num">' + usd(c.p) + '</td>'
+            + '<td class="num" id="cv' + i + '"></td></tr>';
+    });
+    html += '<tr class="gate"><td>' + m.gate.label + '<span class="cnote">' + m.gate.note + '</span>'
+          + '<div class="ctrl"><input type="range" id="gate" min="' + m.gate.min + '" max="' + m.gate.max + '" value="' + m.gate.v + '" step="1" aria-label="' + m.gate.label + ', percent">'
+          + '<span class="readout" id="gout"></span></div></td>'
+          + '<td class="hide"><span class="badge b-assumed">assumed</span></td>'
+          + '<td class="num">—</td><td class="num">—</td><td class="num">—</td></tr>';
+    $('rows').innerHTML = html;
+
+    var rl = '';
+    m.rej.forEach(function(r){
+      rl += '<li><span class="d">' + r[0] + '</span><span class="w">' + r[1]
+          + (r[2] !== '—' ? ' <span style="font-style:normal;font-family:var(--mono);font-size:.72rem;color:var(--faint)">(' + r[2] + ' variance)</span>' : '')
+          + '</span></li>';
+    });
+    $('rejlist').innerHTML = rl;
+    $('rejmore').textContent = m.rejmore;
+
+    $('gate').addEventListener('input', calc);
+    calc();
+  }
+
+  function calc(){
+    var m = M[key], g = parseInt($('gate').value, 10) / 100;
+    $('gout').textContent = Math.round(g * 100) + '%';
+    var tam = 0;
+    m.cells.forEach(function(c, i){
+      var v = c.u * g * c.p; tam += v;
+      $('cv' + i).textContent = usd(v);
+    });
+    var sam = tam * m.samRate, som = sam * m.somRate;
+    $('tam').textContent = usd(tam);
+    $('sam').textContent = usd(sam);
+    $('som').textContent = usd(som);
+    $('rng').textContent = usd(tam * 0.41) + ' – ' + usd(tam * 2.35);
+
+    var span = m.gate.max - m.gate.min, pos = (g * 100 - m.gate.min) / span;
+    $('verdict').innerHTML = pos < 0.28 ? m.verdicts.low : (pos > 0.72 ? m.verdicts.high : m.verdicts.base);
+  }
+
+  Array.prototype.forEach.call(document.querySelectorAll('.switch button'), function(b){
+    b.addEventListener('click', function(){
+      Array.prototype.forEach.call(document.querySelectorAll('.switch button'), function(x){
+        x.setAttribute('aria-selected', x === b ? 'true' : 'false');
+      });
+      key = b.dataset.k; build();
+    });
+  });
+
+  build();
+})();
+</script>
+</body>
+</html>
