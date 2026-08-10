@@ -1777,7 +1777,7 @@ function renderPIReport(r) {
   // CHAPTER 1: THE OPPORTUNITY
   if (r.disease_intelligence) {
     const di = r.disease_intelligence;
-    html += chapterHeader('1', 'The Opportunity', 'Understanding the disease landscape, unmet need, and why this market exists');
+    html += chapterHeader('1', 'The Opportunity', _isResearchDomain ? 'Understanding the market landscape, buyer population, and why this opportunity exists' : 'Understanding the disease landscape, unmet need, and why this market exists');
 
     // Narrative intro — domain-aware to avoid clinical vocabulary for research tools
     if (_isResearchDomain) {
@@ -2202,9 +2202,16 @@ function renderPIReport(r) {
     // Market geography inline
     if (r.market_geography) {
       const g = r.market_geography;
-      html += `<div class="narrative-block">${g.description}</div>`;
+      if (g.description) html += `<div class="narrative-block">${g.description}</div>`;
       if (g.top_states && g.top_states.length) {
-        html += '<div class="geo-row">' + g.top_states.map(s => `<span class="geo-tag">${s}</span>`).join('') + '</div>';
+        // Only render state tags if they contain more than a bare two-letter code
+        const richStates = g.top_states.filter(s => s && s.trim().length > 2);
+        if (richStates.length) {
+          html += '<div class="geo-row">' + richStates.map(s => `<span class="geo-tag">${s}</span>`).join('') + '</div>';
+        } else {
+          // Bare state codes: render inline in the description paragraph, no chips
+          html += `<div class="narrative-block" style="font-size:12px;color:var(--text-3)">Top states: ${g.top_states.join(' · ')}</div>`;
+        }
       }
     }
   }
@@ -2424,7 +2431,7 @@ function renderPIReport(r) {
   }
 
   if (r.recommended_next_steps && r.recommended_next_steps.length) {
-    html += `<div class="narrative-block">Prioritized action items based on the regulatory strategy and development timeline above.</div>`;
+    html += `<div class="narrative-block">Prioritized action items and the critical path forward.</div>`;
     html += '<ol class="steps">' + r.recommended_next_steps.map(s => `<li>${s}</li>`).join('') + '</ol>';
   }
 
