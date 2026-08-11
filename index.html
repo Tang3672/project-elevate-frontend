@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Medlevate — market models you can audit</title>
-<meta name="description" content="FDA regulatory pathway, market sizing, and competitive landscape for any drug, device, or diagnostic. Every number sourced and labelled.">
+<title>Medlevate: market models you can actually audit</title>
+<meta name="description" content="Market sizing for drugs, devices, and diagnostics. Every population count, price band, and adoption rate labeled by source so you can check our work.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;1,6..72,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -289,10 +289,10 @@
 
 <div class="railed" style="padding-bottom:5.5rem">
   <span class="tick">Thesis</span>
-  <h1>A market estimate is worth exactly what its <em>weakest assumption</em> is worth.</h1>
+  <h1>A market estimate is only as good as its <em>weakest assumption.</em></h1>
   <div class="lede">
-    <p>Most sizing hands you a number and buries the reasoning. Medlevate shows the whole derivation — every population count, every price band, every adoption rate — marked by where it came from and how far we'd trust it.</p>
-    <p>Then it lets you argue. You know your field better than any retrieval pipeline. Correct an assumption and the model recomputes, including the recommendation that depended on it.</p>
+    <p>Most sizing tools hand you a number and call it done. Medlevate shows how the number was built: every population count, price band, and adoption rate, each labeled by where it came from.</p>
+    <p>You know your disease area better than any tool does. If an assumption is wrong, change it. The model reruns and the recommendation updates.</p>
   </div>
 </div>
 
@@ -324,8 +324,8 @@
   <div class="railed">
     <span class="tick">01</span>
     <p class="secnum">Worked example</p>
-    <h2>The dimensions change with the product. That's the whole job.</h2>
-    <p class="sub">There is no universal segmentation. A therapy sold through payers, a diagnostic sold to labs, and an instrument bought on a grant have almost nothing in common structurally. Switch the product and watch the model rebuild itself.</p>
+    <h2>The segmentation has to change with the product.</h2>
+    <p class="sub">A drug going through payers looks nothing like a diagnostic sold to labs, or a research instrument bought on a grant. Pick a product type below and see how the model shifts.</p>
 
     <div class="switch" role="tablist" aria-label="Product archetype">
       <button role="tab" id="tab-rx" aria-selected="true" data-k="rx">Therapeutic</button>
@@ -372,8 +372,8 @@
   <div class="railed">
     <span class="tick">02</span>
     <p class="secnum">Dimensions considered and rejected</p>
-    <h2>Refusing to segment on something is a finding, not an omission.</h2>
-    <p class="sub">A dimension earns a place only if it explains variance in price or adoption. Everything else is a label, and labels dressed as segments manufacture precision that isn't there. The registry holds several hundred; each report draws from the subset your buyer makes eligible.</p>
+    <h2>What got cut, and why.</h2>
+    <p class="sub">We only segment on things that actually change what a buyer pays or whether they buy at all. Race and ethnicity matters for equity research but doesn't move a diagnostic pricing model. Practice size collapses into site of care. Each report shows what got excluded and the reason.</p>
 
     <p class="tally" id="tally"></p>
     <ul class="rej" id="rejlist"></ul>
@@ -389,22 +389,22 @@
       <div class="step">
         <span class="k">Classify</span>
         <h3>Establish what it is</h3>
-        <p>Product type, who signs the purchase order, whether it's regulated at all. Get this wrong and every section downstream inherits the error — so you confirm it before anything runs.</p>
+        <p>Product type, who actually signs the purchase order, whether it goes through FDA at all. Get this wrong and everything else is wrong too, so it runs first.</p>
       </div>
       <div class="step">
         <span class="k">Retrieve</span>
         <h3>Find the denominator</h3>
-        <p>Prevalence registries, facility rosters, federal awards, patents, literature. Which source is even valid depends on the buyer. Each fact carries the source it was fetched with.</p>
+        <p>Prevalence registries, facility counts, grant awards, patents, published literature. What's worth pulling depends on the buyer. Every number keeps a reference to where it came from.</p>
       </div>
       <div class="step">
         <span class="k">Derive</span>
         <h3>Build the cells</h3>
-        <p>Choose dimensions that measurably change price or adoption, then price each cell on its own terms. Arithmetic runs in code, never in prose.</p>
+        <p>Pick the dimensions that actually change price or adoption and build a cell for each one. The math runs in code, not in a paragraph where it can't be checked.</p>
       </div>
       <div class="step">
         <span class="k">Contest</span>
         <h3>Check it, then correct it</h3>
-        <p>A verifier flags what doesn't reconcile and says so plainly rather than claiming it fixed it. You override what you know better, and everything downstream moves.</p>
+        <p>If the numbers don't add up, the verifier says so. You can change any assumption you know better than we do, and the rest of the model adjusts.</p>
       </div>
     </div>
   </div>
@@ -415,7 +415,7 @@
     <span class="tick">04</span>
     <p class="secnum">Pricing</p>
     <h2>Pick the level of depth your project needs.</h2>
-    <p class="sub">Every tier produces the same auditable derivation — labelled sources, explicit assumptions, sensitivity ranking. The difference is volume and how deep you need to go.</p>
+    <p class="sub">Every tier gives you the same thing: labeled sources, explicit assumptions, and a sensitivity ranking. The difference is how many reports you need and how far you want to dig.</p>
 
     <div class="plans">
       <div class="plan">
@@ -466,7 +466,7 @@
     <span class="tick">05</span>
     <p class="secnum">Primary sources</p>
     <h2>Every number resolves to something you can open.</h2>
-    <p class="sub">Sources bind to claims at fetch time, so a citation can't drift from the figure it supports. Anything unsourced is marked assumed and surfaces in the sensitivity ranking rather than hiding in a footnote.</p>
+    <p class="sub">Citations attach to the specific numbers they support when they're pulled, so a source can't get separated from its claim. Anything we couldn't source is labeled as assumed and flagged in the sensitivity ranking.</p>
     <div class="srcgrid">
       <div><h4>Population</h4><ul><li>CDC WONDER</li><li>SEER</li><li>NHANES · BRFSS</li><li>US Census ACS</li></ul></div>
       <div><h4>Care delivery</h4><ul><li>AHA Annual Survey</li><li>CMS Provider of Service</li><li>NPPES</li><li>CLIA registry</li></ul></div>
@@ -481,8 +481,8 @@
 <section id="access">
   <div class="railed">
     <span class="tick">06</span>
-    <h2>For the people who have to defend the number in the room.</h2>
-    <p class="sub">Tech transfer offices, research PIs, and founders writing the commercialization section. In limited release while the verification layer hardens — if you want to put a report through its paces, ideally by trying to break it, get in touch.</p>
+    <h2>For people who have to defend the number in the room.</h2>
+    <p class="sub">Built for tech transfer offices, research PIs, and founders working on commercialization plans. We're in limited release right now. If you want to run a report and stress-test it, reach out.</p>
     <div class="cta">
       <a class="btn solid" href="app.html">Request access</a>
       <a class="btn ghost" href="#model">See the model</a>
@@ -546,9 +546,9 @@
       ],
       rejmore:'20 further dimensions rejected below threshold. Full list in the report appendix.',
       verdicts:{
-        low:'<b>Recommendation changed — narrow to a subpopulation.</b> Below roughly 25% treated share the broad-label economics stop clearing. Two recommendations drop: primary-care detailing and open-formulary pursuit.',
-        base:'<b>Recommendation — pursue broad label with payer-first sequencing.</b> The model supports contracting ahead of promotional spend.',
-        high:'<b>Recommendation changed — expand promotional footprint.</b> Above roughly 58% treated share, sales capacity rather than eligible population becomes the binding constraint.'
+        low:'<b>Recommendation: narrow to a subpopulation.</b> Below roughly 25% treated share the broad-label economics stop working. Two recommendations fall away: primary-care detailing and open-formulary pursuit.',
+        base:'<b>Recommendation: pursue broad label with payer-first sequencing.</b> The model supports contracting ahead of promotional spend.',
+        high:'<b>Recommendation: expand promotional footprint.</b> Above roughly 58% treated share, sales capacity rather than eligible population becomes the binding constraint.'
       }
     },
     dx:{
@@ -572,9 +572,9 @@
       ],
       rejmore:'12 further dimensions rejected below threshold. Full list in the report appendix.',
       verdicts:{
-        low:'<b>Recommendation changed — lead with instrument-agnostic chemistry.</b> Below roughly 28% compatibility the install-base strategy fails and reagent-rental economics stop working.',
-        base:'<b>Recommendation — hospital-lab beachhead, reference labs second.</b> Send-out displacement is the shortest path to volume.',
-        high:'<b>Recommendation changed — go direct to reference labs first.</b> Above roughly 68% compatibility the concentrated high-volume segment is reachable without an install campaign.'
+        low:'<b>Recommendation: lead with instrument-agnostic chemistry.</b> Below roughly 28% compatibility the install-base strategy falls apart and reagent-rental pricing stops working.',
+        base:'<b>Recommendation: hospital-lab beachhead, reference labs second.</b> Send-out displacement is the fastest path to volume.',
+        high:'<b>Recommendation: go direct to reference labs first.</b> Above roughly 68% compatibility the concentrated high-volume segment is reachable without running an install campaign.'
       }
     },
     tool:{
@@ -598,9 +598,9 @@
       ],
       rejmore:'16 further dimensions rejected below threshold. Full list in the report appendix.',
       verdicts:{
-        low:'<b>Recommendation changed — narrow the wedge.</b> Below roughly 15% the base is too thin for a broad launch. Institutional site licensing and multi-agency expansion both drop out.',
-        base:'<b>Recommendation — non-dilutive first.</b> The model supports an SBIR-funded path to revenue. It does not support a priced equity round.',
-        high:'<b>Recommendation changed — equity becomes defensible.</b> Above roughly 42% a priced round is worth the dilution, and sales capacity replaces market size as the constraint.'
+        low:'<b>Recommendation: narrow the wedge.</b> Below roughly 15% the base is too thin for a broad launch. Institutional site licensing and multi-agency expansion both drop out.',
+        base:'<b>Recommendation: non-dilutive first.</b> The model supports an SBIR path to revenue. It does not support a priced equity round.',
+        high:'<b>Recommendation: equity becomes defensible.</b> Above roughly 42% a priced round is worth the dilution, and sales capacity replaces market size as the constraint.'
       }
     }
   };
