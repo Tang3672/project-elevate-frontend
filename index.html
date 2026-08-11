@@ -79,6 +79,7 @@
     font-family:var(--serif);font-weight:300;
     font-size:clamp(2rem,4.4vw,3.15rem);line-height:1.14;
     letter-spacing:-.015em;margin:0 0 1.75rem;max-width:19ch;
+    text-wrap:balance;
   }
   h1 em{font-style:italic;font-weight:400}
   .lede{max-width:33rem;color:var(--body);font-size:1.02rem}
@@ -86,16 +87,11 @@
   .lede p:last-child{margin-bottom:0}
 
   /* ---- stats strip ---- */
-  .stats-strip{
-    border-top:1px solid var(--rule);padding:3rem 0;
-  }
-  .stats-row{
-    display:grid;grid-template-columns:repeat(3,1fr);gap:2.5rem;
-  }
+  .stats-strip{border-top:1px solid var(--rule);padding:3rem 0}
+  .stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:2.5rem}
   .stat-n{
     display:block;font-family:var(--mono);font-size:2.4rem;
-    font-variant-numeric:tabular-nums;letter-spacing:-.03em;line-height:1;
-    margin-bottom:.55rem;
+    font-variant-numeric:tabular-nums;letter-spacing:-.03em;line-height:1;margin-bottom:.55rem;
   }
   .stat-l{
     display:block;font-size:.9rem;color:var(--muted);font-style:italic;
@@ -104,7 +100,6 @@
 
   /* ---- sections ---- */
   section{padding:5.5rem 0;border-top:1px solid var(--rule)}
-  .section-compact{padding:0}
   .secnum{
     font-family:var(--mono);font-size:.68rem;letter-spacing:.18em;
     text-transform:uppercase;color:var(--faint);margin:0 0 2.25rem;
@@ -112,6 +107,7 @@
   h2{
     font-family:var(--serif);font-weight:400;font-size:1.65rem;
     line-height:1.28;letter-spacing:-.01em;margin:0 0 1.15rem;max-width:24ch;
+    text-wrap:balance;
   }
   .sub{max-width:33rem;color:var(--muted);font-size:.98rem;margin:0 0 2.5rem}
 
@@ -136,7 +132,9 @@
   .model-meta{font-family:var(--mono);font-size:.68rem;color:var(--faint)}
   .model-body{padding:0 1.6rem 1.6rem}
 
-  table{width:100%;border-collapse:collapse}
+  /* ---- table ---- */
+  .table-wrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;min-width:460px}
   th{
     font-family:var(--mono);font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;
     color:var(--faint);font-weight:400;text-align:left;padding:1.1rem .5rem .65rem 0;
@@ -179,6 +177,7 @@
   .tally b{color:var(--ink);font-weight:500}
   .rej{list-style:none;padding:0;margin:0;max-width:48rem}
   .rej li{display:grid;grid-template-columns:14rem 1fr;gap:1.5rem;padding:.9rem 0;border-bottom:1px solid var(--hair);font-size:.92rem}
+  .rej li:last-child{border-bottom:none}
   .rej .d{font-family:var(--mono);font-size:.74rem;letter-spacing:.03em}
   .rej .w{color:var(--muted);font-style:italic}
   .more{font-family:var(--mono);font-size:.7rem;color:var(--faint);margin-top:1.1rem}
@@ -191,35 +190,19 @@
 
   /* ---- pricing ---- */
   .plans{
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(16rem,1fr));
-    gap:1px;
-    background:var(--rule);
-    border:1px solid var(--rule);
-    max-width:56rem;
-    margin-top:2.25rem;
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(16rem,1fr));
+    gap:1px;background:var(--rule);border:1px solid var(--rule);
+    max-width:56rem;margin-top:2.25rem;
   }
   .plan{background:var(--paper);padding:2rem 1.75rem 2.25rem}
   .plan-featured{background:#fff}
-  .plan-badge{
-    font-family:var(--mono);font-size:.6rem;letter-spacing:.16em;
-    text-transform:uppercase;color:var(--faint);display:block;margin-bottom:.65rem;
-  }
-  .plan-tier{
-    font-family:var(--mono);font-size:.68rem;letter-spacing:.18em;
-    text-transform:uppercase;color:var(--muted);display:block;margin-bottom:1.2rem;
-  }
+  .plan-badge{font-family:var(--mono);font-size:.6rem;letter-spacing:.16em;text-transform:uppercase;color:var(--faint);display:block;margin-bottom:.65rem}
+  .plan-tier{font-family:var(--mono);font-size:.68rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:1.2rem}
   .plan-price{margin-bottom:1.75rem;line-height:1}
-  .plan-amt{
-    font-family:var(--mono);font-size:2.2rem;
-    font-variant-numeric:tabular-nums;letter-spacing:-.03em;
-  }
+  .plan-amt{font-family:var(--mono);font-size:2.2rem;font-variant-numeric:tabular-nums;letter-spacing:-.03em}
   .plan-per{font-family:var(--mono);font-size:.74rem;color:var(--muted)}
   .plan-feats{list-style:none;padding:0;margin:0 0 1.85rem;font-style:italic}
-  .plan-feats li{
-    font-size:.88rem;color:var(--muted);
-    padding:.45rem 0;border-bottom:1px solid var(--hair);
-  }
+  .plan-feats li{font-size:.88rem;color:var(--muted);padding:.45rem 0;border-bottom:1px solid var(--hair)}
   .plan-feats li:first-child{border-top:1px solid var(--hair)}
 
   /* ---- sources ---- */
@@ -260,9 +243,7 @@
   }
 
   /* ---- responsive ---- */
-  @media (max-width:860px){
-    .topnav{display:none}
-  }
+  @media (max-width:860px){.topnav{display:none}}
   @media (max-width:720px){
     body{font-size:17px}
     .shell{padding:0 1.15rem}
@@ -358,18 +339,20 @@
         <span class="model-meta" id="mMeta"></span>
       </div>
       <div class="model-body">
-        <table>
-          <thead>
-            <tr>
-              <th scope="col">Cell</th>
-              <th scope="col" class="hide">Basis</th>
-              <th scope="col" class="num" id="hUnit"></th>
-              <th scope="col" class="num">Price</th>
-              <th scope="col" class="num">Cell value</th>
-            </tr>
-          </thead>
-          <tbody id="rows"></tbody>
-        </table>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Cell</th>
+                <th scope="col" class="hide">Basis</th>
+                <th scope="col" class="num" id="hUnit"></th>
+                <th scope="col" class="num">Price</th>
+                <th scope="col" class="num">Cell value</th>
+              </tr>
+            </thead>
+            <tbody id="rows"></tbody>
+          </table>
+        </div>
 
         <dl class="totals">
           <div><dt>Total addressable</dt><dd id="tam"></dd></div>
@@ -535,7 +518,7 @@
   </div>
 </footer>
 
-<p class="footer-legal">© 2024 Medlevate. Illustrative figures · Not investment advice.</p>
+<p class="footer-legal">© 2025 Medlevate. Illustrative figures · Not investment advice.</p>
 
 </div><!-- /shell -->
 
@@ -636,29 +619,37 @@
   function build(){
     var m = M[key];
     $('mTitle').textContent = m.title;
-    $('mMeta').textContent = m.dims + ' · ' + m.counts.split(' · ')[1];
-    $('hUnit').textContent = m.unit;
-    $('cap').textContent = m.src;
-    $('tally').innerHTML = 'Registry queried for this buyer — <b>' + m.counts.replace(/ · /g, '</b> · <b>') + '</b>';
+    $('mMeta').textContent  = m.dims + ' · ' + m.counts.split(' · ')[1];
+    $('hUnit').textContent  = m.unit;
+    $('cap').textContent    = m.src;
+    $('tally').innerHTML    = 'Registry queried for this buyer — <b>' + m.counts.replace(/ · /g, '</b> · <b>') + '</b>';
 
     var html = '';
     m.cells.forEach(function(c, i){
-      html += '<tr><td>' + c.n + '<span class="cnote">' + c.note + '</span></td>'
+      html += '<tr>'
+            + '<td>' + c.n + '<span class="cnote">' + c.note + '</span></td>'
             + '<td class="hide"><span class="badge b-' + c.b + '">' + c.b + '</span></td>'
             + '<td class="num">' + num(c.u) + '</td>'
             + '<td class="num">' + usd(c.p) + '</td>'
-            + '<td class="num" id="cv' + i + '"></td></tr>';
+            + '<td class="num" id="cv' + i + '"></td>'
+            + '</tr>';
     });
-    html += '<tr class="gate"><td>' + m.gate.label + '<span class="cnote">' + m.gate.note + '</span>'
-          + '<div class="ctrl"><input type="range" id="gate" min="' + m.gate.min + '" max="' + m.gate.max + '" value="' + m.gate.v + '" step="1" aria-label="' + m.gate.label + ', percent">'
-          + '<span class="readout" id="gout"></span></div></td>'
+    html += '<tr class="gate">'
+          + '<td>' + m.gate.label + '<span class="cnote">' + m.gate.note + '</span>'
+          + '<div class="ctrl">'
+          + '<input type="range" id="gate" min="' + m.gate.min + '" max="' + m.gate.max + '" value="' + m.gate.v + '" step="1" aria-label="' + m.gate.label + ', percent">'
+          + '<span class="readout" id="gout"></span>'
+          + '</div></td>'
           + '<td class="hide"><span class="badge b-assumed">assumed</span></td>'
-          + '<td class="num">—</td><td class="num">—</td><td class="num">—</td></tr>';
+          + '<td class="num">—</td><td class="num">—</td><td class="num">—</td>'
+          + '</tr>';
     $('rows').innerHTML = html;
 
     var rl = '';
     m.rej.forEach(function(r){
-      rl += '<li><span class="d">' + r[0] + '</span><span class="w">' + r[1]
+      rl += '<li>'
+          + '<span class="d">' + r[0] + '</span>'
+          + '<span class="w">' + r[1]
           + (r[2] !== '—' ? ' <span style="font-style:normal;font-family:var(--mono);font-size:.72rem;color:var(--faint)">(' + r[2] + ' variance)</span>' : '')
           + '</span></li>';
     });
