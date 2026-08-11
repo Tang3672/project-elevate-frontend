@@ -1681,11 +1681,11 @@ function renderPIReport(r) {
     html += `<div style="border:1px solid var(--border);border-radius:4px;padding:16px 20px;margin-bottom:28px;background:var(--bg)">
       <div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px;margin-bottom:4px">
         <div style="font-family:var(--display);font-size:13px;font-weight:700;color:var(--text);text-transform:uppercase;letter-spacing:.05em">Commercialization Assessment</div>
-        <span style="font-size:9px;color:var(--text-4)" title="internal weighting only">overall ${Math.round(overall*100)}%</span>
+        <span id="comm-overall-priority" style="font-size:9px;color:var(--text-4)" title="internal weighting only">overall ${Math.round(overall*100)}%</span>
       </div>
       <div style="font-size:11px;color:var(--text-3);margin-bottom:8px">Each dimension is built from the specific retrieved signals below — read the evidence and judge for yourself. The faint percentages are an internal weighting only, not a verdict.</div>
       ${rows}
-      ${_cs.recommendation ? `<div class="callout-box callout-blue" style="margin-top:14px"><div class="callout-label">→ Recommended Next Action</div><div class="callout-text">${_cs.recommendation}</div></div>` : ''}
+      ${_cs.recommendation ? `<div id="comm-recommendation-callout" class="callout-box callout-blue" style="margin-top:14px"><div class="callout-label">→ Recommended Next Action</div><div id="comm-recommendation-text" class="callout-text">${_cs.recommendation}</div></div>` : ''}
       <div style="font-size:9px;color:var(--text-4);margin-top:10px">Built from PTRS approval odds, deal-comp moat, IP whitespace, TRL, SBIR activity, and bottom-up market size — sources shown per line. Not investment advice.</div>
     </div>`;
   }
@@ -3138,6 +3138,22 @@ function _applyBuyerModelUpdate(data) {
     });
     bar.textContent = `Version ${data.version}: ${data.rationale} | Changed: ${changes.join('; ')}`;
     bar.style.display = 'block';
+  }
+
+  // Item 9: recommendation is recommend(model) — update live when buyer-model nodes change
+  if (data.recommendation_update) {
+    const recText = document.getElementById('comm-recommendation-text');
+    if (recText) {
+      recText.textContent = data.recommendation_update.recommendation;
+      const callout = document.getElementById('comm-recommendation-callout');
+      if (callout) {
+        callout.style.transition = 'background 0.4s ease';
+        callout.style.background = '#dbeafe';
+        setTimeout(() => { callout.style.background = ''; callout.style.transition = ''; }, 1400);
+      }
+    }
+    const prEl = document.getElementById('comm-overall-priority');
+    if (prEl) prEl.textContent = `overall ${Math.round(data.recommendation_update.overall_priority * 100)}% ↻`;
   }
 }
 
