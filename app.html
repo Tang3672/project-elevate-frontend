@@ -2065,7 +2065,7 @@ function renderPIReport(r) {
       const _tri = r.triangulation;
       const _mc  = _tri.monte_carlo;
       const _sns = r.sensitivity || [];
-      const _fM  = v => v == null ? '—' : (v >= 1e9 ? `$${(v/1e9).toFixed(1)}B` : `$${(v/1e6).toFixed(0)}M`);
+      const _fM  = v => v == null ? '—' : v >= 1e9 ? `$${(v/1e9).toFixed(1)}B` : v >= 1e6 ? `$${(v/1e6).toFixed(1)}M` : v >= 1e3 ? `$${Math.round(v/1e3)}K` : `$${Math.round(v)}`;
 
       html += `<div style="margin-top:28px;padding-top:20px;border-top:1px solid var(--border)">
         <div style="font-family:var(--display);font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--text-4);margin-bottom:3px">Methodology Transparency</div>
@@ -4764,7 +4764,7 @@ async function _msSaveOverrides() {
   const rationale = document.getElementById('ms-rationale')?.value || '';
 
   try {
-    const tok = localStorage.getItem('jwt') || sessionStorage.getItem('jwt') || '';
+    const tok = localStorage.getItem('pe_token') || '';
     const headers = {'Content-Type': 'application/json'};
     if (tok) headers['Authorization'] = `Bearer ${tok}`;
     const res = await fetch(`${API}/alignment/market-sizing-override`, {
@@ -4808,7 +4808,7 @@ async function _msLoadOverrides() {
   const rid = window._currentReportId;
   if (!rid) return;
   try {
-    const tok = localStorage.getItem('jwt') || sessionStorage.getItem('jwt') || '';
+    const tok = localStorage.getItem('pe_token') || '';
     const headers = {};
     if (tok) headers['Authorization'] = `Bearer ${tok}`;
     const res = await fetch(`${API}/alignment/market-sizing-override/${rid}`, {headers});
@@ -6683,7 +6683,7 @@ async function downloadPDF() {
       const _ptri = r.triangulation;
       const _pmc  = _ptri.monte_carlo;
       const _psns = r.sensitivity || [];
-      const _pfM  = v => v == null ? '-' : (v >= 1e9 ? '$'+(v/1e9).toFixed(1)+'B' : '$'+Math.round(v/1e6)+'M');
+      const _pfM  = v => v == null ? '-' : v >= 1e9 ? '$'+(v/1e9).toFixed(1)+'B' : v >= 1e6 ? '$'+(v/1e6).toFixed(1)+'M' : v >= 1e3 ? '$'+Math.round(v/1e3)+'K' : '$'+Math.round(v);
 
       subhead('Market Sizing — How We Got Here');
       para('Three independent methods were triangulated and reconciled by weighted average. The weights (bottom-up 50%, top-down 25%, value-based 25%) are explicit so you can interrogate the assumptions.', {size:9,color:SUB});
