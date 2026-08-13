@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Medlevate — Medical Market Intelligence</title>
+  <title>Medlevate — Intelligence Platform</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet" />
@@ -509,7 +509,7 @@
     <div class="logo-mark">ME</div>
     <span class="logo-name">Medlevate</span>
     <div class="logo-sep"></div>
-    <span class="logo-sub">Medical Market Intelligence</span>
+    <span class="logo-sub" id="logo-sub">Medical Market Intelligence</span>
   </div>
   <div class="hdr-right" id="hdr-right">
     <div class="sig-badge"><div class="sig-dot"></div><span class="sig-txt" id="sig-hdr">Loading…</span></div>
@@ -1148,7 +1148,7 @@ function fmt(n) { return n != null ? Number(n).toLocaleString() : '-'; }
 function fmtUSD(n) {
   if (!n) return '-';
   if (n >= 1e9) return `$${(n/1e9).toFixed(1)}B`;
-  if (n >= 1e6) return `$${(n/1e6).toFixed(0)}M`;
+  if (n >= 1e6) return `$${(n/1e6).toFixed(1)}M`;
   return `$${(n/1e3).toFixed(0)}K`;
 }
 
@@ -1624,6 +1624,9 @@ function renderPIReport(r) {
   const _reportDomain = (r.domain || '').toLowerCase();
   const _isResearchDomain = _reportDomain.includes('research') || _reportDomain.includes('life_sciences_research');
 
+  // B-09: sync header subtitle with report type
+  const _lsEl = document.getElementById('logo-sub');
+  if (_lsEl) _lsEl.textContent = _isResearchDomain ? 'Commercialization Intelligence' : 'Market Intelligence';
 
   let html = '<div class="sg">';
 
