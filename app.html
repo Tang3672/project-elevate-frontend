@@ -1628,6 +1628,10 @@ function renderPIReport(r) {
   const _lsEl = document.getElementById('logo-sub');
   if (_lsEl) _lsEl.textContent = _isResearchDomain ? 'Commercialization Intelligence' : 'Market Intelligence';
 
+  // B-07: section counter — increments only when a section is actually rendered,
+  // so suppressed sections don't leave gaps in the numbering.
+  let _sec = 0;
+
   let html = '<div class="sg">';
 
   // Mock-mode watermark — must be unmissable; a mocked report that looks real is dangerous
@@ -1780,7 +1784,7 @@ function renderPIReport(r) {
   // CHAPTER 1: THE OPPORTUNITY
   if (r.disease_intelligence) {
     const di = r.disease_intelligence;
-    html += chapterHeader('1', 'The Opportunity', _isResearchDomain ? 'Understanding the market landscape, buyer population, and why this opportunity exists' : 'Understanding the disease landscape, unmet need, and why this market exists');
+    html += chapterHeader(++_sec, 'The Opportunity', _isResearchDomain ? 'Understanding the market landscape, buyer population, and why this opportunity exists' : 'Understanding the disease landscape, unmet need, and why this market exists');
 
     // Narrative intro — domain-aware to avoid clinical vocabulary for research tools
     if (_isResearchDomain) {
@@ -1848,7 +1852,7 @@ function renderPIReport(r) {
   // CHAPTER 2: THE MARKET
   if (r.market_sizing) {
     const ms = r.market_sizing;
-    html += chapterHeader('2', 'The Market', 'How large is the opportunity, who will pay, and what can you realistically capture');
+    html += chapterHeader(++_sec, 'The Market', 'How large is the opportunity, who will pay, and what can you realistically capture');
 
     const tamVal = ms.total_addressable_market_usd >= 1e9
       ? `$${(ms.total_addressable_market_usd/1e9).toFixed(1)}B`
@@ -2222,7 +2226,7 @@ function renderPIReport(r) {
   // CHAPTER 3: YOUR PATH TO APPROVAL — suppressed for non-regulated research tools
   if (r.regulatory_pathway && !_isResearchDomain) {
     const rp = r.regulatory_pathway;
-    html += chapterHeader('3', 'Your Path to Approval', 'The FDA regulatory strategy, designations to pursue, and clinical trial roadmap');
+    html += chapterHeader(++_sec, 'Your Path to Approval', 'The FDA regulatory strategy, designations to pursue, and clinical trial roadmap');
 
     html += `<div class="narrative-block">
       The recommended FDA pathway below is based on your product type and indication. Each designation is ranked by priority, with specific application timing and impact on exclusivity and trial burden.
@@ -2340,7 +2344,7 @@ function renderPIReport(r) {
   // STRATEGIC PLAYBOOK
   if (true) { // always show strategic playbook
     var playbook = r.strategic_playbook || [];
-    html += chapterHeader('4', 'Strategic Playbook', 'Proven strategies from comparable companies - with named examples and sources');
+    html += chapterHeader(++_sec, 'Strategic Playbook', 'Proven strategies from comparable companies - with named examples and sources');
     html += '<div style="font-family:var(--body);font-size:13px;color:var(--text-2);line-height:1.8;margin-bottom:16px">The following strategies have been used by companies in this space to accelerate development, reduce capital requirements, or expand market opportunity. Each is sourced from a real company and drug.</div>';
     playbook.forEach(function(s, i) {
       var link = s.source_url ? '<a href="' + s.source_url + '" target="_blank" style="color:var(--blue);font-size:11px;font-weight:600">Source</a>' : '';
@@ -2368,7 +2372,7 @@ function renderPIReport(r) {
   // CHAPTER 4: GETTING TO MARKET
   if (r.market_access && !_isResearchDomain) {
     const ma = r.market_access;
-    html += chapterHeader('5', 'Getting to Market', 'Who buys your product, how reimbursement works, and how to win formulary access');
+    html += chapterHeader(++_sec, 'Getting to Market', 'Who buys your product, how reimbursement works, and how to win formulary access');
 
     html += `<div class="narrative-block">
       FDA approval opens the commercial pathway. This section covers who controls purchasing decisions, how reimbursement is structured, and what drives formulary access at target institutions.
@@ -2418,7 +2422,7 @@ function renderPIReport(r) {
   }
 
   // CHAPTER 5: YOUR ACTION PLAN
-  html += chapterHeader('6', 'Your Action Plan', 'Prioritized next steps, funding sources, and the critical path forward');
+  html += chapterHeader(++_sec, 'Your Action Plan', 'Prioritized next steps, funding sources, and the critical path forward');
 
   // Funding
   if (r.regulatory_pathway && r.regulatory_pathway.funding_programs && r.regulatory_pathway.funding_programs.length) {
@@ -2558,7 +2562,7 @@ function renderPIReport(r) {
   // CHAPTER 7: COMPETITIVE LANDSCAPE — rendered from the report's server-side sweep
   // (reliable). It arrives with the background verification, so it may show a brief
   // "gathering…" state that the verification poll fills in.
-  html += chapterHeader('7', 'Competitive Landscape', 'Named competitors, their key advantages, market white space, and your differentiation levers');
+  html += chapterHeader(++_sec, 'Competitive Landscape', 'Named competitors, their key advantages, market white space, and your differentiation levers');
   html += `<div id="comp-sweep-panel" style="background:var(--bg-2);border:1px solid var(--border);padding:16px;margin-bottom:16px">${_renderCompPanelInner(r.competitive_landscape)}</div>`;
 
   // OUTCOME / FEEDBACK CAPTURE (P11) — close the loop on what the TTO/PI decided
@@ -2594,7 +2598,7 @@ function renderPIReport(r) {
     (r.evidence_base && Object.keys(r.evidence_base).length)
   );
   if (_hasStrategicContent) {
-    html += chapterHeader('8', 'Strategic Intelligence', 'Positioning, segment choices, feature priorities, pricing trade-offs, and adversarial review');
+    html += chapterHeader(++_sec, 'Strategic Intelligence', 'Positioning, segment choices, feature priorities, pricing trade-offs, and adversarial review');
 
     // S-01 Evidence Base
     const _eb = r.evidence_base;
@@ -3426,17 +3430,6 @@ async function _runTimelineInline(idea, ptype) {
       </button>`;
   } catch(e) { el.innerHTML = `<div style="font-size:11px;color:var(--text-3)">Timeline generation failed.</div>`; }
 }
-
-function chapterHeader(num, title, subtitle) {
-  return `<div style="display:flex;align-items:flex-start;gap:16px;margin:32px 0 16px;padding-bottom:12px;border-bottom:2px solid var(--blue)">
-    <div style="background:var(--blue);color:#fff;font-family:var(--display);font-size:14px;font-weight:700;width:32px;height:32px;display:flex;align-items:center;justify-content:center;flex-shrink:0">${num}</div>
-    <div>
-      <div style="font-family:var(--display);font-size:17px;font-weight:700;color:var(--text)">${title}</div>
-      <div style="font-family:var(--body);font-size:12px;color:var(--text-3);margin-top:2px">${subtitle}</div>
-    </div>
-  </div>`;
-}
-
 
 function chapterHeader(num, title, subtitle) {
   return `<div style="display:flex;align-items:flex-start;gap:16px;margin:32px 0 16px;padding-bottom:12px;border-bottom:2px solid var(--blue)">
@@ -6567,9 +6560,12 @@ async function downloadPDF() {
       if(_cs.recommendation) para('Recommended next action: '+clean(_cs.recommendation), {bold:true,size:9});
     }
 
+    // B-07: PDF section counter — mirrors the HTML _sec counter logic so both match.
+    let _pSec = 0;
+
     // 1 — Opportunity
     const di = r.disease_intelligence||{};
-    heading(1,'The Opportunity');
+    heading(++_pSec,'The Opportunity');
     if (di.unmet_need_summary) para(di.unmet_need_summary, {bold:true});
     (di.data_points||[]).slice(0,10).forEach(d=>{
       bullet((clean(d.metric||d.label||'')?clean(d.metric||d.label||'')+': ':'')+clean(d.value||'')+(d.year?(' ('+clean(d.year)+')'):''));
@@ -6593,7 +6589,7 @@ async function downloadPDF() {
 
     // 2 — Market
     const ms = r.market_sizing||{};
-    heading(2,'The Market');
+    heading(++_pSec,'The Market');
     if (ms.formula) para(ms.formula, {bold:true});
     (ms.steps||[]).forEach((s,i)=>{
       const v = (typeof s.value==='number')? s.value.toLocaleString() : clean(s.value);
@@ -6778,7 +6774,7 @@ async function downloadPDF() {
     const rp = r.regulatory_pathway||{};
     const _rpHasContent = !_pdfIsResearch && (rp.recommended_pathway || (rp.designations||[]).length || rp.pathway_rationale);
     if (_rpHasContent) {
-      heading(3,'Your Path to Approval');
+      heading(++_pSec,'Your Path to Approval');
       if (rp.recommended_pathway){ subhead('Recommended pathway'); para(rp.recommended_pathway); }
       if (rp.pathway_rationale) para(rp.pathway_rationale);
       if ((rp.designations||[]).length) subhead('FDA designations & pathways');
@@ -6795,7 +6791,7 @@ async function downloadPDF() {
 
     // 4 — Strategic playbook
     if ((r.strategic_playbook||[]).length){
-      heading(4,'Strategic Playbook');
+      heading(++_pSec,'Strategic Playbook');
       (r.strategic_playbook||[]).forEach(s=>{
         para(clean(s.strategy), {bold:true, gap:0.5});
         if(s.example) para('Example: '+clean(s.example), {size:9, gap:0.5});
@@ -6809,7 +6805,7 @@ async function downloadPDF() {
     const ma = r.market_access||{};
     const _maHasContent = !_pdfIsResearch && (ma.primary_channel || (ma.buyer_segments||[]).length || ma.reimbursement_pathway);
     if (_maHasContent) {
-      heading(5,'Getting to Market');
+      heading(++_pSec,'Getting to Market');
       if (ma.primary_channel){ subhead('Primary channel'); para(ma.primary_channel); }
       (ma.buyer_segments||[]).slice(0,8).forEach(b=>{
         if(typeof b==='string'){ bullet(b); return; }
@@ -6822,7 +6818,7 @@ async function downloadPDF() {
 
     // 6 — Action plan
     if ((r.recommended_next_steps||[]).length){
-      heading(6,'Your Action Plan');
+      heading(++_pSec,'Your Action Plan');
       (r.recommended_next_steps||[]).forEach((s,i)=>{
         const t = clean(typeof s==='string'? s : (s.step||s.action||''));
         pdf.setFont('helvetica','bold'); pdf.setFontSize(9.3); pdf.setTextColor(BLUE[0],BLUE[1],BLUE[2]); ensure(5); pdf.text(String(i+1)+'.', margin, y);
@@ -6835,7 +6831,7 @@ async function downloadPDF() {
     const cl = r.competitive_landscape;
     const hasCL = cl && (cl.competitors||[]).length;
     if (hasCL){
-      heading(7,'Competitive Landscape');
+      heading(++_pSec,'Competitive Landscape');
       if(cl.summary) para(cl.summary);
       // Research tools use a different schema (overlap/where_you_win/switching_cost instead of approval_status/pipeline counts)
       const isResearchCL = (cl.competitors||[]).some(c=>c.overlap||c.where_you_win||c.switching_cost);
@@ -6881,7 +6877,7 @@ async function downloadPDF() {
       (r.adversarial_review||[]).length || ((r.pricing_model_analysis||{}).model_comparison||[]).length
     );
     if (_pdfSIC) {
-      heading(hasCL?9:8,'Strategic Intelligence');
+      heading(++_pSec,'Strategic Intelligence');
 
       if (r.positioning_statement) {
         subhead('Positioning'); para(r.positioning_statement);
