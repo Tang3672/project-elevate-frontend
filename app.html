@@ -903,20 +903,7 @@
 
             <div style="margin-top:14px">
               <span class="chip-lbl">Quick examples</span>
-              <div class="chips">
-                <button class="chip" onclick="setEx(0)">AMR antibiotic — beta-lactam/BLI</button>
-                <button class="chip" onclick="setEx(1)">MRSA — novel oral antibiotic</button>
-                <button class="chip" onclick="setEx(2)">ALS rare disease — gene silencing</button>
-                <button class="chip" onclick="setEx(3)">GBM — immunotherapy</button>
-                <button class="chip" onclick="setEx(4)">SMA — gene therapy</button>
-                <button class="chip" onclick="setEx(5)">Pancreatic cancer — ADC</button>
-                <button class="chip" onclick="setEx(6)">Rural CGM — next-gen device</button>
-                <button class="chip" onclick="setEx(7)">Sepsis — AI early detection</button>
-                <button class="chip" onclick="setEx(8)">Rapid AST — point-of-care diagnostic</button>
-                <button class="chip" onclick="setEx(12)">Neurotech lab — wearable data sync</button>
-                <button class="chip" onclick="setEx(13)">Behavioral science — lab data mgmt</button>
-                <button class="chip" onclick="setEx(14)">ELN / protocol mgmt — lab SaaS</button>
-              </div>
+              <div class="chips" id="example-chips"></div>
             </div>
 
             <button class="btn-primary" id="run-btn" onclick="startAnalysisFlow()" style="width:100%">Refine &amp; Analyze →</button>
@@ -1152,12 +1139,45 @@ function fmtUSD(n) {
   return `$${(n/1e3).toFixed(0)}K`;
 }
 
+// Maps example index → short label shown on the chip button.
+const _EXAMPLE_LABELS = [
+  'AMR antibiotic — beta-lactam/BLI', 'MRSA — novel oral antibiotic',
+  'ALS rare disease — gene silencing', 'GBM — immunotherapy',
+  'SMA — gene therapy', 'Pancreatic cancer — ADC',
+  'Rural CGM — next-gen device', 'Sepsis — AI early detection',
+  'Rapid AST — point-of-care diagnostic', 'Melanoma mRNA vaccine',
+  'DMD antisense oligo', 'PCSK9 base editing',
+  'Neurotech lab — wearable data sync', 'Behavioral science — lab data mgmt',
+  'ELN / protocol mgmt — lab SaaS',
+];
+
+// E-01: filter quick examples by selected domain so clinical examples don't show
+// for a user working on a research tool (and vice versa).
+function _renderExamples() {
+  const container = document.getElementById('example-chips');
+  if (!container) return;
+  const _rt = selectedType && (
+    selectedType.startsWith('research_tool') ||
+    selectedType.startsWith('research_infrastructure')
+  );
+  // Research tool types → show only research tool examples (12–14)
+  // Clinical/device types  → show only clinical/device examples (0–8)
+  // Ambiguous (other_platform, etc.) → show all
+  const _showIdxs = _rt ? [12,13,14] :
+    (selectedType && selectedType !== 'other_platform') ? [0,1,2,3,4,5,6,7,8] :
+    [0,1,2,3,4,5,6,7,8,12,13,14];
+  container.innerHTML = _showIdxs
+    .map(i => `<button class="chip" onclick="setEx(${i})">${_EXAMPLE_LABELS[i]||'Example '+i}</button>`)
+    .join('');
+}
+
 function selectType(type, el) {
   selectedType = type;
   document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
   el.classList.add('active');
   document.getElementById('pt-badge').textContent = el.querySelector('.type-name').textContent;
   document.getElementById('pathogen-row').style.display = type === 'drug_small_molecule' ? '' : 'none';
+  _renderExamples();
   const placeholders = {
     drug_small_molecule: 'Describe your drug - target disease, mechanism, patient population. For antibiotics include target pathogen.',
     biologic: 'Describe your biologic - antibody target, indication, format (mAb, ADC, bispecific, enzyme replacement).',
@@ -7022,6 +7042,11 @@ function selectPathway(pathway, btn) {
 // Step 2: user answers ≥3 questions → "Generate Market Analysis" button unlocks
 // Step 3: user clicks generate → runAnalysis() fires with answers embedded
 
+// E-02: track idea text so we can detect when the user starts a genuinely new
+// analysis and reset the question state rather than carrying forward the previous
+// report's answers (same bug class as v7 A.3 product-name persistence).
+window._lastQuestionsIdea = null;
+
 async function startAnalysisFlow() {
   const idea = document.getElementById('idea')?.value.trim();
   if (!idea || idea.length < 30) {
@@ -7038,10 +7063,19 @@ async function startAnalysisFlow() {
     return;
   }
 
-  // Step 3: Questions → report
+  // E-02: if the idea has changed, clear the previous run's question answers so
+  // we don't carry stale intake data into a completely different product analysis.
+  if (window._lastQuestionsIdea !== null && window._lastQuestionsIdea !== idea) {
+    window.clarifyAnswers  = {};
+    window._questionsShown = false;
+    window._classification = null;
+  }
+
+  // If questions already shown and answered for THIS idea, go straight to analysis.
   if (window._questionsShown && Object.keys(window.clarifyAnswers).length >= 1) {
     runAnalysis(); return;
   }
+  window._lastQuestionsIdea = idea;
   await _showMandatoryQuestions(idea);
 }
 
@@ -7619,6 +7653,12 @@ async function exportICal() {
     URL.revokeObjectURL(url);
   } catch(e) { alert('Export failed: ' + e.message); }
 }
+</script>
+
+<script>
+// Render example chips once on page load with the default type (drug_small_molecule).
+// After this, _renderExamples() is called by selectType() on every type change.
+_renderExamples();
 </script>
 
 <footer style="border-top:1px solid rgba(255,255,255,.06);background:#070c1a;padding:24px 40px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;font-size:13px;color:#475569;">
