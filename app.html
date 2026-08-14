@@ -1575,7 +1575,7 @@ function buildVerificationBadgesHTML(r) {
           <div style="font-size:11px;color:var(--text-2);margin-top:1px">${_val.summary || ''}</div>
           ${(_val.errors||[]).length ? `<div style="font-size:10px;color:#dc2626;margin-top:4px">${_val.errors.map(e=>`<strong>${e.agent}:</strong> ${e.issue}`).join('<br>')}</div>` : ''}
           ${(_val.warnings||[]).length && !(_val.errors||[]).length ? `<div style="font-size:10px;color:#d97706;margin-top:4px">${_val.warnings.slice(0,2).map(w=>`<strong>${w.agent}:</strong> ${w.issue}`).join('<br>')}</div>` : ''}
-          ${_isBlocking ? `<div style="margin-top:6px;font-size:10px;color:#7c3aed;font-weight:600">Correct the arithmetic errors above, then regenerate to unlock export.</div>` : ''}
+          ${_isBlocking ? `<div style="margin-top:6px;font-size:10px;color:#7c3aed;font-weight:600">Edit the market model below to fix these errors and unlock export — no regeneration needed. <a href="#buyer-model-panel" onclick="document.getElementById('buyer-model-panel')?.scrollIntoView({behavior:'smooth',block:'start'});return false;" style="color:#7c3aed;text-decoration:underline;cursor:pointer">Jump to model ↓</a></div>` : ''}
         </div>
       </div>` : '';
   const _tpct = v => (v == null ? '—' : Math.round(v * 100) + '%');
@@ -2944,6 +2944,8 @@ async function _loadMarketSizingDerivation(idea, ptype, disease, report) {
 function _renderBuyerModelPanel(d, reportId) {
   const anchor = document.getElementById('derivation-anchor');
   if (!anchor) return;
+  const _isBlocking = typeof lastReport !== 'undefined' && lastReport &&
+    (lastReport.validation || {}).status === 'BLOCKING';
 
   function _fmt(v) {
     if (!v && v !== 0) return '—';
@@ -2971,9 +2973,10 @@ function _renderBuyerModelPanel(d, reportId) {
 
   function _stepRow(step, i, d) {
     const isInput  = i < 2;
-    const editNode = ['pop','sp','sam_rate','som_rate'][i] || null;
+    // Steps: 0=pop, 1=spend, 2=TAM (computed from 0×1), 3=SAM (edit sam_rate), 4=SOM (edit som_rate)
+    const editNode = {0:'pop', 1:'sp', 3:'sam_rate', 4:'som_rate'}[i] || null;
     const val = step.value != null
-      ? (i < 2 ? (i===0 ? _num(step.value)+' labs' : _fmt(step.value)+'/yr') : _fmt(step.value))
+      ? (i === 0 ? _num(step.value)+' labs' : i === 1 ? _fmt(step.value)+'/yr' : _fmt(step.value))
       : '—';
     return `
       <div style="display:grid;grid-template-columns:28px 1fr auto;gap:8px;align-items:start;
@@ -3001,12 +3004,18 @@ function _renderBuyerModelPanel(d, reportId) {
   panel.id = 'buyer-model-panel';
   panel.style.cssText = 'margin:16px 0;border:1px solid var(--border);border-radius:4px;overflow:hidden';
   panel.innerHTML = `
+    ${_isBlocking ? `<div id="bm-blocking-banner" style="background:#7c3aed;color:#fff;padding:8px 16px;
+         display:flex;align-items:center;gap:8px;font-size:11px">
+      <span style="font-size:13px">⚠</span>
+      <span>Export blocked due to arithmetic errors — edit the steps below to unlock.
+        Adjusted numbers recompute instantly; export unlocks when SAM ≤ TAM.</span>
+    </div>` : ''}
     <div style="background:var(--blue);color:#fff;padding:12px 16px;display:flex;align-items:center;justify-content:space-between">
       <div>
         <div style="font-family:var(--display);font-size:12px;font-weight:700;letter-spacing:.04em">
           BOTTOM-UP BUYER MODEL — EDITABLE
         </div>
-        <div style="font-size:10px;opacity:.8;margin-top:2px">
+        <div style="font-size:10px;opacity:.8;margin-top:2px" id="bm-header-totals">
           TAM = ${tam} &nbsp;·&nbsp; SAM = ${sam} &nbsp;·&nbsp; SOM = ${som}
         </div>
       </div>
@@ -3114,7 +3123,7 @@ function _applyBuyerModelUpdate(data) {
   if (!panel) return;
 
   // Update the header totals
-  const hdr = panel.querySelector('div[style*="background:var(--blue)"] div:first-child div:last-child');
+  const hdr = document.getElementById('bm-header-totals');
   if (hdr) {
     hdr.textContent = `TAM = ${data.tam_fmt} · SAM = ${data.sam_fmt} · SOM = ${data.som_fmt}`;
   }
@@ -3123,11 +3132,11 @@ function _applyBuyerModelUpdate(data) {
   const container = document.getElementById('bm-steps-container');
   if (container && data.steps) {
     function _fmtStep(s, i) {
-      const isInput = i < 2;
-      const editNode = ['pop','sp','sam_rate','som_rate'][i];
+      const editNode = {0:'pop', 1:'sp', 3:'sam_rate', 4:'som_rate'}[i] || null;
       const val = s.value != null
-        ? (i < 2 ? (i===0 ? s.value.toLocaleString()+' labs' : '$'+Math.round(s.value).toLocaleString()+'/yr') : (() => {
+        ? (i === 0 ? s.value.toLocaleString()+' labs' : i === 1 ? '$'+Math.round(s.value).toLocaleString()+'/yr' : (() => {
             const v = s.value;
+            if (v >= 1e9) return '$'+(v/1e9).toFixed(1)+'B';
             if (v >= 1e6) return '$'+(v/1e6).toFixed(1)+'M';
             if (v >= 1e3) return '$'+Math.round(v/1e3)+'K';
             return '$'+v.toLocaleString();
@@ -3182,6 +3191,40 @@ function _applyBuyerModelUpdate(data) {
     const prEl = document.getElementById('comm-overall-priority');
     if (prEl) prEl.textContent = `overall ${Math.round(data.recommendation_update.overall_priority * 100)}% ↻`;
   }
+
+  // Item 10: Export unlock — if the buyer model edit resolves all math errors,
+  // update lastReport.validation in place and re-render the verification badge.
+  // SAM ≤ TAM and SOM ≤ SAM are guaranteed by _recompute_buyer_model on the backend;
+  // we only need to confirm the numbers are structurally valid before clearing.
+  try {
+    const nodes = data.nodes || {};
+    const newTam = parseFloat(nodes.us_tam_usd || 0);
+    const newSam = parseFloat(nodes.us_sam_usd || 0);
+    const newSom = parseFloat(nodes.us_som_usd || 0);
+    const mathOk = newTam > 0 && newSam <= newTam && newSom <= newSam;
+    if (mathOk && typeof lastReport !== 'undefined' && lastReport && lastReport.validation) {
+      const val = lastReport.validation;
+      if (val.status === 'BLOCKING' || val.status === 'ERROR') {
+        // Remove math verifier errors; keep any other agent errors
+        const remaining = (val.errors || []).filter(e =>
+          !((e.agent || '').toLowerCase().includes('math'))
+        );
+        val.errors = remaining;
+        if (remaining.length === 0) {
+          val.status = 'PASS';
+          val.summary = '✓ PASS: Market model verified after user edit — SAM ≤ TAM, SOM ≤ SAM confirmed.';
+          val.export_blocked = false;
+        } else {
+          val.status = 'FLAG';
+        }
+        const slot = document.getElementById('verification-slot');
+        if (slot) slot.innerHTML = buildVerificationBadgesHTML(lastReport);
+        // Remove the export-blocked banner from the buyer model panel header
+        const bmBlock = document.getElementById('bm-blocking-banner');
+        if (bmBlock) bmBlock.remove();
+      }
+    }
+  } catch (_unlockErr) { /* non-fatal */ }
 }
 
 async function _showModelHistory(reportId) {
