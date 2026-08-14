@@ -6953,30 +6953,29 @@ async function downloadPDF() {
     // 7 — Competitive Landscape — always rendered (mirrors HTML which always shows this chapter).
     // Parity fix: HTML renders this chapter unconditionally (with a loading placeholder when
     // data is absent); PDF must also always render it so section numbers stay in sync.
-    {
-      const cl = r.competitive_landscape;
-      const hasCL = cl && (cl.competitors||[]).length;
-      heading(++_pSec,'Competitive Landscape');
-      if (hasCL) {
-        if(cl.summary) para(cl.summary);
-        // Research tools use a different schema (overlap/where_you_win/switching_cost instead of approval_status/pipeline counts)
-        const isResearchCL = (cl.competitors||[]).some(c=>c.overlap||c.where_you_win||c.switching_cost);
-        (cl.competitors||[]).slice(0,12).forEach(c=>{
-          if(isResearchCL){
-            para(clean(c.name)+(c.category?' ['+clean(c.category)+']':''), {bold:true,gap:0.5});
-            if(c.overlap) para('Overlap: '+clean(c.overlap), {size:9,x:margin+4,w:contentW-4,gap:0.3});
-            if(c.where_you_win) para('Advantage: '+clean(c.where_you_win), {size:9,x:margin+4,w:contentW-4,gap:0.3});
-            if(c.where_you_lose) para('Disadvantage: '+clean(c.where_you_lose), {size:9,x:margin+4,w:contentW-4,color:SUB,gap:0.3});
-            if(c.switching_cost) para('Switching cost: '+clean(c.switching_cost), {size:9,x:margin+4,w:contentW-4,gap:0.3});
-            if(c.price_point) para('Price: '+clean(c.price_point), {size:8.3,x:margin+4,w:contentW-4,color:SUB,gap:0.5});
-          } else {
-            bullet(clean(c.name)+(c.company?(' — '+clean(c.company)):'')+(c.stage?(' ['+clean(c.stage)+']'):''));
-            if(c.approval_status) para('Status: '+clean(c.approval_status)+(c.approval_count!=null?' ('+c.approval_count+' approved)':''), {size:8.5,x:margin+6,w:contentW-6,color:SUB,gap:0.3});
-          }
-        });
-      } else {
-        para('Competitive landscape data not available for this report.', {size:9,color:SUB});
-      }
+    // hasCL is declared here (not inside {}) so it's visible to the Sources heading below.
+    const _clData = r.competitive_landscape;
+    const hasCL = _clData && (_clData.competitors||[]).length;
+    heading(++_pSec,'Competitive Landscape');
+    if (hasCL) {
+      if(_clData.summary) para(_clData.summary);
+      // Research tools use a different schema (overlap/where_you_win/switching_cost instead of approval_status/pipeline counts)
+      const isResearchCL = (_clData.competitors||[]).some(c=>c.overlap||c.where_you_win||c.switching_cost);
+      (_clData.competitors||[]).slice(0,12).forEach(c=>{
+        if(isResearchCL){
+          para(clean(c.name)+(c.category?' ['+clean(c.category)+']':''), {bold:true,gap:0.5});
+          if(c.overlap) para('Overlap: '+clean(c.overlap), {size:9,x:margin+4,w:contentW-4,gap:0.3});
+          if(c.where_you_win) para('Advantage: '+clean(c.where_you_win), {size:9,x:margin+4,w:contentW-4,gap:0.3});
+          if(c.where_you_lose) para('Disadvantage: '+clean(c.where_you_lose), {size:9,x:margin+4,w:contentW-4,color:SUB,gap:0.3});
+          if(c.switching_cost) para('Switching cost: '+clean(c.switching_cost), {size:9,x:margin+4,w:contentW-4,gap:0.3});
+          if(c.price_point) para('Price: '+clean(c.price_point), {size:8.3,x:margin+4,w:contentW-4,color:SUB,gap:0.5});
+        } else {
+          bullet(clean(c.name)+(c.company?(' — '+clean(c.company)):'')+(c.stage?(' ['+clean(c.stage)+']'):''));
+          if(c.approval_status) para('Status: '+clean(c.approval_status)+(c.approval_count!=null?' ('+c.approval_count+' approved)':''), {size:8.5,x:margin+6,w:contentW-6,color:SUB,gap:0.3});
+        }
+      });
+    } else {
+      para('Competitive landscape data not available for this report.', {size:9,color:SUB});
     }
 
     // Sources & citations — aggregate the same way the web renderer does
