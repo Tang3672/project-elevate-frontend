@@ -6443,13 +6443,18 @@ async function downloadPDF() {
     const r = (typeof lastReport !== 'undefined' && lastReport) ? lastReport : null;
     if (!r) { alert('Please run an analysis first.'); if (btn){btn.textContent=origText;btn.disabled=false;} return; }
 
-    // B-02: Block export when the Math Verifier found an arithmetic inconsistency.
+    // B-02 (updated): Blocking state downgrades to watermarked draft. Blocking the
+    // export entirely is worse than an artifact that's visibly marked DRAFT with
+    // errors printed on page 1. The user confirms before continuing.
     const _valStatus = (r.validation || {}).status;
-    if (_valStatus === 'BLOCKING' || (r.validation || {}).export_blocked) {
-      const _msg = (r.validation || {}).summary || 'The Math Verifier found an arithmetic error in the market model.';
-      alert('⛔ PDF export is blocked.\n\n' + _msg + '\n\nCorrect the flagged errors and regenerate before exporting.');
-      if (btn) { btn.textContent = origText; btn.disabled = false; }
-      return;
+    const _isDraftExport = _valStatus === 'BLOCKING' || (r.validation || {}).export_blocked;
+    if (_isDraftExport) {
+      const _draftMsg = (r.validation || {}).summary || 'The Math Verifier found an arithmetic error in the market model.';
+      const _proceed = confirm(
+        'Math Verifier errors detected.\n\n' + _draftMsg +
+        '\n\nThe PDF will be exported as a DRAFT with errors listed on the first page.\n\nProceed with draft export?'
+      );
+      if (!_proceed) { if (btn){btn.textContent=origText;btn.disabled=false;} return; }
     }
 
     const { jsPDF } = window.jspdf;
@@ -6478,8 +6483,17 @@ async function downloadPDF() {
       pdf.setFont('helvetica','normal'); pdf.setFontSize(7); pdf.setTextColor(148,163,184);
       const _hdrSub = (r && (r.domain||'').toLowerCase().includes('research')) ? 'Commercialization Intelligence Report' : 'Market Intelligence Report';
       pdf.text(_hdrSub,10,13.5);
-      pdf.text(dateStr, pageW-margin, 8, {align:'right'});
-      pdf.text('medlevate.netlify.app', pageW-margin, 13.5, {align:'right'});
+      // Draft export: stamp a red DRAFT badge in the header bar on every page.
+      if (_isDraftExport) {
+        pdf.setFillColor(180,0,0); pdf.rect(pageW-56,3,54,12,'F');
+        pdf.setTextColor(255,255,255); pdf.setFont('helvetica','bold'); pdf.setFontSize(7.5);
+        pdf.text('DRAFT - UNVERIFIED', pageW-29, 8.5, {align:'center'});
+        pdf.setFont('helvetica','normal'); pdf.setFontSize(6);
+        pdf.text('math errors detected', pageW-29, 13, {align:'center'});
+      } else {
+        pdf.text(dateStr, pageW-margin, 8, {align:'right'});
+        pdf.text('medlevate.netlify.app', pageW-margin, 13.5, {align:'right'});
+      }
       y=25;
     }
     function footer(){
@@ -6508,6 +6522,26 @@ async function downloadPDF() {
       if(url){ pdf.setTextColor(LINK[0],LINK[1],LINK[2]); pdf.splitTextToSize(clean(url),contentW-4).forEach(l=>{ ensure(3.8); pdf.textWithLink(l,margin+4,y,{url:url}); y+=3.7; }); } y+=1; }
 
     header();
+
+    // Draft export error block — errors listed on page 1 before the report body.
+    if (_isDraftExport) {
+      const _DR = [153,27,27];
+      const _draftErrs = ((r.validation || {}).errors || []);
+      const _draftBlockH = 8 + (_draftErrs.length ? _draftErrs.length * 4.5 : 0) + 6;
+      pdf.setFillColor(254,226,226); pdf.rect(margin, y, contentW, _draftBlockH, 'F');
+      pdf.setDrawColor(220,38,38); pdf.setLineWidth(0.4); pdf.rect(margin, y, contentW, _draftBlockH, 'S');
+      pdf.setTextColor(_DR[0],_DR[1],_DR[2]); pdf.setFont('helvetica','bold'); pdf.setFontSize(8);
+      pdf.text('DRAFT — Math Verifier errors detected. Correct before sharing.', margin+3, y+5.5);
+      y += 8;
+      if (_draftErrs.length) {
+        _draftErrs.forEach(e => {
+          const _et = clean((e.agent||'')+(e.agent?': ':'')+((e.issue||e.message||e.field||'')));
+          if(_et){ pdf.setFont('helvetica','normal'); pdf.setFontSize(7); pdf.setTextColor(_DR[0],_DR[1],_DR[2]);
+            pdf.splitTextToSize(_et, contentW-8).forEach(l=>{ pdf.text(l,margin+5,y); y+=3.8; }); }
+        });
+      }
+      y += 6;
+    }
 
     // Title block
     const cond = clean(r.product_name || (r.disease_intelligence&&r.disease_intelligence.condition) || r.idea_submitted || 'Market Intelligence Report');
