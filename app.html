@@ -1874,12 +1874,8 @@ function renderPIReport(r) {
     const ms = r.market_sizing;
     html += chapterHeader(++_sec, 'The Market', 'How large is the opportunity, who will pay, and what can you realistically capture');
 
-    const tamVal = ms.total_addressable_market_usd >= 1e9
-      ? `$${(ms.total_addressable_market_usd/1e9).toFixed(1)}B`
-      : `$${(ms.total_addressable_market_usd/1e6).toFixed(0)}M`;
-    const samVal = ms.serviceable_market_usd >= 1e9
-      ? `$${(ms.serviceable_market_usd/1e9).toFixed(1)}B`
-      : `$${(ms.serviceable_market_usd/1e6).toFixed(0)}M`;
+    const tamVal = fmtUSD(ms.total_addressable_market_usd);
+    const samVal = fmtUSD(ms.serviceable_market_usd);
 
     // Domain-aware intro prose — never inject pharma vocabulary for research tools
     const _msSteps = ms.derivation_steps || [];
@@ -5953,7 +5949,7 @@ async function loadDiscoveryForBuilder() {
     grid.innerHTML = markets.map(o => {
       const icon = _TA_ICONS[o.therapeutic_area] || '💊';
       const sam  = o.sam_fmt || o.peak_revenue_fmt || o.sam || '—';
-      const tam  = o.us_tam_fmt || (o.us_tam_usd ? '$'+Math.round(o.us_tam_usd/1e6)+'M' : o.tam || '—');
+      const tam  = o.us_tam_fmt || (o.us_tam_usd ? fmtUSD(o.us_tam_usd) : o.tam || '—');
       return `<div class="build-market-card" data-disease="${o.disease}" data-ta="${o.therapeutic_area||o.ta||''}" data-score="${o.score}" data-tam="${sam}" onclick="toggleMarketCard(this)">
         <div class="sel-check">✓</div>
         <div style="font-size:16px;margin-bottom:4px">${icon}</div>
@@ -6462,7 +6458,7 @@ function renderDiscovery(opps, isFiltered) {
     const enr = o.enrichment    || {};
     const pop   = (o.us_patient_population || 0).toLocaleString();
     const price = o.annual_cost_usd ? '$' + o.annual_cost_usd.toLocaleString() : '—';
-    const tamRaw = o.us_tam_usd ? (o.us_tam_usd >= 1e9 ? `$${(o.us_tam_usd/1e9).toFixed(1)}B` : `$${(o.us_tam_usd/1e6).toFixed(0)}M`) : tam;
+    const tamRaw = o.us_tam_usd ? fmtUSD(o.us_tam_usd) : tam;
     const eligible   = ms.eligible_patients ? ms.eligible_patients.toLocaleString() : '—';
     const diagYield  = ms.diagnostic_yield  ? (ms.diagnostic_yield * 100).toFixed(0) + '%' : '—';
     const treatElig  = (o.us_patient_population && ms.eligible_patients && ms.diagnostic_yield)
@@ -6783,9 +6779,8 @@ async function downloadPDF() {
     // Criterion 7: use live formatted values when user has edited the model
     const _mFmt = window._bmFormatted || {};
     heading(++_pSec,'The Market');
-    const _pdfFmtUsd = v => v >= 1e9 ? '$'+(v/1e9).toFixed(1)+'B' : '$'+(v/1e6).toFixed(0)+'M';
-    const _pdfTam = _mFmt.tam || (ms.total_addressable_market_usd ? _pdfFmtUsd(ms.total_addressable_market_usd) : null);
-    const _pdfSam = _mFmt.sam || (ms.serviceable_market_usd ? _pdfFmtUsd(ms.serviceable_market_usd) : null);
+    const _pdfTam = _mFmt.tam || (ms.total_addressable_market_usd ? fmtUSD(ms.total_addressable_market_usd) : null);
+    const _pdfSam = _mFmt.sam || (ms.serviceable_market_usd ? fmtUSD(ms.serviceable_market_usd) : null);
     const _pdfSom = _mFmt.som;
     if (_pdfTam) para('TAM '+_pdfTam+(_pdfSam?' · SAM '+_pdfSam:'')+(_pdfSom?' · SOM '+_pdfSom:''), {bold:true,size:10,gap:1});
     if (ms.formula) para(ms.formula, {bold:true});
