@@ -411,6 +411,15 @@ function init() {
     getProblems: function () { return problems(derive(state)); },
     format:      { usd: usd, int: int, pct: pct },
     onChange:    function (cb) { listeners.push(cb); },
+    /* Inject persisted ops after async load (e.g. on page reload). */
+    loadOps: function (savedOps) {
+      (savedOps || []).forEach(function (o) {
+        if (o.op === 'note') notes.push(o);
+        else ops.push(o);
+      });
+      renderLedger();
+      paint();
+    },
     exportPayload: function () {
       var v = derive(state);
       return {
@@ -429,6 +438,16 @@ function init() {
       };
     }
   };
+
+  /* ------------------------------------------------- load persisted assumptions
+     Fires async so the initial paint is instant; saved ops arrive and re-render
+     without blocking. No-ops silently if the endpoint returns empty or errors. */
+  if (REPORT_ID) {
+    fetch(API_BASE + '/alignment/reports/' + REPORT_ID + '/assumptions')
+      .then(function (r) { return r.ok ? r.json() : []; })
+      .then(function (saved) { if (saved && saved.length) window.MedlevateModel.loadOps(saved); })
+      .catch(function () {});
+  }
 
   /* ------------------------------------------------------ narrative staleness
      Paragraphs tagged [data-narrative][data-sensitive-to="tam,sam,..."] get
