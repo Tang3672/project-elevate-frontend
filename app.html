@@ -1888,22 +1888,22 @@ function renderPIReport(r) {
     if (_isResearchDomain) {
       const _unitLabel = (ms.unit || 'funded labs');
       const _methodsStr = _msMethodNote || 'buyer population model × observed spend band';
-      _msIntroProse = `TAM is <strong>${tamVal}</strong>, built bottom-up from NIH-funded ${_unitLabel} running instrumented experiments. SAM of <strong>${samVal}</strong> applies reachability and adoption gates. Methodology: ${_methodsStr}.`;
+      _msIntroProse = `TAM is <strong><span class="mv" data-node="tam">${tamVal}</span></strong>, built bottom-up from NIH-funded ${_unitLabel} running instrumented experiments. SAM of <strong><span class="mv" data-node="sam">${samVal}</span></strong> applies reachability and adoption gates. Methodology: ${_methodsStr}.`;
     } else {
       const _samGateNote = ms.sam_gate_note || 'reachability, competitive share, and geography';
-      _msIntroProse = `The total addressable market is <strong>${tamVal}</strong>. The serviceable market, filtered by ${_samGateNote}, is <strong>${samVal}</strong>. The derivation below builds this from primary sources.`;
+      _msIntroProse = `The total addressable market is <strong><span class="mv" data-node="tam">${tamVal}</span></strong>. The serviceable market, filtered by ${_samGateNote}, is <strong><span class="mv" data-node="sam">${samVal}</span></strong>. The derivation below builds this from primary sources.`;
     }
     html += `<div class="narrative-block">${_msIntroProse}</div>`;
 
     html += `<div class="ms-totals">
       <div class="ms-total-cell">
         <div class="ms-total-lbl">Total Addressable Market (TAM)</div>
-        <div class="ms-total-val" id="ms-headline-tam">${tamVal}</div>
+        <div class="ms-total-val mv" id="ms-headline-tam" data-node="tam">${tamVal}</div>
         <div class="ms-total-sub">${_isResearchDomain ? 'Full buyer population at observed spend' : 'Full market if 100% penetration'}</div>
       </div>
       <div class="ms-total-cell">
         <div class="ms-total-lbl">Serviceable Market (SAM)</div>
-        <div class="ms-total-val" style="color:var(--green)" id="ms-headline-sam">${samVal}</div>
+        <div class="ms-total-val mv" style="color:var(--green)" id="ms-headline-sam" data-node="sam">${samVal}</div>
         <div class="ms-total-sub">Realistic capture scenario</div>
       </div>
     </div>`;
@@ -1922,13 +1922,24 @@ function renderPIReport(r) {
         : `<span style="color:var(--text-4)">${s.source || 'No source'}</span>`;
       // Strip "Step N — " prefix from label to avoid "Step 1 - Step 1 -" duplication
       const _stepLabel = (s.label||'').replace(/^Step\s+\d+\s*[-–—]\s*/i,'');
+      const _msStepNid = (() => {
+        const t = (s.label||'').toLowerCase();
+        if (/eligible|buyer\s*pop|funded\s*lab/.test(t)) return 'buyer_population';
+        if (/annual\s*spend|spend\s*per|arpu/.test(t)) return 'spend_per_unit';
+        if (/sam\s*rate|adoption\s*rate|reachab/.test(t)) return 'sam_rate';
+        if (/som\s*rate|5[._]yr|bass/.test(t)) return 'som_rate';
+        if (/\btam\b/.test(t) && !/rate/.test(t)) return 'tam';
+        if (/\bsam\b/.test(t) && !/rate/.test(t)) return 'sam';
+        if (/\bsom\b/.test(t) && !/rate/.test(t)) return 'som';
+        return null;
+      })();
       html += `<div class="ms-step">
         <div>
           <div class="ms-step-label">${_stepLabel}</div>
           ${s.notes ? `<div class="ms-step-source">${s.notes}</div>` : ''}
           <div class="ms-step-source">Source: ${srcHtml}</div>
         </div>
-        <div class="ms-step-value">${fmt(s.value)}</div>
+        <div class="ms-step-value${_msStepNid?' mv':''}"${_msStepNid?` data-node="${_msStepNid}"`:''}>${fmt(s.value)}</div>
         <div class="ms-step-unit">${s.unit}</div>
       </div>`;
     });
@@ -3200,7 +3211,7 @@ function _applyBuyerModelUpdate(data) {
   }
 
   // Apply node-graph formatted values (v9 override endpoint)
-  if (data.formatted) applyValues(data.formatted);
+  if (data.formatted) { applyValues(data.formatted); window._bmFormatted = data.formatted; }
 
   // Re-render steps if the legacy endpoint returned a step list
   const container = document.getElementById('bm-steps-container');
@@ -3525,10 +3536,10 @@ function _renderDerivationPanel(d) {
       <!-- The master formula -->
       <div style="background:rgba(255,255,255,.12);padding:10px 14px;border-radius:3px;margin-bottom:10px;font-family:var(--display)">
         <div style="font-size:15px;font-weight:700;letter-spacing:.02em">
-          TAM = N × D × T × P &nbsp;=&nbsp; ${d.tam_fmt}
+          TAM = N × D × T × P &nbsp;=&nbsp; <span class="mv" data-node="tam">${d.tam_fmt}</span>
         </div>
         <div style="font-size:11px;opacity:.8;margin-top:4px">
-          SAM = TAM × F₅ = ${d.sam_fmt} &nbsp;·&nbsp; SOM = SAM × σ = ${d.som_fmt}
+          SAM = TAM × F₅ = <span class="mv" data-node="sam">${d.sam_fmt}</span> &nbsp;·&nbsp; SOM = SAM × σ = <span class="mv" data-node="som">${d.som_fmt}</span>
         </div>
       </div>
       <!-- Variable key -->
@@ -6905,10 +6916,26 @@ async function downloadPDF() {
 
     // 2 — Market
     const ms = r.market_sizing||{};
+    // Criterion 7: use live formatted values when user has edited the model
+    const _mFmt = window._bmFormatted || {};
     heading(++_pSec,'The Market');
+    const _pdfFmtUsd = v => v >= 1e9 ? '$'+(v/1e9).toFixed(1)+'B' : '$'+(v/1e6).toFixed(0)+'M';
+    const _pdfTam = _mFmt.tam || (ms.total_addressable_market_usd ? _pdfFmtUsd(ms.total_addressable_market_usd) : null);
+    const _pdfSam = _mFmt.sam || (ms.serviceable_market_usd ? _pdfFmtUsd(ms.serviceable_market_usd) : null);
+    const _pdfSom = _mFmt.som;
+    if (_pdfTam) para('TAM '+_pdfTam+(_pdfSam?' · SAM '+_pdfSam:'')+(_pdfSom?' · SOM '+_pdfSom:''), {bold:true,size:10,gap:1});
     if (ms.formula) para(ms.formula, {bold:true});
     (ms.steps||[]).forEach((s,i)=>{
-      const v = (typeof s.value==='number')? s.value.toLocaleString() : clean(s.value);
+      const _msNid = (() => {
+        const t = (s.label||'').toLowerCase();
+        if (/eligible|buyer\s*pop|funded\s*lab/.test(t)) return 'buyer_population';
+        if (/annual\s*spend|spend\s*per|arpu/.test(t)) return 'spend_per_unit';
+        if (/\btam\b/.test(t) && !/rate/.test(t)) return 'tam';
+        if (/\bsam\b/.test(t) && !/rate/.test(t)) return 'sam';
+        if (/\bsom\b/.test(t) && !/rate/.test(t)) return 'som';
+        return null;
+      })();
+      const v = (_msNid && _mFmt[_msNid]) ? _mFmt[_msNid] : ((typeof s.value==='number')? s.value.toLocaleString() : clean(s.value));
       // F-7: strip "Step N" or "Step N — desc" prefix to avoid "Step 1 — Step 1 — desc"
       // The separator [-–—] is optional so bare "Step 1" labels are also stripped.
       const _rawLabel = clean(s.label||'').replace(/^Step\s+\d+\s*[-–—]?\s*/i,'').trim();
