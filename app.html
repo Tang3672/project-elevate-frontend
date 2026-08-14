@@ -1882,16 +1882,27 @@ function renderPIReport(r) {
     const samVal = fmtUSD(ms.serviceable_market_usd);
 
     // Domain-aware intro prose — never inject pharma vocabulary for research tools
-    const _msSteps = ms.derivation_steps || [];
+    const _msSteps = ms.derivation_steps || ms.steps || [];
     const _msMethodNote = ms.methodology_note || '';
+    // Extract step values for data-node spans so the prose updates live with edits.
+    // Graceful: if a step isn't present (unusual schema), the span is omitted.
+    const _msBuyerStep = _msSteps.find(s => /eligible|buyer\s*pop|funded\s*lab/.test((s.label||'').toLowerCase()));
+    const _msSpendStep = _msSteps.find(s => /annual\s*spend|spend\s*per|arpu/.test((s.label||'').toLowerCase()));
+    const _msSomStep   = _msSteps.find(s => /\bsom\b/.test((s.label||'').toLowerCase()) && !/rate/.test((s.label||'').toLowerCase()));
+    const _popNode   = _msBuyerStep != null ? `<span class="mv" data-node="buyer_population">${fmt(_msBuyerStep.value)}</span>` : '';
+    const _spendNode = _msSpendStep != null ? `<span class="mv" data-node="spend_per_unit">${fmtUSD(_msSpendStep.value)}</span>` : '';
+    const _somNode   = _msSomStep   != null ? `<span class="mv" data-node="som">${fmtUSD(_msSomStep.value)}</span>` : '';
     let _msIntroProse;
     if (_isResearchDomain) {
       const _unitLabel = (ms.unit || 'funded labs');
       const _methodsStr = _msMethodNote || 'buyer population model × observed spend band';
-      _msIntroProse = `TAM is <strong><span class="mv" data-node="tam">${tamVal}</span></strong>, built bottom-up from NIH-funded ${_unitLabel} running instrumented experiments. SAM of <strong><span class="mv" data-node="sam">${samVal}</span></strong> applies reachability and adoption gates. Methodology: ${_methodsStr}.`;
+      const _somSuffix = _somNode ? ` · SOM ${_somNode}` : '';
+      _msIntroProse = `TAM is <strong><span class="mv" data-node="tam">${tamVal}</span></strong>, built bottom-up from ${_popNode ? _popNode + ' ' : ''}NIH-funded ${_unitLabel}${_spendNode ? ' at ' + _spendNode + '/unit' : ''} running instrumented experiments. SAM <strong><span class="mv" data-node="sam">${samVal}</span></strong>${_somSuffix} — applies reachability and adoption gates. Methodology: ${_methodsStr}.`;
     } else {
       const _samGateNote = ms.sam_gate_note || 'reachability, competitive share, and geography';
-      _msIntroProse = `The total addressable market is <strong><span class="mv" data-node="tam">${tamVal}</span></strong>. The serviceable market, filtered by ${_samGateNote}, is <strong><span class="mv" data-node="sam">${samVal}</span></strong>. The derivation below builds this from primary sources.`;
+      const _unitDetail = (_popNode || _spendNode) ? ` (${[_popNode, _spendNode].filter(Boolean).join(' · ')})` : '';
+      const _somSuffix  = _somNode ? ` SOM is ${_somNode}.` : '';
+      _msIntroProse = `The total addressable market is <strong><span class="mv" data-node="tam">${tamVal}</span></strong>${_unitDetail}. The serviceable market, filtered by ${_samGateNote}, is <strong><span class="mv" data-node="sam">${samVal}</span></strong>.${_somSuffix} The derivation below builds this from primary sources.`;
     }
     html += `<div class="narrative-block" data-narrative="market_intro" data-sensitive-to="tam,sam">${_msIntroProse}</div>`;
 
@@ -2014,7 +2025,7 @@ function renderPIReport(r) {
                 <div class="ms-step-label">${w.label} ${roleBadge}</div>
                 <div class="ms-step-source"><span style="color:var(--text-4)">${w.source_name || 'Bottom-up derivation'}</span></div>
               </div>
-              <div class="ms-step-value" id="${aggId}" style="font-variant-numeric:tabular-nums">${_wval(w.value, w.unit)}</div>
+              <div class="ms-step-value mv" id="${aggId}" data-node="${w.used_in_formula.toLowerCase()}" style="font-variant-numeric:tabular-nums">${_wval(w.value, w.unit)}</div>
               <div class="ms-step-unit"><span id="ms-delta-${w.used_in_formula}" style="display:none;font-size:10px;font-weight:700;padding:1px 6px;border-radius:3px;margin-right:4px"></span>${w.unit || ''}</div>
             </div>`;
           } else {
