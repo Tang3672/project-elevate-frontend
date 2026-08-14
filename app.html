@@ -2973,8 +2973,10 @@ function _renderBuyerModelPanel(d, reportId) {
 
   function _stepRow(step, i, d) {
     const isInput  = i < 2;
-    // Steps: 0=pop, 1=spend, 2=TAM (computed from 0×1), 3=SAM (edit sam_rate), 4=SOM (edit som_rate)
-    const editNode = {0:'pop', 1:'sp', 3:'sam_rate', 4:'som_rate'}[i] || null;
+    // Steps: 0=buyer_population, 1=spend_per_unit, 2=tam, 3=sam (edit sam_rate), 4=som (edit som_rate)
+    const NODE_IDS = {0:'buyer_population', 1:'spend_per_unit', 2:'tam', 3:'sam', 4:'som'};
+    const nodeId   = NODE_IDS[i] || '';
+    const editNode = {0:'buyer_population', 1:'spend_per_unit', 3:'sam_rate', 4:'som_rate'}[i] || null;
     const val = step.value != null
       ? (i === 0 ? _num(step.value)+' labs' : i === 1 ? _fmt(step.value)+'/yr' : _fmt(step.value))
       : '—';
@@ -2990,8 +2992,8 @@ function _renderBuyerModelPanel(d, reportId) {
           ${step.explanation ? `<div style="font-size:11px;color:var(--text-3);margin-top:4px;line-height:1.5">${step.explanation}</div>` : ''}
         </div>
         <div style="text-align:right;min-width:90px">
-          <div class="bm-step-val" data-step="${i}" style="font-family:var(--mono);font-size:13px;
-               font-weight:700;color:var(--text)">${val}</div>
+          <div class="bm-step-val mv" data-step="${i}" data-node="${nodeId}"
+               style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--text)">${val}</div>
           ${editNode ? `<button onclick="_openNodeEdit('${editNode}','${reportId}')"
             style="margin-top:4px;font-size:10px;font-family:var(--body);color:var(--blue);
                    background:var(--blue-lite);border:1px solid #d0d9f5;padding:2px 8px;
@@ -3072,10 +3074,10 @@ let _bm_active_report = null;
 
 function _openNodeEdit(nodeId, reportId) {
   const labels = {
-    pop:      ['Lab population (number of labs)', 'Enter the midpoint number of eligible labs'],
-    sp:       ['Annual spend per lab ($/yr)', 'Enter the midpoint annual spend per lab in USD'],
-    sam_rate: ['SAM adoption rate (0–1)', 'Enter the fraction of eligible labs expected to adopt (e.g. 0.5 for 50%)'],
-    som_rate: ['SOM 5-yr penetration (0–1)', 'Enter the 5-year market penetration fraction (e.g. 0.15 for 15%)'],
+    buyer_population: ['Lab population (number of labs)', 'Enter the midpoint number of eligible labs'],
+    spend_per_unit:   ['Annual spend per lab ($/yr)', 'Enter the midpoint annual spend per lab in USD'],
+    sam_rate:         ['SAM adoption rate (0–1)', 'Enter the fraction of eligible labs expected to adopt (e.g. 0.5 for 50%)'],
+    som_rate:         ['SOM 5-yr penetration (0–1)', 'Enter the 5-year market penetration fraction (e.g. 0.15 for 15%)'],
   };
   _bm_active_node   = nodeId;
   _bm_active_report = reportId;
@@ -3099,10 +3101,10 @@ async function _submitNodeEdit() {
   statusEl.textContent = 'Recomputing…';
   const token = localStorage.getItem('pe_token');
   try {
-    const res = await fetch(`${API}/alignment/market-model/${_bm_active_report}/edit`, {
+    const res = await fetch(`${API}/alignment/market-model/${_bm_active_report}/override`, {
       method: 'POST',
       headers: {'Content-Type':'application/json','Authorization':`Bearer ${token||''}`},
-      body: JSON.stringify({ node_id: _bm_active_node, value_mid: val, rationale: rat }),
+      body: JSON.stringify({ node_id: _bm_active_node, value: val, rationale: rat }),
     });
     if (!res.ok) {
       const err = await res.json().catch(()=>({}));
@@ -3128,11 +3130,16 @@ function _applyBuyerModelUpdate(data) {
     hdr.textContent = `TAM = ${data.tam_fmt} · SAM = ${data.sam_fmt} · SOM = ${data.som_fmt}`;
   }
 
-  // Re-render steps
+  // Apply node-graph formatted values (v9 override endpoint)
+  if (data.formatted) applyValues(data.formatted);
+
+  // Re-render steps if the legacy endpoint returned a step list
   const container = document.getElementById('bm-steps-container');
   if (container && data.steps) {
+    const _NODE_IDS = {0:'buyer_population', 1:'spend_per_unit', 2:'tam', 3:'sam', 4:'som'};
     function _fmtStep(s, i) {
-      const editNode = {0:'pop', 1:'sp', 3:'sam_rate', 4:'som_rate'}[i] || null;
+      const nodeId   = _NODE_IDS[i] || '';
+      const editNode = {0:'buyer_population', 1:'spend_per_unit', 3:'sam_rate', 4:'som_rate'}[i] || null;
       const val = s.value != null
         ? (i === 0 ? s.value.toLocaleString()+' labs' : i === 1 ? '$'+Math.round(s.value).toLocaleString()+'/yr' : (() => {
             const v = s.value;
@@ -3151,7 +3158,8 @@ function _applyBuyerModelUpdate(data) {
             <div style="font-family:var(--mono);font-size:11px;color:var(--text-3)">${s.formula||''}</div>
           </div>
           <div style="text-align:right;min-width:90px">
-            <div style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--text)">${val}</div>
+            <div class="bm-step-val mv" data-step="${i}" data-node="${nodeId}"
+                 style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--text)">${val}</div>
             ${editNode ? `<button onclick="_openNodeEdit('${editNode}','${_bm_active_report}')"
               style="margin-top:4px;font-size:10px;font-family:var(--body);color:var(--blue);
                      background:var(--blue-lite);border:1px solid #d0d9f5;padding:2px 8px;
@@ -3162,18 +3170,27 @@ function _applyBuyerModelUpdate(data) {
     container.innerHTML = data.steps.map((s,i) => _fmtStep(s,i)).join('');
   }
 
-  // Show diff bar
-  if (data.diff && data.diff.length) {
+  // Show diff bar — handles both v9 object diff and legacy array diff
+  if (data.diff) {
     const bar = document.getElementById('bm-diff-bar');
-    const changes = data.diff.filter(d => !d.computed).map(d => {
-      const labels = {pop_lo:'pop low',pop_hi:'pop high',sp_lo:'spend low',sp_hi:'spend high',
-                      sam_lo:'SAM rate low',sam_hi:'SAM rate high',som_lo:'SOM rate low',som_hi:'SOM rate high'};
-      const fmt = (v,k) => k.includes('lo')||k.includes('hi')&&!k.includes('sam')&&!k.includes('som')
-        ? v.toLocaleString() : v;
-      return `${labels[d.param]||d.param}: ${fmt(d.old,d.param)} → ${fmt(d.new,d.param)}`;
-    });
-    bar.textContent = `Version ${data.version}: ${data.rationale} | Changed: ${changes.join('; ')}`;
-    bar.style.display = 'block';
+    let changes = [];
+    if (Array.isArray(data.diff)) {
+      const legacyLabels = {pop_lo:'pop low',pop_hi:'pop high',sp_lo:'spend low',sp_hi:'spend high',
+                            sam_lo:'SAM rate low',sam_hi:'SAM rate high',som_lo:'SOM rate low',som_hi:'SOM rate high'};
+      changes = data.diff.filter(d => !d.computed)
+        .map(d => `${legacyLabels[d.param]||d.param}: ${d.old} → ${d.new}`);
+    } else {
+      const nodeLabels = {buyer_population:'population', spend_per_unit:'spend/lab',
+                          tam:'TAM', sam_rate:'SAM rate', sam:'SAM', som_rate:'SOM rate', som:'SOM'};
+      changes = Object.entries(data.diff).map(([nid, d]) => {
+        const sign = d.pct > 0 ? '+' : '';
+        return `${nodeLabels[nid]||nid}: ${sign}${d.pct}%`;
+      });
+    }
+    if (changes.length) {
+      bar.textContent = `Version ${data.version}: ${data.rationale||''} | Changed: ${changes.join('; ')}`;
+      bar.style.display = 'block';
+    }
   }
 
   // Item 9: recommendation is recommend(model) — update live when buyer-model nodes change
@@ -3225,6 +3242,15 @@ function _applyBuyerModelUpdate(data) {
       }
     }
   } catch (_unlockErr) { /* non-fatal */ }
+}
+
+function applyValues(formatted) {
+  if (!formatted || typeof formatted !== 'object') return;
+  Object.entries(formatted).forEach(([nid, fv]) => {
+    document.querySelectorAll(`[data-node="${nid}"]`).forEach(el => {
+      el.textContent = fv;
+    });
+  });
 }
 
 async function _showModelHistory(reportId) {
