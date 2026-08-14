@@ -430,6 +430,39 @@ function init() {
     }
   };
 
+  /* ------------------------------------------------------ narrative staleness
+     Paragraphs tagged [data-narrative][data-sensitive-to="tam,sam,..."] get
+     the mm-stale class (amber left border + regenerate button) when the user
+     moves any of their sensitive keys more than 15% from the engine baseline.
+     Do NOT auto-regenerate — that's an LLM call per keystroke. */
+  window.MedlevateModel.onChange(function(v) {
+    var b = window.MedlevateModel.getBase();
+    document.querySelectorAll('[data-narrative]').forEach(function(el) {
+      var keys = (el.dataset.sensitiveTo || '').split(',').filter(Boolean);
+      var stale = keys.some(function(k) {
+        return b[k] > 0 && Math.abs(v[k] - b[k]) / b[k] > 0.15;
+      });
+      el.classList.toggle('mm-stale', stale);
+      var btn = el.querySelector('.mm-regen-btn');
+      if (stale && !btn) {
+        btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'mm-regen-btn';
+        btn.textContent = 'Regenerate this section';
+        btn.onclick = function() {
+          btn.disabled = true; btn.textContent = 'Regenerating…';
+          // stub — prose regeneration endpoint is a future follow-on task
+          setTimeout(function() {
+            btn.disabled = false; btn.textContent = 'Regenerate this section';
+          }, 1500);
+        };
+        el.appendChild(btn);
+      } else if (!stale && btn) {
+        btn.remove();
+      }
+    });
+  });
+
   renderLedger();
   paint();
 }

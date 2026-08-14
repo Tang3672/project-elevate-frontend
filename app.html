@@ -67,6 +67,10 @@
 
 
     .narrative-block{font-family:var(--body);font-size:13px;color:var(--text-2);line-height:1.8;margin-bottom:16px;padding:0}
+    .mm-stale{opacity:.75;border-left:3px solid var(--amber,#f59e0b);padding-left:10px;transition:opacity .2s}
+    .mm-regen-btn{display:inline-block;margin-top:6px;font-family:var(--display);font-size:10px;font-weight:700;background:transparent;color:var(--amber,#f59e0b);border:1px solid var(--amber,#f59e0b);padding:3px 10px;cursor:pointer;border-radius:2px}
+    .mm-regen-btn:hover{background:var(--amber,#f59e0b);color:#fff}
+    .mm-regen-btn:disabled{opacity:.5;cursor:default}
     .callout-box{padding:14px 16px;margin-bottom:16px;border-left:4px solid}
     .callout-blue{background:var(--blue-pale);border-color:var(--blue)}
     .callout-green{background:#f0fdf4;border-color:#16a34a}
@@ -1889,7 +1893,7 @@ function renderPIReport(r) {
       const _samGateNote = ms.sam_gate_note || 'reachability, competitive share, and geography';
       _msIntroProse = `The total addressable market is <strong><span class="mv" data-node="tam">${tamVal}</span></strong>. The serviceable market, filtered by ${_samGateNote}, is <strong><span class="mv" data-node="sam">${samVal}</span></strong>. The derivation below builds this from primary sources.`;
     }
-    html += `<div class="narrative-block">${_msIntroProse}</div>`;
+    html += `<div class="narrative-block" data-narrative="market_intro" data-sensitive-to="tam,sam">${_msIntroProse}</div>`;
 
     html += `<div class="ms-totals">
       <div class="ms-total-cell">
@@ -1960,7 +1964,7 @@ function renderPIReport(r) {
             <div style="font-family:var(--display);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:${isBase?'var(--green)':'var(--text-3)'}">${sc.scenario}${isBase?' ·  base case':''}</div>
             <div style="font-family:var(--display);font-size:19px;font-weight:800;color:var(--text);margin-top:4px">${sc.som_fmt}</div>
             <div style="font-size:10px;color:var(--text-3)">SOM · SAM ${sc.sam_fmt} · TAM ${sc.tam_fmt}</div>
-            <div style="font-size:10px;color:var(--text-2);margin-top:6px;line-height:1.5">${sc.narrative}</div>
+            <div style="font-size:10px;color:var(--text-2);margin-top:6px;line-height:1.5" data-narrative="scenario_${sc.scenario}" data-sensitive-to="tam,sam,som">${sc.narrative}</div>
           </div>`;
         });
         html += `</div></div>`;
