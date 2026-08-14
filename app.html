@@ -922,7 +922,7 @@
         <div class="card">
           <div class="ch"><span class="ct">Analysis Output</span><span class="cb-badge" id="sig-badge">-</span></div>
           <div id="alert-bar" class="set-alert-bar"><span class="set-alert-txt">🔔 Get weekly alerts when new signals match this topic</span><button class="set-alert-btn" onclick="createWatchlistFromReport()">Set Alert</button></div>
-          <div id="save-bar" class="save-bar"><span class="save-bar-txt">✓ Analysis complete</span><div style="display:flex;align-items:center;gap:0"><input type="text" id="save-name" placeholder="Name this report…" /><button class="save-bar-btn" onclick="saveReport()">Save Report</button><button class="save-bar-btn" onclick="downloadPDF()" style="background:var(--blue);color:#fff;border:1px solid var(--blue)">⬇ Download PDF</button></div></div>
+          <div id="save-bar" class="save-bar"><span class="save-bar-txt">✓ Analysis complete</span><div style="display:flex;align-items:center;gap:0"><input type="text" id="save-name" placeholder="Name this report…" /><button class="save-bar-btn" onclick="saveReport()">Save Report</button><button class="save-bar-btn" onclick="downloadPDF()" data-export-pdf style="background:var(--blue);color:#fff;border:1px solid var(--blue)">⬇ Download PDF</button></div></div>
           <div id="results" class="cb">
             <div class="empty">
               <div class="empty-icon">⚕</div>
@@ -1974,6 +1974,23 @@ function renderPIReport(r) {
           som: _wfRun.som_usd || 0,
           reportId: window._currentReportId,
         };
+        // market-model.js 4-key blob — extracted from waterfall rows by label heuristic
+        const _mmBlob = { buyer_population: 0, spend_per_unit: 0, sam_rate: 0, som_rate: 0 };
+        (_prov.waterfall || []).filter(w => !w.is_aggregate).forEach(w => {
+          const t = (w.label||'').toLowerCase();
+          const k = /eligible|buyer\s*pop|funded\s*lab/.test(t) ? 'buyer_population'
+                  : /annual\s*spend|spend\s*per|arpu/.test(t) ? 'spend_per_unit'
+                  : /sam\s*rate|adoption\s*rate|reachab/.test(t) ? 'sam_rate'
+                  : /som\s*rate|5[._]yr|bass/.test(t) ? 'som_rate'
+                  : null;
+          if (k) _mmBlob[k] = w.value;
+        });
+        if (!_mmBlob.buyer_population && _mmBlob.spend_per_unit && _wfRun.tam_usd)
+          _mmBlob.buyer_population = Math.round(_wfRun.tam_usd / _mmBlob.spend_per_unit);
+        if (!_mmBlob.sam_rate && _wfRun.tam_usd && _wfRun.sam_usd)
+          _mmBlob.sam_rate = _wfRun.sam_usd / _wfRun.tam_usd;
+        if (!_mmBlob.som_rate && _wfRun.sam_usd && _wfRun.som_usd)
+          _mmBlob.som_rate = _wfRun.som_usd / _wfRun.sam_usd;
         let _wIdx = 0;
         html += `<div style="margin-top:16px" id="ms-waterfall-container">
           <div class="ms-total-lbl" style="margin-bottom:8px">Provenance Waterfall — click any input value to adjust; TAM/SAM/SOM update live</div>
@@ -2002,9 +2019,20 @@ function renderPIReport(r) {
             const displayVal = isRatio ? (w.value * 100).toFixed(1) : (w.value != null ? Math.round(w.value) : '');
             const displayUnit = isRatio ? '%' : (w.unit || '');
             const safeLabel = (w.label || '').replace(/"/g, '&quot;');
+            // market-model.js binding: map this row to one of the 4 state keys
+            const _wfT = (w.label||'').toLowerCase();
+            const _mmNk = /eligible|buyer\s*pop|funded\s*lab/.test(_wfT) ? 'buyer_population'
+                        : /annual\s*spend|spend\s*per|arpu/.test(_wfT) ? 'spend_per_unit'
+                        : /sam\s*rate|adoption\s*rate|reachab/.test(_wfT) ? 'sam_rate'
+                        : /som\s*rate|5[._]yr|bass/.test(_wfT) ? 'som_rate'
+                        : null;
+            const _mmDataInput = _mmNk ? `data-input="${_mmNk}" ${isRatio ? 'data-input-scale="0.01"' : ''}` : '';
+            const _mmBadge = _mmNk
+              ? `<span class="badge b-assumed" data-badge="${_mmNk}" data-original="assumed" style="font-size:9px;font-weight:700;padding:1px 6px;border-radius:2px;margin-left:6px;background:var(--bg-3);color:var(--text-3)">assumed</span>`
+              : '';
             html += `<div class="ms-step">
               <div>
-                <div class="ms-step-label">${w.label} ${roleBadge}</div>
+                <div class="ms-step-label">${w.label} ${roleBadge}${_mmBadge}</div>
                 <div class="ms-step-source">Source: ${src}${conf}</div>
               </div>
               <div class="ms-step-value">
@@ -2016,6 +2044,7 @@ function renderPIReport(r) {
                        data-is-ratio="${isRatio}"
                        data-role="${w.used_in_formula}"
                        data-label="${safeLabel}"
+                       ${_mmDataInput}
                        oninput="_msOnGateEdit(this)"
                        title="Edit this value — TAM/SAM/SOM will recompute automatically"
                        style="width:90px;font-family:var(--display);font-size:14px;font-weight:700;
@@ -2047,6 +2076,57 @@ function renderPIReport(r) {
               <span id="ms-save-status" style="font-size:11px;color:var(--green)"></span>
             </div>
           </div>
+        </div>`;
+
+        // ── market-model.js integration ──────────────────────────────────────
+        // <script type="application/json"> injected via innerHTML: the browser
+        // creates the DOM node and preserves textContent but never executes it.
+        // initMedlevateModel() is called after innerHTML is set (see renderReport).
+        const _mmJsonSafe = JSON.stringify(_mmBlob).replace(/<\//g, '<\\/');
+        const _mmApiBase  = (typeof API !== 'undefined' ? API : '');
+
+        html += `<script id="market-model" type="application/json"
+          data-report-id="${window._currentReportId || ''}"
+          data-api-base="${_mmApiBase}">${_mmJsonSafe}<\/script>`;
+
+        html += `
+        <div style="margin-top:20px;padding:16px;background:var(--bg-2);border:1px solid var(--border);border-radius:3px">
+          <div style="font-family:var(--display);font-size:12px;font-weight:700;color:var(--text);margin-bottom:8px">Add an assumption the model missed</div>
+          <textarea id="mm-nl" rows="3"
+            style="width:100%;font-family:var(--body);font-size:12px;color:var(--text);background:var(--bg);border:1px solid var(--border);padding:8px;resize:vertical;box-sizing:border-box;border-radius:2px"
+            placeholder="e.g. Only about a third of those labs actually run long-duration experiments, and nobody pays more than $1,500/yr out of a grant line."></textarea>
+          <div style="margin-top:8px">
+            <button type="button" id="mm-interpret"
+              style="font-family:var(--display);font-size:11px;font-weight:700;background:var(--blue);color:#fff;border:none;padding:6px 14px;cursor:pointer;border-radius:2px">Interpret</button>
+          </div>
+        </div>
+
+        <div id="mm-preview" style="margin-top:4px"></div>
+
+        <div style="font-family:var(--display);font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:var(--text-4);margin:18px 0 5px">Assumptions applied</div>
+        <div id="mm-ledger"></div>
+
+        <div style="font-family:var(--display);font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:var(--text-4);margin:14px 0 5px">On record</div>
+        <div id="mm-notes"></div>
+
+        <div id="mm-guard" class="mm-guard ok"
+          style="margin-top:12px;padding:8px 12px;font-size:11px;font-weight:700;border-radius:2px;background:var(--green-bg);color:var(--green)"></div>
+
+        <div class="mm-panel" id="mm-diff" hidden
+          style="margin-top:12px;padding:12px 14px;background:var(--bg-2);border:1px solid var(--border)">
+          <div style="font-family:var(--display);font-size:12px;font-weight:700;color:var(--text);margin-bottom:6px">Change from engine baseline</div>
+          <div class="mm-diffrows"></div>
+        </div>
+
+        <div class="mm-panel" id="mm-recs" hidden
+          style="margin-top:12px;padding:12px 14px;background:var(--blue-pale);border:1px solid var(--border)">
+          <div style="font-family:var(--display);font-size:12px;font-weight:700;color:var(--text);margin-bottom:6px">Recommendations changed</div>
+          <div class="mm-recrows"></div>
+        </div>
+
+        <div style="margin-top:12px">
+          <button type="button" id="mm-reset"
+            style="font-family:var(--display);font-size:11px;font-weight:700;background:transparent;color:var(--text-3);border:1px solid var(--border);padding:5px 12px;cursor:pointer;border-radius:2px">Reset to engine values</button>
         </div>`;
       }
     }
@@ -2704,6 +2784,8 @@ function renderPIReport(r) {
   lastReport = r;
   // Load any saved gate overrides after DOM is ready
   setTimeout(_msLoadOverrides, 0);
+  // market-model.js: rebind to the newly-injected #market-model blob
+  setTimeout(function () { if (window.initMedlevateModel) window.initMedlevateModel(); }, 0);
   // Competitive landscape now comes from the report (server-side sweep), patched in
   // by the verification poll — no separate, flaky client fetch.
 
@@ -2766,7 +2848,7 @@ function _renderPostReportTools(r) {
             <div style="font-size:13px;font-weight:700;color:var(--text)">📄 Export Report</div>
             <div style="font-size:11px;color:var(--text-3)">Download the full analysis as a PDF for sharing with tech transfer offices, investors, or advisors.</div>
           </div>
-          <button onclick="downloadPDF()" style="padding:8px 20px;background:var(--blue);color:#fff;border:none;border-radius:3px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap">⬇ Download PDF</button>
+          <button onclick="downloadPDF()" data-export-pdf style="padding:8px 20px;background:var(--blue);color:#fff;border:none;border-radius:3px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap">⬇ Download PDF</button>
         </div>
       </div>
     </div>`;
@@ -6576,6 +6658,7 @@ function prefillFromDiscovery(disease) {
 <!-- PDF Generation -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="/js/market-model.js" defer></script>
 <script>
 async function downloadPDF() {
   const btn = document.querySelector('[onclick="downloadPDF()"]');
@@ -6594,6 +6677,15 @@ async function downloadPDF() {
     //    report DATA — no html2canvas screenshot. ──
     const r = (typeof lastReport !== 'undefined' && lastReport) ? lastReport : null;
     if (!r) { alert('Please run an analysis first.'); if (btn){btn.textContent=origText;btn.disabled=false;} return; }
+
+    // market-model.js guard: model must be internally consistent before export
+    const _mm = window.MedlevateModel;
+    if (_mm && !_mm.isValid()) {
+      alert('Fix the market model first: ' + _mm.getProblems().join(', ') +
+            '\n\nAdjust the inputs in §2 "The Market" to resolve the inconsistency.');
+      if (btn) { btn.textContent = origText; btn.disabled = false; }
+      return;
+    }
 
     // B-02 (updated): Blocking state downgrades to watermarked draft. Blocking the
     // export entirely is worse than an artifact that's visibly marked DRAFT with
@@ -6880,6 +6972,36 @@ async function downloadPDF() {
     }
 
     // TRIANGULATION REMOVED (Fix 1)
+
+    // Assumptions applied by the user via market-model.js
+    if (window.MedlevateModel && window.MedlevateModel.isEdited()) {
+      const _mmExp = window.MedlevateModel.exportPayload();
+      if (_mmExp.assumptions.length || _mmExp.notes.length) {
+        subhead('Assumptions applied by the user');
+        const _mmBase = _mmExp.baseline;
+        const _mmVals = _mmExp.values;
+        const _mmFmt  = _mmExp.formatted;
+        const _OPINV = {gate:'Filter',set:'Set',cap:'Cap',floor:'Floor'};
+        const _OPSYM = {gate:'x',set:'=',cap:'<=',floor:'>='};
+        _mmExp.assumptions.forEach(a => {
+          const _bv = _mmBase[a.target];
+          const _av = _mmVals[a.target];
+          const _sym = _OPSYM[a.op] || '';
+          const _shown = a.op === 'gate' ? (a.value * 100).toFixed(0) + '%' : String(a.value);
+          bullet((_OPINV[a.op]||a.op) + ' ' + (a.target||'') + ' ' + _sym + _shown + ' — ' + clean(a.quoted_span || a.label || ''));
+          if (_bv !== undefined && _av !== undefined && Math.abs(_av - _bv) > 1e-6) {
+            para(clean(a.label || a.target) + ': ' + (_OPINV[a.op]||'') + ' (before ' + (typeof _bv === 'number' ? _bv.toLocaleString() : _bv) + ', after ' + (typeof _av === 'number' ? _av.toLocaleString() : _av) + ')', {x:margin+6,w:contentW-6,size:8.3,color:SUB,gap:0.5});
+          }
+        });
+        if (_mmExp.notes.length) {
+          para('On record (no effect on model)', {bold:true, size:9, gap:0.3});
+          _mmExp.notes.forEach(n => bullet(clean(n)));
+        }
+        const _fmtUSD = v => v >= 1e9 ? '$'+(v/1e9).toFixed(1)+'B' : v >= 1e6 ? '$'+(v/1e6).toFixed(1)+'M' : v >= 1e3 ? '$'+Math.round(v/1e3)+'K' : '$'+Math.round(v);
+        para('Engine baseline: TAM ' + _fmtUSD(_mmBase.tam) + ' · SAM ' + _fmtUSD(_mmBase.sam) + ' · SOM ' + _fmtUSD(_mmBase.som), {size:8.5,color:SUB,gap:0.3});
+        para('As adjusted:     TAM ' + _fmtUSD(_mmVals.tam) + ' · SAM ' + _fmtUSD(_mmVals.sam) + ' · SOM ' + _fmtUSD(_mmVals.som), {bold:true,size:8.5,gap:1});
+      }
+    }
 
     // 3 — Regulatory (suppressed for non-regulated research tools and when no data)
     const _pdfIsResearch = (r.domain||'').toLowerCase().includes('research');
