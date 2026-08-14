@@ -3029,8 +3029,27 @@ function _renderBuyerModelPanel(d, reportId) {
     <div id="bm-steps-container">
       ${steps.map((s, i) => _stepRow(s, i, d)).join('')}
     </div>
+    <!-- Active user-added gates -->
+    <div id="bm-gates-container" style="display:none;padding:10px 16px;border-top:1px solid var(--border);background:var(--bg-2)">
+      <div style="font-size:9px;font-weight:700;color:var(--text-3);margin-bottom:6px;letter-spacing:.06em;text-transform:uppercase">Active Filters</div>
+      <div id="bm-gates-list" style="display:flex;flex-wrap:wrap;gap:6px"></div>
+    </div>
+    <!-- Add filter -->
+    <div style="padding:10px 16px;border-top:1px solid var(--border);display:flex;align-items:center;gap:10px">
+      <button onclick="_openGateModal('${reportId}')"
+        style="font-size:10px;font-family:var(--body);color:var(--blue);background:var(--blue-lite);
+               border:1px solid #d0d9f5;padding:4px 10px;cursor:pointer;border-radius:2px">
+        + Add filter</button>
+      <span style="font-size:10px;color:var(--text-4)">Narrow the model without rewriting formulas</span>
+    </div>
+    <!-- Recommendation changes -->
+    <div id="bm-rec-bar" style="display:none;padding:12px 16px;border-top:1px solid var(--border);background:#f0f9ff"></div>
+    <!-- Diff bar -->
     <div id="bm-diff-bar" style="display:none;padding:10px 16px;background:#fef3c7;
          font-size:11px;color:#92400e;font-family:var(--mono)"></div>
+    <!-- Version bar -->
+    <div id="bm-version-bar" style="display:none;padding:10px 16px;border-top:1px solid var(--border);
+         background:var(--bg-2);font-size:10px;color:var(--text-3)"></div>
     <!-- Edit modal (hidden) -->
     <div id="bm-edit-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);
          z-index:9999;align-items:center;justify-content:center">
@@ -3064,9 +3083,59 @@ function _renderBuyerModelPanel(d, reportId) {
         <div id="bm-modal-status" style="margin-top:8px;font-size:11px;color:var(--text-3)"></div>
       </div>
     </div>
+    <!-- Gate modal (hidden) -->
+    <div id="bm-gate-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);
+         z-index:9999;align-items:center;justify-content:center">
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:6px;
+                  padding:24px;width:360px;max-width:90vw;box-shadow:0 8px 32px rgba(0,0,0,.2)">
+        <div style="font-family:var(--display);font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px">
+          Add a filter the model missed</div>
+        <div style="font-size:11px;color:var(--text-3);margin-bottom:14px">
+          Multiplies a node by a fraction. Stored with your rationale so anyone reading the model knows why.</div>
+        <label style="font-family:var(--body);font-size:11px;font-weight:600;color:var(--text);display:block;margin-bottom:4px">
+          Filter applies to</label>
+        <select id="bm-gate-target"
+          style="width:100%;box-sizing:border-box;padding:8px 10px;font-size:12px;margin-bottom:10px;
+                 border:1px solid var(--border);background:var(--bg);color:var(--text);border-radius:3px">
+          <option value="buyer_population">Buyer population</option>
+          <option value="tam">TAM</option>
+          <option value="sam">SAM</option>
+          <option value="som">SOM</option>
+        </select>
+        <label style="font-family:var(--body);font-size:11px;font-weight:600;color:var(--text);display:block;margin-bottom:4px">
+          Filter label</label>
+        <input id="bm-gate-label" type="text" placeholder="e.g. Labs with IACUC vivarium"
+          style="width:100%;box-sizing:border-box;padding:8px 10px;font-size:12px;margin-bottom:10px;
+                 border:1px solid var(--border);background:var(--bg);color:var(--text);border-radius:3px"/>
+        <label style="font-family:var(--body);font-size:11px;font-weight:600;color:var(--text);display:block;margin-bottom:4px">
+          Fraction retained (0.01–1.0)</label>
+        <input id="bm-gate-value" type="number" min="0.01" max="1" step="0.01" placeholder="e.g. 0.6"
+          style="width:100%;box-sizing:border-box;padding:8px 10px;font-size:13px;margin-bottom:10px;
+                 border:1px solid var(--border);background:var(--bg);color:var(--text);border-radius:3px;font-family:var(--mono)"/>
+        <label style="font-family:var(--body);font-size:11px;font-weight:600;color:var(--text);display:block;margin-bottom:4px">
+          Rationale (required)</label>
+        <textarea id="bm-gate-rationale" placeholder="Why does this filter apply?"
+          style="width:100%;box-sizing:border-box;padding:8px 10px;font-size:12px;
+                 border:1px solid var(--border);background:var(--bg);color:var(--text);
+                 border-radius:3px;min-height:64px;font-family:var(--body);resize:vertical"
+        ></textarea>
+        <div style="display:flex;gap:8px;margin-top:12px">
+          <button onclick="_submitGate()"
+            style="flex:1;padding:8px;background:var(--blue);color:#fff;border:none;
+                   border-radius:3px;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--body)">
+            Apply filter →</button>
+          <button onclick="document.getElementById('bm-gate-modal').style.display='none'"
+            style="padding:8px 14px;background:var(--bg-2);border:1px solid var(--border);
+                   border-radius:3px;font-size:12px;cursor:pointer;font-family:var(--body)">Cancel</button>
+        </div>
+        <div id="bm-gate-status" style="margin-top:8px;font-size:11px;color:var(--text-3)"></div>
+      </div>
+    </div>
   `;
 
   anchor.after(panel);
+  // Seed version bar with server history in the background (non-blocking)
+  requestAnimationFrame(() => _showModelHistory(reportId));
 }
 
 let _bm_active_node = null;
@@ -3193,6 +3262,66 @@ function _applyBuyerModelUpdate(data) {
     }
   }
 
+  // Active gates — render chips with × remove buttons
+  if (data.active_gates !== undefined) {
+    const gc = document.getElementById('bm-gates-container');
+    const gl = document.getElementById('bm-gates-list');
+    if (gc && gl) {
+      if (data.active_gates.length) {
+        gl.innerHTML = data.active_gates.map(g => `
+          <span style="display:inline-flex;align-items:center;gap:5px;background:var(--blue-lite);
+                       border:1px solid #d0d9f5;border-radius:12px;padding:3px 10px;font-size:10px;color:var(--blue)">
+            <span title="applied to ${g.target_node_id||''}">
+              ${g.label} &times;${Math.round(g.value*100)}%</span>
+            <button onclick="_removeGate('${g.id}','${_bm_active_report}')"
+              style="background:none;border:none;cursor:pointer;color:var(--blue);font-size:12px;
+                     line-height:1;padding:0 2px" title="Remove filter">&times;</button>
+          </span>`).join('');
+        gc.style.display = 'block';
+      } else {
+        gc.style.display = 'none';
+        gl.innerHTML = '';
+      }
+    }
+    // Cache model hash globally for PDF stamp
+    if (data.model_hash) window._bmModelHash = data.model_hash;
+  }
+
+  // Recommendation changes from predicate library
+  if (data.recommendations_changed && data.recommendations_changed.length) {
+    const rb = document.getElementById('bm-rec-bar');
+    if (rb) {
+      rb.innerHTML = `
+        <div style="font-size:9px;font-weight:700;color:#0369a1;letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px">
+          Recommendations updated</div>
+        ${data.recommendations_changed.map(r => `
+          <div style="margin-bottom:8px">
+            <div style="font-size:9px;font-weight:700;color:#64748b;text-transform:uppercase;margin-bottom:2px">
+              ${r.id.replace(/_/g,' ')}</div>
+            ${r.from ? `<div style="font-size:10px;color:#94a3b8;text-decoration:line-through;margin-bottom:1px">${r.from}</div>` : ''}
+            <div style="font-size:11px;font-weight:600;color:#0c4a6e">${r.to}</div>
+          </div>`).join('')}`;
+      rb.style.display = 'block';
+    }
+  }
+
+  // Version bar — append this version to the inline history strip
+  if (data.version) {
+    const vb = document.getElementById('bm-version-bar');
+    if (vb) {
+      const existing = vb.dataset.versions ? JSON.parse(vb.dataset.versions) : [];
+      const note = (data.rationale || '').replace(/\s*\([^)]*\)\s*$/, '').slice(0, 60);
+      existing.push({ v: data.version, note, created_by: 'you', ts: Date.now() });
+      vb.dataset.versions = JSON.stringify(existing);
+      const fmtAge = ts => { const s = Math.round((Date.now()-ts)/1000); return s < 60 ? 'just now' : Math.round(s/60)+'m ago'; };
+      vb.innerHTML = existing.map((e, i) =>
+        `<span style="color:${i===existing.length-1?'var(--blue)':'var(--text-3)'};margin-right:4px">
+           v${e.v} ${e.created_by==='engine'?'Engine':'You'}: ${e.note || 'edit'} (${fmtAge(e.ts)})${i<existing.length-1?' ·':''}</span>`
+      ).join('');
+      vb.style.display = 'block';
+    }
+  }
+
   // Item 9: recommendation is recommend(model) — update live when buyer-model nodes change
   if (data.recommendation_update) {
     const recText = document.getElementById('comm-recommendation-text');
@@ -3253,7 +3382,61 @@ function applyValues(formatted) {
   });
 }
 
+function _openGateModal(reportId) {
+  _bm_active_report = reportId;
+  document.getElementById('bm-gate-label').value = '';
+  document.getElementById('bm-gate-value').value = '';
+  document.getElementById('bm-gate-rationale').value = '';
+  document.getElementById('bm-gate-status').textContent = '';
+  document.getElementById('bm-gate-modal').style.display = 'flex';
+  document.getElementById('bm-gate-label').focus();
+}
+
+async function _submitGate() {
+  const target  = document.getElementById('bm-gate-target').value;
+  const label   = document.getElementById('bm-gate-label').value.trim();
+  const val     = parseFloat(document.getElementById('bm-gate-value').value);
+  const rat     = document.getElementById('bm-gate-rationale').value.trim();
+  const statusEl = document.getElementById('bm-gate-status');
+  if (!label)          { statusEl.textContent = 'Label is required.'; return; }
+  if (!val || val <= 0 || val > 1) { statusEl.textContent = 'Fraction must be between 0.01 and 1.'; return; }
+  if (!rat)            { statusEl.textContent = 'Rationale is required.'; return; }
+  statusEl.textContent = 'Applying…';
+  const token = localStorage.getItem('pe_token');
+  try {
+    const res = await fetch(`${API}/alignment/market-model/${_bm_active_report}/gate`, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json','Authorization':`Bearer ${token||''}`},
+      body: JSON.stringify({ target_node_id: target, label, value: val, rationale: rat }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(()=>({}));
+      statusEl.textContent = err.detail || 'Gate failed.'; return;
+    }
+    document.getElementById('bm-gate-modal').style.display = 'none';
+    _applyBuyerModelUpdate(await res.json());
+  } catch(e) { statusEl.textContent = 'Network error: ' + e.message; }
+}
+
+async function _removeGate(gateId, reportId) {
+  const token = localStorage.getItem('pe_token');
+  try {
+    const res = await fetch(`${API}/alignment/market-model/${reportId}/gate/${encodeURIComponent(gateId)}`, {
+      method: 'DELETE',
+      headers: {'Authorization':`Bearer ${token||''}`},
+    });
+    if (res.ok) _applyBuyerModelUpdate(await res.json());
+  } catch(e) { console.debug('Remove gate failed:', e); }
+}
+
 async function _showModelHistory(reportId) {
+  const vb = document.getElementById('bm-version-bar');
+  // If the version bar already has data, just toggle it
+  if (vb && vb.dataset.versions) {
+    vb.style.display = vb.style.display === 'none' ? 'block' : 'none';
+    return;
+  }
+  // Otherwise fetch from server and populate
   const token = localStorage.getItem('pe_token');
   try {
     const res = await fetch(`${API}/alignment/market-model/${reportId}/versions`, {
@@ -3262,11 +3445,20 @@ async function _showModelHistory(reportId) {
     if (!res.ok) return;
     const data = await res.json();
     const versions = data.versions || [];
-    if (!versions.length) { alert('No version history yet.'); return; }
-    const rows = versions.map(v =>
-      `v${v.version}: ${v.rationale || 'Baseline'} (${new Date(v.created_at).toLocaleString()})`
-    ).join('\n');
-    alert(`Model version history:\n\n${rows}`);
+    if (!versions.length || !vb) return;
+    const entries = versions.map(v => ({
+      v: v.version,
+      note: (v.rationale || v.change_note || 'Baseline').slice(0, 60),
+      created_by: v.created_by === 'engine' ? 'engine' : 'you',
+      ts: new Date(v.created_at || Date.now()).getTime(),
+    }));
+    vb.dataset.versions = JSON.stringify(entries);
+    const fmtAge = ts => { const s = Math.round((Date.now()-ts)/1000); return s < 60 ? 'just now' : s < 3600 ? Math.round(s/60)+'m ago' : Math.round(s/3600)+'h ago'; };
+    vb.innerHTML = entries.map((e, i) =>
+      `<span style="color:${i===entries.length-1?'var(--blue)':'var(--text-3)'};margin-right:4px">
+         v${e.v} ${e.created_by==='engine'?'Engine':'You'}: ${e.note} (${fmtAge(e.ts)})${i<entries.length-1?' ·':''}</span>`
+    ).join('');
+    vb.style.display = 'block';
   } catch(e) { console.debug('Version history failed:', e); }
 }
 
@@ -6587,7 +6779,8 @@ async function downloadPDF() {
     }
     function footer(){
       pdf.setTextColor(148,163,184); pdf.setFont('helvetica','normal'); pdf.setFontSize(6.5);
-      pdf.text('Generated by Medlevate · medlevate.netlify.app · Not investment advice.', pageW/2, pageH-6, {align:'center'});
+      const _hashStamp = window._bmModelHash ? (' · Model ' + window._bmModelHash.slice(0,16)) : '';
+      pdf.text('Generated by Medlevate · medlevate.netlify.app · Not investment advice.' + _hashStamp, pageW/2, pageH-6, {align:'center'});
     }
     function ensure(h){ if (y+h > pageH-12){ footer(); pdf.addPage(); header(); } }
     function heading(num,title){
