@@ -228,6 +228,13 @@ function init() {
     var noteOps  = res.ops.filter(function (o) { return o.op === 'note'; });
     pending = { modelOps: modelOps, noteOps: noteOps, text: text };
 
+    // Quantize gate values on receipt so display (33.3%) and stored value (0.333) match.
+    // Without this, (0.3333 * 100).toFixed(0) = "33", but re-read gives 33/100 = 0.33 — silent drift.
+    modelOps.forEach(function (o) {
+      if (o.op === 'gate') o.value = Math.round(o.value * 1000) / 1000;
+      else                 o.value = Math.round(o.value * 100)  / 100;
+    });
+
     var cur  = derive(state);
     var next = derive(state, ops.concat(modelOps));
     var VERB = { gate: 'Filter', set: 'Set', cap: 'Cap', floor: 'Floor' };
@@ -239,7 +246,7 @@ function init() {
     modelOps.forEach(function (o, i) {
       var before = cur[o.target];
       var after  = derive(state, ops.concat([o]))[o.target];
-      var shown  = o.op === 'gate' ? (o.value * 100).toFixed(0) : o.value;
+      var shown  = o.op === 'gate' ? (o.value * 100).toFixed(1) : o.value;
       html += '<div style="padding:8px 0;border-bottom:1px solid var(--border)">' +
         '<div style="display:flex;align-items:center;gap:8px;font-size:11.5px">' +
           '<span style="font-family:var(--display);font-size:10px;font-weight:700;text-transform:uppercase;background:var(--blue-lite);color:var(--blue);padding:2px 6px;border-radius:2px">' + VERB[o.op] + '</span>' +
