@@ -452,14 +452,17 @@ function init() {
   /* ------------------------------------------------------ narrative staleness
      Paragraphs tagged [data-narrative][data-sensitive-to="tam,sam,..."] get
      the mm-stale class (amber left border + regenerate button) when the user
-     moves any of their sensitive keys more than 15% from the engine baseline.
-     Do NOT auto-regenerate — that's an LLM call per keystroke. */
+     moves any sensitive key >15% from its reference point.
+     Reference = engine baseline until the section is regenerated; after regen
+     it tracks from the values at the time of last regeneration (stored in
+     data-regen-values) so stale doesn't immediately re-fire on fresh prose. */
   window.MedlevateModel.onChange(function(v) {
-    var b = window.MedlevateModel.getBase();
+    var engineBase = window.MedlevateModel.getBase();
     document.querySelectorAll('[data-narrative]').forEach(function(el) {
       var keys = (el.dataset.sensitiveTo || '').split(',').filter(Boolean);
+      var ref  = el.dataset.regenValues ? JSON.parse(el.dataset.regenValues) : engineBase;
       var stale = keys.some(function(k) {
-        return b[k] > 0 && Math.abs(v[k] - b[k]) / b[k] > 0.15;
+        return ref[k] > 0 && Math.abs(v[k] - ref[k]) / ref[k] > 0.15;
       });
       el.classList.toggle('mm-stale', stale);
       var btn = el.querySelector('.mm-regen-btn');
@@ -468,12 +471,40 @@ function init() {
         btn.type = 'button';
         btn.className = 'mm-regen-btn';
         btn.textContent = 'Regenerate this section';
-        btn.onclick = function() {
+        btn.onclick = async function() {
+          // Capture prose text before the button pollutes textContent
+          var clone = el.cloneNode(true);
+          var cloneBtn = clone.querySelector('.mm-regen-btn');
+          if (cloneBtn) cloneBtn.remove();
+          var currentText = clone.textContent.trim();
+
           btn.disabled = true; btn.textContent = 'Regenerating…';
-          // stub — prose regeneration endpoint is a future follow-on task
-          setTimeout(function() {
+          try {
+            var M = window.MedlevateModel;
+            var resp = await fetch(
+              API_BASE + '/alignment/reports/' + REPORT_ID + '/assumptions/regenerate-section',
+              {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  section:         el.dataset.narrative,
+                  original_text:   currentText,
+                  current_values:  M.getValues(),
+                  baseline_values: M.getBase(),
+                  assumptions:     M.getOps(),
+                }),
+              }
+            );
+            if (!resp.ok) throw new Error('HTTP ' + resp.status);
+            var data = await resp.json();
+            // Store regen-time values so staleness tracks from here
+            el.dataset.regenValues = JSON.stringify(M.getValues());
+            el.classList.remove('mm-stale');
+            el.innerHTML = data.html;           // replaces button too — that's correct
+          } catch (e) {
+            console.error('regen failed', e);
             btn.disabled = false; btn.textContent = 'Regenerate this section';
-          }, 1500);
+          }
         };
         el.appendChild(btn);
       } else if (!stale && btn) {
