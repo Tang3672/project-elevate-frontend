@@ -199,6 +199,7 @@ function init() {
 
   /* ----------------------------------------- natural language input */
   async function parseAssumption(text) {
+    if (!REPORT_ID) throw new Error('No report ID — try reloading the report');
     var r = await fetch(API_BASE + '/alignment/reports/' + REPORT_ID + '/assumptions/parse', {
       method: 'POST',
       headers: _authHeaders(),
@@ -305,7 +306,10 @@ function init() {
       o.id = o.id || 'o' + Math.random().toString(36).slice(2, 8);
       ops.push(o);
     });
-    pending.noteOps.forEach(function (o) { notes.push(o); });
+    pending.noteOps.forEach(function (o) {
+      o.id = o.id || 'n' + Math.random().toString(36).slice(2, 8);
+      notes.push(o);
+    });
     document.getElementById('mm-preview').innerHTML = '';
     pending = null;
     renderLedger();

@@ -1641,7 +1641,7 @@ function _renderCompPanelInner(cl) {
 }
 
 function renderPIReport(r) {
-  window._currentReportId = r.report_id || null;
+  window._currentReportId = r.report_id || window._currentJobId || null;
   document.getElementById('sig-badge').textContent = fmt(r.signals_searched) + ' signals searched';
 
   // Domain flag used in multiple sections — compute once at the top
