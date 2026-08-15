@@ -1943,11 +1943,12 @@ function renderPIReport(r) {
         const t = (s.label||'').toLowerCase();
         if (/eligible|buyer\s*pop|funded\s*lab/.test(t)) return 'buyer_population';
         if (/annual\s*spend|spend\s*per|arpu/.test(t)) return 'spend_per_unit';
+        // Dollar-amount aggregates first so "SOM = SAM × 5-yr" binds to 'som' not 'som_rate'
+        if (/obtainable|\bsom\b/.test(t) && !/rate/.test(t)) return 'som';
+        if (/serviceable\s+addressable|\bsam\b/.test(t) && !/rate/.test(t)) return 'sam';
+        if (/total\s+addressable|\btam\b/.test(t) && !/rate/.test(t)) return 'tam';
         if (/sam\s*rate|adoption\s*rate|reachab/.test(t)) return 'sam_rate';
         if (/som\s*rate|5[._]yr|bass/.test(t)) return 'som_rate';
-        if (/\bsom\b/.test(t) && !/rate/.test(t)) return 'som';
-        if (/\bsam\b/.test(t) && !/rate/.test(t)) return 'sam';
-        if (/\btam\b/.test(t) && !/rate/.test(t)) return 'tam';
         return null;
       })();
       html += `<div class="ms-step">

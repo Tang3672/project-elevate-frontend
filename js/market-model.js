@@ -247,16 +247,22 @@ function init() {
       var before = cur[o.target];
       var after  = derive(state, ops.concat([o]))[o.target];
       var shown  = o.op === 'gate' ? (o.value * 100).toFixed(1) : o.value;
-      html += '<div style="padding:8px 0;border-bottom:1px solid var(--border)">' +
-        '<div style="display:flex;align-items:center;gap:8px;font-size:11.5px">' +
-          '<span style="font-family:var(--display);font-size:10px;font-weight:700;text-transform:uppercase;background:var(--blue-lite);color:var(--blue);padding:2px 6px;border-radius:2px">' + VERB[o.op] + '</span>' +
+      var _isRevise = !!o.replaces;
+      var _replacedOp = _isRevise ? ops.find(function (x) { return x.id === o.replaces; }) : null;
+      var _verbLabel = _isRevise ? 'Revise' : VERB[o.op];
+      var _verbColor = _isRevise ? 'var(--amber, #d97706)' : 'var(--blue)';
+      var _verbBg    = _isRevise ? 'rgba(217,119,6,0.12)' : 'var(--blue-lite)';
+      html += '<div style=”padding:8px 0;border-bottom:1px solid var(--border)”>' +
+        '<div style=”display:flex;align-items:center;gap:8px;font-size:11.5px”>' +
+          '<span style=”font-family:var(--display);font-size:10px;font-weight:700;text-transform:uppercase;background:' + _verbBg + ';color:' + _verbColor + ';padding:2px 6px;border-radius:2px”>' + _verbLabel + '</span>' +
           '<span>' + esc(LABEL[o.target] || o.target) + '</span>' +
-          '<span style="color:var(--text-3)">' + SYM[o.op] + '</span>' +
-          '<input type="number" data-op="' + i + '" value="' + shown + '" step="any" style="width:80px;font-family:var(--display);font-size:12px;font-weight:700;border:1px dashed var(--border);background:var(--bg);color:var(--text);padding:2px 6px;border-radius:2px">' +
-          '<span style="color:var(--text-3)">' + (o.op === 'gate' ? '%' : (o.unit || '')) + '</span>' +
-          '<span style="color:var(--text-4);font-size:10px">conf ' + Number(o.confidence).toFixed(2) + '</span>' +
+          '<span style=”color:var(--text-3)”>' + SYM[o.op] + '</span>' +
+          '<input type=”number” data-op=”' + i + '” value=”' + shown + '” step=”any” style=”width:80px;font-family:var(--display);font-size:12px;font-weight:700;border:1px dashed var(--border);background:var(--bg);color:var(--text);padding:2px 6px;border-radius:2px”>' +
+          '<span style=”color:var(--text-3)”>' + (o.op === 'gate' ? '%' : (o.unit || '')) + '</span>' +
+          '<span style=”color:var(--text-4);font-size:10px”>conf ' + Number(o.confidence).toFixed(2) + '</span>' +
         '</div>' +
-        '<p style="font-size:10.5px;color:var(--text-3);margin-top:4px">“' + esc(o.quoted_span) + '”</p>' +
+        (_isRevise && _replacedOp ? '<p style=”font-size:10px;color:var(--text-4);margin-top:3px”>Replaces: “' + esc(_replacedOp.quoted_span || _replacedOp.label || '') + '”</p>' : '') +
+        '<p style=”font-size:10.5px;color:var(--text-3);margin-top:4px”>”' + esc(o.quoted_span) + '”</p>' +
         '<p style="font-size:10.5px;color:var(--text-2);margin-top:2px">' + FMT[o.target](before) + ' → ' + FMT[o.target](after) +
           (Math.abs(after - before) < 1e-9 ? ' <span style="color:var(--text-4)">(no change)</span>' : '') +
         '</p></div>';
@@ -311,6 +317,8 @@ function init() {
     var payload = { text: pending.text, ops: pending.modelOps.concat(pending.noteOps) };
     pending.modelOps.forEach(function (o) {
       o.id = o.id || 'o' + Math.random().toString(36).slice(2, 8);
+      // If this op supersedes an earlier one, remove the old op before pushing the new one.
+      if (o.replaces) ops = ops.filter(function (x) { return x.id !== o.replaces; });
       ops.push(o);
     });
     pending.noteOps.forEach(function (o) {
