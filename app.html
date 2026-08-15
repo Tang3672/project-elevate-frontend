@@ -513,7 +513,7 @@
     <div class="logo-mark">ME</div>
     <span class="logo-name">Medlevate</span>
     <div class="logo-sep"></div>
-    <span class="logo-sub" id="logo-sub">Medical Market Intelligence</span>
+    <span class="logo-sub" id="logo-sub">Commercialization Intelligence</span>
   </div>
   <div class="hdr-right" id="hdr-right">
     <div class="sig-badge"><div class="sig-dot"></div><span class="sig-txt" id="sig-hdr">Loading…</span></div>
@@ -827,7 +827,7 @@
   <!-- PI ANALYSIS TAB -->
   <div id="t-pi">
     <div class="ph">
-      <div class="ph-title">Medical Market Intelligence</div>
+      <div class="ph-title">Commercialization Intelligence</div>
       <div class="ph-desc">Bottom-up market sizing, FDA pathway analysis, competitive landscape, and commercial strategy — for any health innovation, grounded in primary sources.</div>
     </div>
     <div class="two-col">
@@ -912,12 +912,6 @@
 
             <button class="btn-primary" id="run-btn" onclick="startAnalysisFlow()" style="width:100%">Refine &amp; Analyze →</button>
             <div id="clarify-panel" style="display:none;margin-top:14px"></div>
-          <div style="margin-top:8px;text-align:center">
-            <label style="font-family:var(--body);font-size:11px;color:var(--text-4);cursor:pointer">
-              <input type="checkbox" id="mock-toggle" onchange="window._mockMode=this.checked" style="margin-right:4px">
-              Dev mock mode (no API tokens)
-            </label>
-          </div>
           </div>
         </div>
       </div>
@@ -1568,17 +1562,23 @@ function buildVerificationBadgesHTML(r) {
   if (_val.pending || _trust.pending) {
     return `<div style="margin-top:10px;padding:7px 12px;background:var(--bg);border:1px solid var(--border);border-radius:3px;font-size:11px;color:var(--text-3)">⏳ Verifying claims, FDA/market facts, and source coverage… <span style="color:var(--text-4)">— this fills in here in a few seconds</span></div>`;
   }
-  const _isBlocking = _val.status === 'BLOCKING';
-  const _valColor = {BLOCKING:'#7c3aed', ERROR:'#dc2626', FLAG:'#d97706', REVIEW:'#0891b2', PASS:'#059669'}[_val.status] || '#6366f1';
-  const _valIcon  = {BLOCKING:'⛔', ERROR:'✗', FLAG:'⚠', REVIEW:'ℹ', PASS:'✓'}[_val.status] || '…';
+  // MATH-category errors come from the server-side math guard. The client-side
+  // guard in market-model.js is the single authoritative source for arithmetic
+  // consistency. Filter MATH errors out of the badge so the two guards can't
+  // display contradicting statuses simultaneously.
+  const _nonMathErrors = (_val.errors||[]).filter(e => (e.category||'').toUpperCase() !== 'MATH');
+  const _isBlocking = _val.status === 'BLOCKING' && _nonMathErrors.length > 0;
+  const _displayStatus = _isBlocking ? 'BLOCKING' : (_val.status === 'BLOCKING' ? 'FLAG' : _val.status);
+  const _valColor = {BLOCKING:'#7c3aed', ERROR:'#dc2626', FLAG:'#d97706', REVIEW:'#0891b2', PASS:'#059669'}[_displayStatus] || '#6366f1';
+  const _valIcon  = {BLOCKING:'⛔', ERROR:'✗', FLAG:'⚠', REVIEW:'ℹ', PASS:'✓'}[_displayStatus] || '…';
   const _valBadge = (_val.status && _val.status !== 'PENDING')
     ? `<div style="margin-top:10px;padding:7px 12px;background:${_valColor}11;border:1px solid ${_valColor}33;border-radius:3px;display:flex;gap:8px;align-items:flex-start">
         <span style="font-size:14px;color:${_valColor};font-weight:800;flex-shrink:0">${_valIcon}</span>
         <div style="flex:1">
-          <div style="font-size:11px;font-weight:700;color:${_valColor}">Verification — ${_val.status}${_isBlocking ? ' · PDF export blocked' : ''}</div>
+          <div style="font-size:11px;font-weight:700;color:${_valColor}">Verification — ${_displayStatus}${_isBlocking ? ' · PDF export blocked' : ''}</div>
           <div style="font-size:11px;color:var(--text-2);margin-top:1px">${_val.summary || ''}</div>
-          ${(_val.errors||[]).length ? `<div style="font-size:10px;color:#dc2626;margin-top:4px">${_val.errors.map(e=>`<strong>${e.agent}:</strong> ${e.issue}`).join('<br>')}</div>` : ''}
-          ${(_val.warnings||[]).length && !(_val.errors||[]).length ? `<div style="font-size:10px;color:#d97706;margin-top:4px">${_val.warnings.slice(0,2).map(w=>`<strong>${w.agent}:</strong> ${w.issue}`).join('<br>')}</div>` : ''}
+          ${_nonMathErrors.length ? `<div style="font-size:10px;color:#dc2626;margin-top:4px">${_nonMathErrors.map(e=>`<strong>${e.agent}:</strong> ${e.issue}`).join('<br>')}</div>` : ''}
+          ${(_val.warnings||[]).length && !_nonMathErrors.length ? `<div style="font-size:10px;color:#d97706;margin-top:4px">${_val.warnings.slice(0,2).map(w=>`<strong>${w.agent}:</strong> ${w.issue}`).join('<br>')}</div>` : ''}
           ${_isBlocking ? `<div style="margin-top:6px;font-size:10px;color:#7c3aed;font-weight:600">Edit the market model below to fix these errors and unlock export — no regeneration needed. <a href="#buyer-model-panel" onclick="document.getElementById('buyer-model-panel')?.scrollIntoView({behavior:'smooth',block:'start'});return false;" style="color:#7c3aed;text-decoration:underline;cursor:pointer">Jump to model ↓</a></div>` : ''}
         </div>
       </div>` : '';
@@ -2918,14 +2918,15 @@ function _renderBuyerModelPanel(d, reportId) {
   const anchor = document.getElementById('derivation-anchor');
   if (!anchor) return;
   const _isBlocking = typeof lastReport !== 'undefined' && lastReport &&
-    (lastReport.validation || {}).status === 'BLOCKING';
+    (lastReport.validation || {}).status === 'BLOCKING' &&
+    ((lastReport.validation || {}).errors || []).some(e => (e.category||'').toUpperCase() !== 'MATH');
 
   function _fmt(v) {
     if (!v && v !== 0) return '—';
     v = parseFloat(v);
     if (v >= 1e9) return '$' + (v/1e9).toFixed(1) + 'B';
     if (v >= 1e6) return '$' + (v/1e6).toFixed(1) + 'M';
-    if (v >= 1e3) return '$' + Math.round(v/1e3) + 'K';
+    if (v >= 1e4) return '$' + Math.round(v/1e3) + 'K';
     return '$' + v.toLocaleString();
   }
   function _pct(v) { return v != null ? (parseFloat(v)*100).toFixed(0) + '%' : '—'; }
@@ -6711,7 +6712,8 @@ async function downloadPDF() {
     // export entirely is worse than an artifact that's visibly marked DRAFT with
     // errors printed on page 1. The user confirms before continuing.
     const _valStatus = (r.validation || {}).status;
-    const _isDraftExport = _valStatus === 'BLOCKING' || (r.validation || {}).export_blocked;
+    const _nonMathErrs = ((r.validation || {}).errors || []).filter(e => (e.category||'').toUpperCase() !== 'MATH');
+    const _isDraftExport = (_valStatus === 'BLOCKING' && _nonMathErrs.length > 0) || (r.validation || {}).export_blocked;
     if (_isDraftExport) {
       const _draftMsg = (r.validation || {}).summary || 'The Math Verifier found an arithmetic error in the market model.';
       const _proceed = confirm(
