@@ -52,6 +52,14 @@ function init() {
   var API_BASE  = blob.dataset.apiBase  || '';
   var base, state, ops, notes, listeners, debounceTimer, pending;
 
+  /* Auth header — same token store the rest of the app uses. */
+  function _authHeaders(extra) {
+    var h = Object.assign({ 'Content-Type': 'application/json' }, extra || {});
+    var tok = (typeof localStorage !== 'undefined') && localStorage.getItem('pe_token');
+    if (tok) h['Authorization'] = 'Bearer ' + tok;
+    return h;
+  }
+
   try {
     base = JSON.parse(blob.textContent);
   } catch (e) {
@@ -193,7 +201,7 @@ function init() {
   async function parseAssumption(text) {
     var r = await fetch(API_BASE + '/alignment/reports/' + REPORT_ID + '/assumptions/parse', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: _authHeaders(),
       body: JSON.stringify({ text: text, state: state, ops: ops })
     });
     if (!r.ok) throw new Error('parse failed: ' + r.status);
@@ -304,7 +312,7 @@ function init() {
     paint();
     try {
       await fetch(API_BASE + '/alignment/reports/' + REPORT_ID + '/assumptions/apply', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: _authHeaders(),
         body: JSON.stringify(payload)
       });
     } catch (e) { console.warn('assumption not persisted', e); }
@@ -331,7 +339,8 @@ function init() {
         var i = ops.findIndex(function (o) { return o.id === b.dataset.del; });
         if (i > -1) ops.splice(i, 1);
         renderLedger(); paint();
-        fetch(API_BASE + '/alignment/reports/' + REPORT_ID + '/assumptions/' + b.dataset.del, { method: 'DELETE' })
+        fetch(API_BASE + '/alignment/reports/' + REPORT_ID + '/assumptions/' + b.dataset.del,
+          { method: 'DELETE', headers: _authHeaders() })
           .catch(function () {});
       };
     });
@@ -443,7 +452,8 @@ function init() {
      Fires async so the initial paint is instant; saved ops arrive and re-render
      without blocking. No-ops silently if the endpoint returns empty or errors. */
   if (REPORT_ID) {
-    fetch(API_BASE + '/alignment/reports/' + REPORT_ID + '/assumptions')
+    fetch(API_BASE + '/alignment/reports/' + REPORT_ID + '/assumptions',
+          { headers: _authHeaders() })
       .then(function (r) { return r.ok ? r.json() : []; })
       .then(function (saved) { if (saved && saved.length) window.MedlevateModel.loadOps(saved); })
       .catch(function () {});
@@ -485,7 +495,7 @@ function init() {
               API_BASE + '/alignment/reports/' + REPORT_ID + '/assumptions/regenerate-section',
               {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: _authHeaders(),
                 body: JSON.stringify({
                   section:         el.dataset.narrative,
                   original_text:   currentText,
