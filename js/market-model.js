@@ -18,7 +18,7 @@
 function usd(v) {
   if (v >= 1e9) return '$' + (v / 1e9).toFixed(1) + 'B';
   if (v >= 1e6) return '$' + (v / 1e6).toFixed(1) + 'M';
-  if (v >= 1e3) return '$' + Math.round(v / 1e3).toLocaleString() + 'K';
+  if (v >= 1e4) return '$' + Math.round(v / 1e3).toLocaleString() + 'K';
   return '$' + Math.round(v).toLocaleString();
 }
 function int(v) { return Math.round(v).toLocaleString(); }
@@ -386,7 +386,8 @@ function init() {
       } catch (e) {
         document.getElementById('mm-preview').innerHTML =
           '<div style="padding:10px;background:var(--bg-2);border:1px solid var(--border);font-size:11.5px;color:var(--text-3)">' +
-          'Could not interpret that right now. You can still edit the values directly above.</div>';
+          'Could not interpret that right now. You can still edit the values directly above.' +
+          '<br><span style="font-size:10px;opacity:.6">' + (e && e.message ? e.message : String(e)) + '</span></div>';
       } finally {
         btnInterpret.disabled = false;
         btnInterpret.textContent = 'Interpret';

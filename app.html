@@ -1939,9 +1939,9 @@ function renderPIReport(r) {
         if (/annual\s*spend|spend\s*per|arpu/.test(t)) return 'spend_per_unit';
         if (/sam\s*rate|adoption\s*rate|reachab/.test(t)) return 'sam_rate';
         if (/som\s*rate|5[._]yr|bass/.test(t)) return 'som_rate';
-        if (/\btam\b/.test(t) && !/rate/.test(t)) return 'tam';
-        if (/\bsam\b/.test(t) && !/rate/.test(t)) return 'sam';
         if (/\bsom\b/.test(t) && !/rate/.test(t)) return 'som';
+        if (/\bsam\b/.test(t) && !/rate/.test(t)) return 'sam';
+        if (/\btam\b/.test(t) && !/rate/.test(t)) return 'tam';
         return null;
       })();
       html += `<div class="ms-step">
@@ -3187,7 +3187,7 @@ function _applyBuyerModelUpdate(data) {
             const v = s.value;
             if (v >= 1e9) return '$'+(v/1e9).toFixed(1)+'B';
             if (v >= 1e6) return '$'+(v/1e6).toFixed(1)+'M';
-            if (v >= 1e3) return '$'+Math.round(v/1e3)+'K';
+            if (v >= 1e4) return '$'+Math.round(v/1e3)+'K';
             return '$'+v.toLocaleString();
           })())
         : '—';
@@ -6901,9 +6901,9 @@ async function downloadPDF() {
         const t = (s.label||'').toLowerCase();
         if (/eligible|buyer\s*pop|funded\s*lab/.test(t)) return 'buyer_population';
         if (/annual\s*spend|spend\s*per|arpu/.test(t)) return 'spend_per_unit';
-        if (/\btam\b/.test(t) && !/rate/.test(t)) return 'tam';
-        if (/\bsam\b/.test(t) && !/rate/.test(t)) return 'sam';
         if (/\bsom\b/.test(t) && !/rate/.test(t)) return 'som';
+        if (/\bsam\b/.test(t) && !/rate/.test(t)) return 'sam';
+        if (/\btam\b/.test(t) && !/rate/.test(t)) return 'tam';
         return null;
       })();
       const v = (_msNid && _mFmt[_msNid]) ? _mFmt[_msNid] : ((typeof s.value==='number')? s.value.toLocaleString() : clean(s.value));
