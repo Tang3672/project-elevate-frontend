@@ -1706,10 +1706,10 @@ function renderPIReport(r) {
         : '<div style="font-size:11px;color:var(--text-4);margin-top:3px">No specific retrieved signals for this dimension.</div>';
       // No STRONG/MODERATE/WEAK verdict — just the dimension and the sourced
       // evidence behind it. The % is a faint, secondary internal weighting.
-      rows += `<div style="padding:11px 0;border-bottom:1px solid var(--border)">
+      rows += `<div data-comm-dim="${k}" style="padding:11px 0;border-bottom:1px solid var(--border)">
         <div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px">
           <span style="font-size:12px;font-weight:700;color:var(--text)">${_labels[k]||k}</span>
-          <span style="font-size:9px;color:var(--text-4)" title="internal weighting only — secondary to the evidence">${Math.round(sc[k]*100)}%</span>
+          <span class="comm-dim-pct" style="font-size:9px;color:var(--text-4)" title="internal weighting only — secondary to the evidence">${Math.round(sc[k]*100)}%</span>
         </div>
         ${driversHtml}
       </div>`;
@@ -2863,8 +2863,19 @@ function renderPIReport(r) {
               if (!resp.ok) throw new Error('HTTP ' + resp.status);
               var data = await resp.json();
               var sc = data.commercialization_scores || {};
+              // Update overall priority badge
               var prEl = document.getElementById('comm-overall-priority');
               if (prEl && sc.overall_priority != null) prEl.textContent = 'overall ' + Math.round(sc.overall_priority*100) + '% (gated)';
+              // Update each dimension row percentage
+              Object.keys(sc).forEach(function(dimKey) {
+                if (dimKey === 'overall_priority') return;
+                var dimEl = document.querySelector('[data-comm-dim="' + dimKey + '"]');
+                if (dimEl) {
+                  var pctEl = dimEl.querySelector('.comm-dim-pct');
+                  if (pctEl && sc[dimKey] != null) pctEl.textContent = Math.round(sc[dimKey]*100) + '% (gated)';
+                }
+              });
+              // Update recommendation
               var recEl = document.getElementById('comm-recommendation-text');
               if (recEl && data.recommendation) recEl.textContent = data.recommendation;
               nb.innerHTML = '<span style="color:#059669">✓ Re-scored with current model (SOM ' + (window.MedlevateModel.format.usd(vals.som)) + ')</span>';
