@@ -1715,12 +1715,12 @@ function renderPIReport(r) {
       </div>`;
     });
     const overall = sc.overall_priority;
-    html += `<div style="border:1px solid var(--border);border-radius:4px;padding:16px 20px;margin-bottom:28px;background:var(--bg)">
+    html += `<div id="assessment-block" style="border:1px solid var(--border);border-radius:4px;padding:16px 20px;margin-bottom:28px;background:var(--bg)">
       <div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px;margin-bottom:4px">
         <div style="font-family:var(--display);font-size:13px;font-weight:700;color:var(--text);text-transform:uppercase;letter-spacing:.05em">Commercialization Assessment</div>
         <span id="comm-overall-priority" style="font-size:9px;color:var(--text-4)" title="internal weighting only">overall ${Math.round(overall*100)}%</span>
       </div>
-      <div style="font-size:11px;color:var(--text-3);margin-bottom:8px">Each dimension is built from the specific retrieved signals below — read the evidence and judge for yourself. The faint percentages are an internal weighting only, not a verdict.</div>
+      <div id="comm-baseline-note" style="font-size:11px;color:var(--text-3);margin-bottom:8px">Each dimension is built from the specific retrieved signals below — read the evidence and judge for yourself. The faint percentages are an internal weighting only, not a verdict.</div>
       ${rows}
       ${_cs.recommendation ? `<div id="comm-recommendation-callout" class="callout-box callout-blue" style="margin-top:14px"><div class="callout-label">→ Recommended Next Action</div><div id="comm-recommendation-text" class="callout-text">${_cs.recommendation}</div></div>` : ''}
       <div style="font-size:9px;color:var(--text-4);margin-top:10px">Built from PTRS approval odds, deal-comp moat, IP whitespace, TRL, SBIR activity, and bottom-up market size — sources shown per line. Not investment advice.</div>
@@ -2460,7 +2460,18 @@ function renderPIReport(r) {
   }
 
   // SOURCES - merge ALL sources including literature, buyer segments, KOLs
-  var allSources = (r.sources || []).slice();
+  // Filter backend-provided sources before building the list:
+  // 1. Drop entries with no URL (can't verify, shouldn't render)
+  // 2. Drop bare-homepage URLs (no specific resource path, e.g. reporter.nih.gov/)
+  // 3. Drop known market-research aggregators (CAGR/share data ≠ buyer population evidence)
+  var _AGGREGATOR_RE = /mordor intelligence|grand view research|marketsandmarkets|allied market research|maximize market research|imarc group|fortune business insights|precedence research|global market insights/i;
+  var allSources = (r.sources || []).filter(function(s) {
+    if (!s.url) return false;
+    var _path = s.url.replace(/^https?:\/\/[^/]+/, '').replace(/^\/+$/, '');
+    if (!_path) return false; // bare domain / homepage
+    if (_AGGREGATOR_RE.test(s.name || '')) return false;
+    return true;
+  }).slice();
   var seenUrls = new Set(allSources.map(function(s) { return s.url; }));
   var today = new Date().toISOString().slice(0,10);
 
@@ -2815,6 +2826,62 @@ function renderPIReport(r) {
   setTimeout(_msLoadOverrides, 0);
   // market-model.js: rebind to the newly-injected #market-model blob
   setTimeout(function () { if (window.initMedlevateModel) window.initMedlevateModel(); }, 0);
+
+  // Assessment re-score: when gates shift SOM >15% from report baseline, show a
+  // "Re-score with current model" link so the assessment reflects the gated values.
+  (function _wireAssessmentRescore() {
+    var _reportId = r.report_id || window._currentReportId;
+    if (!_reportId || !(r.commercialization_scores || {}).commercialization_scores) return;
+    var _baseSom = (r.market_sizing_derivation || {}).us_som_usd || null;
+    var _rescoring = false;
+    setTimeout(function () {
+      var M = window.MedlevateModel;
+      if (!M) return;
+      M.onChange(function(v) {
+        var block = document.getElementById('assessment-block');
+        var note  = document.getElementById('comm-baseline-note');
+        if (!block || !note) return;
+        var _curSom = v.som || 0;
+        var _ref = _baseSom || _curSom;
+        var _drifted = _ref > 0 && Math.abs(_curSom - _ref) / _ref > 0.15;
+        var existing = block.querySelector('.mm-rescore-notice');
+        if (_drifted && !existing && !_rescoring) {
+          var nb = document.createElement('div');
+          nb.className = 'mm-rescore-notice';
+          nb.style.cssText = 'font-size:11px;color:#d97706;background:rgba(217,119,6,.07);border:1px solid rgba(217,119,6,.25);padding:6px 10px;border-radius:3px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;gap:8px';
+          nb.innerHTML = '<span>Scores are based on the baseline model. Your gates have moved SOM by more than 15%.</span>'
+            + '<button type="button" style="font-size:11px;color:#d97706;background:none;border:1px solid #d97706;padding:3px 10px;cursor:pointer;border-radius:3px;white-space:nowrap">Re-score →</button>';
+          nb.querySelector('button').onclick = async function() {
+            _rescoring = true;
+            this.disabled = true; this.textContent = 'Re-scoring…';
+            try {
+              var vals = M.getValues();
+              var resp = await fetch(API_BASE + '/alignment/reports/' + _reportId + '/rescore', {
+                method: 'POST', headers: _authHeaders(),
+                body: JSON.stringify({ som_usd: vals.som, tam_usd: vals.tam })
+              });
+              if (!resp.ok) throw new Error('HTTP ' + resp.status);
+              var data = await resp.json();
+              var sc = data.commercialization_scores || {};
+              var prEl = document.getElementById('comm-overall-priority');
+              if (prEl && sc.overall_priority != null) prEl.textContent = 'overall ' + Math.round(sc.overall_priority*100) + '% (gated)';
+              var recEl = document.getElementById('comm-recommendation-text');
+              if (recEl && data.recommendation) recEl.textContent = data.recommendation;
+              nb.innerHTML = '<span style="color:#059669">✓ Re-scored with current model (SOM ' + (window.MedlevateModel.format.usd(vals.som)) + ')</span>';
+            } catch(e) {
+              console.error('rescore failed', e);
+              this.disabled = false; this.textContent = 'Re-score →';
+              _rescoring = false;
+            }
+          };
+          note.insertAdjacentElement('afterend', nb);
+        } else if (!_drifted && existing) {
+          existing.remove();
+          _rescoring = false;
+        }
+      });
+    }, 200);
+  })();
   // Competitive landscape now comes from the report (server-side sweep), patched in
   // by the verification poll — no separate, flaky client fetch.
 
