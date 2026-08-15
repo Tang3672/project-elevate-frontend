@@ -1678,7 +1678,7 @@ function renderPIReport(r) {
     <div style="border-left:4px solid var(--blue);padding:16px 20px;background:var(--bg-2);margin-bottom:28px">
       <div style="font-family:var(--display);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--blue);margin-bottom:6px">${_isResearchDomain ? 'Commercialization Intelligence Report' : 'Market Intelligence Report'}</div>
       <div style="font-family:var(--display);font-size:20px;font-weight:700;color:var(--text);margin-bottom:8px">${r.product_name || (r.disease_intelligence ? r.disease_intelligence.condition : '') || 'Analysis'}</div>
-      <div style="font-family:var(--body);font-size:13px;color:var(--text-2);line-height:1.7">${r.executive_summary}</div>
+      <div class="mm-narrative" data-narrative="executive_summary" data-sensitive-to="tam,sam,som" style="font-family:var(--body);font-size:13px;color:var(--text-2);line-height:1.7">${r.executive_summary}</div>
       <div id="verification-slot">${buildVerificationBadgesHTML(r)}</div>
     </div>`;
 
@@ -3431,7 +3431,7 @@ async function _showModelHistory(reportId) {
     const entries = versions.map(v => ({
       v: v.version,
       note: (v.rationale || v.change_note || 'Baseline').slice(0, 60),
-      created_by: v.created_by === 'engine' ? 'engine' : 'you',
+      created_by: (v.created_by == null || v.created_by === 'engine') ? 'engine' : 'you',
       ts: new Date(v.created_at || Date.now()).getTime(),
     }));
     vb.dataset.versions = JSON.stringify(entries);
