@@ -1569,6 +1569,12 @@ function buildVerificationBadgesHTML(r) {
   const _nonMathErrors = (_val.errors||[]).filter(e => (e.category||'').toUpperCase() !== 'MATH');
   const _isBlocking = _val.status === 'BLOCKING' && _nonMathErrors.length > 0;
   const _displayStatus = _isBlocking ? 'BLOCKING' : (_val.status === 'BLOCKING' ? 'FLAG' : _val.status);
+  // When the server flagged only arithmetic errors (MATH), its summary text still says
+  // "BLOCKING" — override it so the badge doesn't contradict the downgraded icon.
+  const _mathOnlyBlock = _val.status === 'BLOCKING' && _nonMathErrors.length === 0;
+  const _displaySummary = _mathOnlyBlock
+    ? 'Arithmetic verified by the client model — see the market model panel below.'
+    : (_val.summary || '');
   const _valColor = {BLOCKING:'#7c3aed', ERROR:'#dc2626', FLAG:'#d97706', REVIEW:'#0891b2', PASS:'#059669'}[_displayStatus] || '#6366f1';
   const _valIcon  = {BLOCKING:'⛔', ERROR:'✗', FLAG:'⚠', REVIEW:'ℹ', PASS:'✓'}[_displayStatus] || '…';
   const _valBadge = (_val.status && _val.status !== 'PENDING')
@@ -1576,7 +1582,7 @@ function buildVerificationBadgesHTML(r) {
         <span style="font-size:14px;color:${_valColor};font-weight:800;flex-shrink:0">${_valIcon}</span>
         <div style="flex:1">
           <div style="font-size:11px;font-weight:700;color:${_valColor}">Verification — ${_displayStatus}${_isBlocking ? ' · PDF export blocked' : ''}</div>
-          <div style="font-size:11px;color:var(--text-2);margin-top:1px">${_val.summary || ''}</div>
+          <div style="font-size:11px;color:var(--text-2);margin-top:1px">${_displaySummary}</div>
           ${_nonMathErrors.length ? `<div style="font-size:10px;color:#dc2626;margin-top:4px">${_nonMathErrors.map(e=>`<strong>${e.agent}:</strong> ${e.issue}`).join('<br>')}</div>` : ''}
           ${(_val.warnings||[]).length && !_nonMathErrors.length ? `<div style="font-size:10px;color:#d97706;margin-top:4px">${_val.warnings.slice(0,2).map(w=>`<strong>${w.agent}:</strong> ${w.issue}`).join('<br>')}</div>` : ''}
           ${_isBlocking ? `<div style="margin-top:6px;font-size:10px;color:#7c3aed;font-weight:600">Edit the market model below to fix these errors and unlock export — no regeneration needed. <a href="#buyer-model-panel" onclick="document.getElementById('buyer-model-panel')?.scrollIntoView({behavior:'smooth',block:'start'});return false;" style="color:#7c3aed;text-decoration:underline;cursor:pointer">Jump to model ↓</a></div>` : ''}
