@@ -2097,12 +2097,17 @@ function renderPIReport(r) {
         // <script type="application/json"> injected via innerHTML: the browser
         // creates the DOM node and preserves textContent but never executes it.
         // initMedlevateModel() is called after innerHTML is set (see renderReport).
-        const _mmJsonSafe = JSON.stringify(_mmBlob).replace(/<\//g, '<\\/');
         const _mmApiBase  = (typeof API !== 'undefined' ? API : '');
+        // Use a hidden <div> instead of <script> — <script> inside innerHTML
+        // causes WebKit to drop all subsequent HTML in the same string.
+        const _mmAttrSafe = JSON.stringify(_mmBlob)
+          .replace(/&/g, '&amp;')
+          .replace(/"/g, '&quot;');
 
-        html += `<script id="market-model" type="application/json"
+        html += `<div id="market-model" hidden aria-hidden="true"
           data-report-id="${window._currentReportId || ''}"
-          data-api-base="${_mmApiBase}">${_mmJsonSafe}<\/script>`;
+          data-api-base="${_mmApiBase}"
+          data-blob="${_mmAttrSafe}"></div>`;
 
         html += `
         <div style="margin-top:20px;padding:16px;background:var(--bg-2);border:1px solid var(--border);border-radius:3px">

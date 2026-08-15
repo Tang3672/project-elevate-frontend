@@ -61,7 +61,7 @@ function init() {
   }
 
   try {
-    base = JSON.parse(blob.textContent);
+    base = JSON.parse(blob.dataset.blob || blob.textContent);
   } catch (e) {
     console.warn('market-model: JSON parse failed', e);
     return;
