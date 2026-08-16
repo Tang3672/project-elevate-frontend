@@ -7539,7 +7539,7 @@ async function _showMandatoryQuestions(idea) {
       const clsRes = await fetch(`${API}/alignment/classify`, {
         method: 'POST',
         headers: {'Content-Type':'application/json','Authorization':`Bearer ${token}`},
-        body: JSON.stringify({ idea }),
+        body: JSON.stringify({ idea, tier1_category: selectedType }),
       });
       if (clsRes.ok) {
         const clsData = await clsRes.json();
@@ -7564,7 +7564,7 @@ async function _showMandatoryQuestions(idea) {
       body: JSON.stringify({
         idea,
         pathway:        window.selectedPathway || 'commercial',
-        product_type:   window.selectedType    || 'drug_small_molecule',
+        product_type:   selectedType           || 'drug_small_molecule',
         classification: cls,
       }),
     });
