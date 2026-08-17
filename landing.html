@@ -7,338 +7,714 @@
 <meta name="description" content="Market sizing for drugs, devices, and diagnostics. Every population count, price band, and adoption rate labeled by source so you can check our work.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;1,6..72,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  :root{
-    --paper:#FCFCFB;
-    --ink:#17181C;
-    --body:#33353C;
-    --muted:#6C6E74;
-    --faint:#9C9EA4;
-    --rule:#E5E5E1;
-    --hair:#EFEFEC;
-    --retrieved:#2F6B4F;
-    --derived:#3B4A7A;
-    --assumed:#9C6417;
-    --serif:'Newsreader',Georgia,serif;
-    --mono:'IBM Plex Mono',ui-monospace,SFMono-Regular,monospace;
-  }
-  *,*::before,*::after{box-sizing:border-box}
-  html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
-  body{
-    margin:0;background:var(--paper);color:var(--ink);
-    font-family:var(--serif);font-size:18px;line-height:1.62;
-    font-weight:400;-webkit-font-smoothing:antialiased;
-  }
-  a{color:inherit}
-  :focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+/* ── Tokens ── */
+:root {
+  --bg:            #07090D;
+  --bg-2:          #0B0F18;
+  --surface:       #0E1520;
+  --surface-2:     #121D2E;
+  --border:        #1A2540;
+  --border-subtle: #111928;
+  --text:          #E2EAFE;
+  --muted:         #5A7099;
+  --faint:         #334466;
+  --accent:        #4A8CFF;
+  --accent-dim:    rgba(74,140,255,.12);
+  --accent-glow:   rgba(74,140,255,.06);
+  --green:         #34D399;
+  --green-dim:     rgba(52,211,153,.12);
+  --amber:         #F59E0B;
+  --amber-dim:     rgba(245,158,11,.12);
+  --blue-dim:      rgba(96,165,250,.12);
+  --mono:          'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace;
+  --sans:          'Inter', system-ui, -apple-system, sans-serif;
+  --radius:        10px;
+  --radius-sm:     6px;
+}
 
-  /* ---- audit rail ---- */
-  .shell{max-width:72rem;margin:0 auto;padding:0 1.75rem}
-  .railed{position:relative;padding-left:3.25rem}
-  .railed::before{
-    content:"";position:absolute;left:0;top:.35rem;bottom:.35rem;
-    width:1px;background:var(--rule);
-  }
-  .tick{
-    position:absolute;left:-3.25rem;top:.3rem;
-    font-family:var(--mono);font-size:.62rem;letter-spacing:.12em;
-    text-transform:uppercase;color:var(--faint);
-  }
-  .tick::after{
-    content:"";position:absolute;left:2.55rem;top:.42rem;
-    width:.55rem;height:1px;background:var(--rule);
-  }
+/* ── Reset ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 16px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+a { color: inherit; text-decoration: none; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 3px; }
 
-  /* ---- masthead ---- */
-  header.top{
-    display:flex;align-items:center;justify-content:space-between;
-    gap:1rem;padding:2rem 0 6rem;flex-wrap:wrap;
-  }
-  .mark{
-    font-family:var(--mono);font-size:.82rem;letter-spacing:.22em;
-    text-transform:uppercase;text-decoration:none;font-weight:500;flex-shrink:0;
-  }
-  .mark span{color:var(--retrieved)}
-  .topnav{
-    display:flex;gap:1.75rem;font-family:var(--mono);
-    font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);
-  }
-  .topnav a{text-decoration:none;border-bottom:1px solid transparent;padding-bottom:2px}
-  .topnav a:hover{border-bottom-color:var(--ink);color:var(--ink)}
-  .topactions{display:flex;align-items:center;gap:1.25rem;flex-shrink:0}
-  .topact-login{
-    font-family:var(--mono);font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;
-    color:var(--muted);text-decoration:none;padding-bottom:2px;
-    border-bottom:1px solid transparent;transition:border-color .16s,color .16s;
-  }
-  .topact-login:hover{color:var(--ink);border-bottom-color:var(--ink)}
+/* ── Layout ── */
+.shell { max-width: 1120px; margin: 0 auto; padding: 0 2rem; }
 
-  /* ---- hero ---- */
-  h1{
-    font-family:var(--serif);font-weight:300;
-    font-size:clamp(2rem,4.4vw,3.15rem);line-height:1.14;
-    letter-spacing:-.015em;margin:0 0 1.75rem;max-width:19ch;
-    text-wrap:balance;
-  }
-  h1 em{font-style:italic;font-weight:400}
-  .lede{max-width:33rem;color:var(--body);font-size:1.02rem}
-  .lede p{margin:0 0 1.15rem}
-  .lede p:last-child{margin-bottom:0}
+/* ── NAV ── */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  padding: 0 2rem;
+  transition: background .3s, border-color .3s, backdrop-filter .3s;
+  border-bottom: 1px solid transparent;
+}
+nav.scrolled {
+  background: rgba(7,9,13,.75);
+  backdrop-filter: blur(18px) saturate(1.4);
+  -webkit-backdrop-filter: blur(18px) saturate(1.4);
+  border-color: var(--border-subtle);
+}
+.nav-inner {
+  max-width: 1120px; margin: 0 auto;
+  display: flex; align-items: center; justify-content: space-between;
+  height: 64px; gap: 2rem;
+}
+.mark {
+  font-family: var(--mono); font-size: .78rem; letter-spacing: .22em;
+  text-transform: uppercase; font-weight: 500; flex-shrink: 0; color: var(--text);
+}
+.mark span { color: var(--accent); }
+.nav-links {
+  display: flex; gap: 2rem;
+  font-size: .82rem; color: var(--muted); letter-spacing: .01em;
+}
+.nav-links a { transition: color .15s; }
+.nav-links a:hover { color: var(--text); }
+.nav-actions { display: flex; align-items: center; gap: 1rem; flex-shrink: 0; }
+.nav-login {
+  font-size: .82rem; color: var(--muted);
+  transition: color .15s;
+}
+.nav-login:hover { color: var(--text); }
+.btn {
+  font-family: var(--sans); font-size: .82rem; font-weight: 600;
+  padding: .55rem 1.15rem; border-radius: var(--radius-sm);
+  cursor: pointer; display: inline-flex; align-items: center; gap: .4rem;
+  transition: background .18s, transform .15s, box-shadow .18s;
+}
+.btn-primary {
+  background: var(--accent); color: #fff; border: 1px solid transparent;
+}
+.btn-primary:hover {
+  background: #5c9bff;
+  box-shadow: 0 0 20px rgba(74,140,255,.35);
+  transform: translateY(-1px);
+}
+.btn-ghost {
+  background: transparent; color: var(--text);
+  border: 1px solid var(--border);
+}
+.btn-ghost:hover {
+  background: var(--surface); border-color: var(--faint);
+  transform: translateY(-1px);
+}
 
-  /* ---- stats strip ---- */
-  .stats-strip{border-top:1px solid var(--rule);padding:3rem 0}
-  .stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:2.5rem}
-  .stat-n{
-    display:block;font-family:var(--mono);font-size:2.4rem;
-    font-variant-numeric:tabular-nums;letter-spacing:-.03em;line-height:1;margin-bottom:.55rem;
-  }
-  .stat-l{
-    display:block;font-size:.9rem;color:var(--muted);font-style:italic;
-    border-left:1px solid var(--rule);padding-left:.7rem;line-height:1.45;
-  }
+/* ── HERO ── */
+.hero {
+  position: relative; overflow: hidden;
+  min-height: 100vh;
+  display: flex; align-items: center;
+  padding: 140px 2rem 100px;
+}
+.hero-bg {
+  position: absolute; inset: 0; pointer-events: none;
+}
+/* dot grid */
+.hero-bg::before {
+  content: '';
+  position: absolute; inset: 0;
+  background-image: radial-gradient(circle, rgba(74,140,255,.18) 1px, transparent 1px);
+  background-size: 36px 36px;
+  mask-image: radial-gradient(ellipse 80% 80% at 60% 40%, black 0%, transparent 70%);
+  -webkit-mask-image: radial-gradient(ellipse 80% 80% at 60% 40%, black 0%, transparent 70%);
+}
+/* main glow orb */
+.hero-bg::after {
+  content: '';
+  position: absolute;
+  top: -200px; right: -100px;
+  width: 700px; height: 700px;
+  background: radial-gradient(circle, rgba(74,140,255,.14) 0%, rgba(74,140,255,.04) 45%, transparent 70%);
+  border-radius: 50%;
+  animation: orb-drift 18s ease-in-out infinite alternate;
+}
+@keyframes orb-drift {
+  0%   { transform: translate(0,0) scale(1); }
+  100% { transform: translate(40px,60px) scale(1.08); }
+}
+.hero-secondary-glow {
+  position: absolute;
+  bottom: -100px; left: 10%;
+  width: 500px; height: 400px;
+  background: radial-gradient(circle, rgba(52,211,153,.06) 0%, transparent 65%);
+  border-radius: 50%; pointer-events: none;
+}
 
-  /* ---- sections ---- */
-  section{padding:5.5rem 0;border-top:1px solid var(--rule)}
-  .secnum{
-    font-family:var(--mono);font-size:.68rem;letter-spacing:.18em;
-    text-transform:uppercase;color:var(--faint);margin:0 0 2.25rem;
-  }
-  h2{
-    font-family:var(--serif);font-weight:400;font-size:1.65rem;
-    line-height:1.28;letter-spacing:-.01em;margin:0 0 1.15rem;max-width:24ch;
-    text-wrap:balance;
-  }
-  .sub{max-width:33rem;color:var(--muted);font-size:.98rem;margin:0 0 2.5rem}
+.hero-inner {
+  max-width: 1120px; margin: 0 auto; width: 100%;
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 4rem; align-items: center; position: relative; z-index: 1;
+}
 
-  /* ---- archetype switcher ---- */
-  .switch{display:flex;flex-wrap:wrap;gap:0;margin-bottom:1.75rem;border:1px solid var(--rule)}
-  .switch button{
-    font-family:var(--mono);font-size:.7rem;letter-spacing:.11em;text-transform:uppercase;
-    padding:.75rem 1.1rem;background:transparent;border:none;border-right:1px solid var(--rule);
-    color:var(--muted);cursor:pointer;transition:background .16s,color .16s;
-  }
-  .switch button:last-child{border-right:none}
-  .switch button:hover{color:var(--ink)}
-  .switch button[aria-selected="true"]{background:var(--ink);color:var(--paper)}
+.hero-eyebrow {
+  display: inline-flex; align-items: center; gap: .5rem;
+  font-family: var(--mono); font-size: .7rem; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--accent); margin-bottom: 1.5rem;
+  border: 1px solid rgba(74,140,255,.25); border-radius: 100px;
+  padding: .3rem .85rem;
+  opacity: 0; transform: translateY(16px);
+  animation: hero-in .6s .1s ease forwards;
+}
+.hero-eyebrow::before {
+  content: ''; width: 6px; height: 6px;
+  background: var(--accent); border-radius: 50%;
+  box-shadow: 0 0 8px var(--accent);
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+@keyframes pulse-dot {
+  0%,100% { opacity: 1; } 50% { opacity: .4; }
+}
 
-  /* ---- model ---- */
-  .model{border:1px solid var(--rule);background:#fff}
-  .model-head{
-    padding:1.4rem 1.6rem;border-bottom:1px solid var(--hair);
-    display:flex;flex-wrap:wrap;gap:.4rem 1.5rem;justify-content:space-between;align-items:baseline;
-  }
-  .model-title{font-family:var(--mono);font-size:.74rem;letter-spacing:.13em;text-transform:uppercase}
-  .model-meta{font-family:var(--mono);font-size:.68rem;color:var(--faint)}
-  .model-body{padding:0 1.6rem 1.6rem}
+h1 {
+  font-size: clamp(2.6rem, 5vw, 4.2rem);
+  font-weight: 800; line-height: 1.05;
+  letter-spacing: -.03em;
+  text-wrap: balance; margin-bottom: 1.5rem;
+  opacity: 0; transform: translateY(20px);
+  animation: hero-in .65s .2s ease forwards;
+}
+h1 .grad {
+  background: linear-gradient(135deg, #fff 30%, #7ab3ff 70%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
 
-  /* ---- table ---- */
-  .table-wrap{overflow-x:auto}
-  table{width:100%;border-collapse:collapse;min-width:460px}
-  th{
-    font-family:var(--mono);font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;
-    color:var(--faint);font-weight:400;text-align:left;padding:1.1rem .5rem .65rem 0;
-    border-bottom:1px solid var(--hair);
-  }
-  th.num,td.num{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums;padding-right:0}
-  th.num{padding-left:.75rem}
-  td{padding:.9rem .5rem .9rem 0;border-bottom:1px solid var(--hair);vertical-align:top;font-size:.92rem}
-  td.num{font-size:.88rem;padding-top:.95rem}
-  tbody tr:last-child td{border-bottom:none}
-  .cnote{display:block;font-size:.82rem;color:var(--muted);margin-top:.15rem;line-height:1.5;font-style:italic}
+.hero-sub {
+  font-size: 1.05rem; color: var(--muted); max-width: 38ch;
+  line-height: 1.7; margin-bottom: 2.25rem;
+  opacity: 0; transform: translateY(18px);
+  animation: hero-in .65s .35s ease forwards;
+}
 
-  .badge{
-    font-family:var(--mono);font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;
-    padding:.18rem .4rem;border:1px solid currentColor;white-space:nowrap;
-  }
-  .b-retrieved{color:var(--retrieved)}
-  .b-derived{color:var(--derived)}
-  .b-assumed{color:var(--assumed)}
+.hero-ctas {
+  display: flex; gap: .85rem; flex-wrap: wrap;
+  opacity: 0; transform: translateY(16px);
+  animation: hero-in .6s .45s ease forwards;
+}
+.btn-lg { font-size: .9rem; padding: .75rem 1.5rem; border-radius: var(--radius); }
 
-  tr.gate{background:#FDFAF5}
-  .ctrl{display:flex;align-items:center;gap:.85rem;margin-top:.65rem}
-  input[type=range]{-webkit-appearance:none;appearance:none;width:180px;height:2px;background:var(--rule);cursor:pointer}
-  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:14px;height:14px;background:var(--assumed);border-radius:50%;cursor:pointer}
-  input[type=range]::-moz-range-thumb{width:14px;height:14px;background:var(--assumed);border:none;border-radius:50%;cursor:pointer}
-  .readout{font-family:var(--mono);font-size:.78rem;color:var(--assumed);font-variant-numeric:tabular-nums;min-width:3.2rem}
+@keyframes hero-in {
+  to { opacity: 1; transform: translateY(0); }
+}
 
-  .totals{display:flex;flex-wrap:wrap;gap:2.25rem;padding-top:1.5rem;border-top:1px solid var(--rule);margin-top:.25rem}
-  .totals dt{font-family:var(--mono);font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);margin-bottom:.35rem}
-  .totals dd{margin:0;font-family:var(--mono);font-size:1.4rem;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
-  .verdict{margin:1.5rem 0 0;padding-top:1.25rem;border-top:1px solid var(--hair);font-size:.94rem;color:var(--body)}
-  .verdict b{font-weight:500;color:var(--ink)}
-  .cap{font-family:var(--mono);font-size:.68rem;color:var(--faint);line-height:1.65;margin:1.15rem 0 0}
+/* ── HERO CARD ── */
+.hero-card-wrap {
+  display: flex; justify-content: center; align-items: center;
+  opacity: 0; transform: translateX(20px);
+  animation: hero-in .7s .5s ease forwards;
+}
+.hero-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1.5rem;
+  width: 100%; max-width: 440px;
+  position: relative;
+  box-shadow: 0 0 60px rgba(74,140,255,.08), 0 24px 60px rgba(0,0,0,.4);
+  animation: float 8s ease-in-out infinite;
+  overflow: hidden;
+}
+.hero-card::after {
+  content: '';
+  position: absolute; top: 0; left: -100%;
+  width: 50%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.04), transparent);
+  animation: shimmer 4s ease-in-out 1.5s infinite;
+}
+@keyframes float {
+  0%,100% { transform: translateY(0); }
+  50%      { transform: translateY(-10px); }
+}
+@keyframes shimmer {
+  0%   { left: -100%; }
+  100% { left: 200%; }
+}
+.card-header {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  margin-bottom: 1.25rem; padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border-subtle);
+}
+.card-title { font-size: .82rem; font-weight: 600; }
+.card-meta { font-family: var(--mono); font-size: .64rem; color: var(--muted); }
+.live-badge {
+  display: inline-flex; align-items: center; gap: .35rem;
+  font-family: var(--mono); font-size: .62rem; letter-spacing: .08em;
+  color: var(--green); text-transform: uppercase;
+  background: var(--green-dim); border-radius: 100px;
+  padding: .25rem .6rem;
+}
+.live-badge::before {
+  content: ''; width: 5px; height: 5px;
+  background: var(--green); border-radius: 50%;
+  box-shadow: 0 0 6px var(--green);
+  animation: pulse-dot 1.8s ease-in-out infinite;
+}
+.card-rows { display: flex; flex-direction: column; gap: .6rem; margin-bottom: 1.25rem; }
+.card-row {
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: .82rem; padding: .6rem .75rem;
+  background: var(--bg-2); border-radius: var(--radius-sm);
+}
+.card-row-label { color: var(--muted); }
+.card-row-val { font-family: var(--mono); font-size: .8rem; font-weight: 500; }
+.badge-sm {
+  font-family: var(--mono); font-size: .6rem; letter-spacing: .07em;
+  text-transform: uppercase; padding: .2rem .45rem;
+  border-radius: 4px; margin-left: .5rem; vertical-align: middle;
+}
+.b-ret { background: var(--green-dim); color: var(--green); }
+.b-der { background: var(--blue-dim);  color: #60A5FA; }
+.b-ass { background: var(--amber-dim); color: var(--amber); }
+.card-totals {
+  display: grid; grid-template-columns: repeat(3,1fr);
+  gap: .75rem; padding-top: 1rem;
+  border-top: 1px solid var(--border-subtle);
+}
+.card-total-label { font-size: .66rem; color: var(--muted); margin-bottom: .2rem; }
+.card-total-val { font-family: var(--mono); font-size: 1.05rem; font-weight: 500; }
 
-  /* ---- rejected ---- */
-  .tally{
-    font-family:var(--mono);font-size:.72rem;letter-spacing:.05em;color:var(--muted);
-    padding:.85rem 0;border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);margin-bottom:1.75rem;
-  }
-  .tally b{color:var(--ink);font-weight:500}
-  .rej{list-style:none;padding:0;margin:0;max-width:48rem}
-  .rej li{display:grid;grid-template-columns:14rem 1fr;gap:1.5rem;padding:.9rem 0;border-bottom:1px solid var(--hair);font-size:.92rem}
-  .rej li:last-child{border-bottom:none}
-  .rej .d{font-family:var(--mono);font-size:.74rem;letter-spacing:.03em}
-  .rej .w{color:var(--muted);font-style:italic}
-  .more{font-family:var(--mono);font-size:.7rem;color:var(--faint);margin-top:1.1rem}
+/* ── STATS STRIP ── */
+.stats-strip {
+  border-top: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 3rem 2rem;
+  background: var(--bg-2);
+}
+.stats-inner {
+  max-width: 1120px; margin: 0 auto;
+  display: grid; grid-template-columns: repeat(3,1fr); gap: 2rem;
+}
+.stat { position: relative; padding-left: 1.5rem; }
+.stat::before {
+  content: ''; position: absolute; left: 0; top: .2rem;
+  width: 2px; height: calc(100% - .4rem);
+  background: var(--accent); opacity: .4; border-radius: 2px;
+}
+.stat-n {
+  display: block; font-family: var(--mono);
+  font-size: 2.8rem; font-weight: 500;
+  letter-spacing: -.04em; line-height: 1;
+  margin-bottom: .5rem;
+  background: linear-gradient(135deg, var(--text) 40%, var(--accent) 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.stat-l { font-size: .88rem; color: var(--muted); }
 
-  /* ---- steps ---- */
-  .steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(14rem,1fr));gap:2.25rem;max-width:58rem}
-  .step .k{font-family:var(--mono);font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);display:block;padding-bottom:.75rem;margin-bottom:.85rem;border-bottom:1px solid var(--rule)}
-  .step h3{font-family:var(--serif);font-size:1.08rem;font-weight:500;margin:0 0 .45rem}
-  .step p{margin:0;font-size:.9rem;color:var(--muted);line-height:1.6}
+/* ── SECTION BASE ── */
+.section { padding: 7rem 2rem; }
+.section + .section { border-top: 1px solid var(--border-subtle); }
+.section-inner { max-width: 1120px; margin: 0 auto; }
 
-  /* ---- pricing ---- */
-  .plans{
-    display:grid;grid-template-columns:repeat(auto-fit,minmax(16rem,1fr));
-    gap:1px;background:var(--rule);border:1px solid var(--rule);
-    max-width:56rem;margin-top:2.25rem;
-  }
-  .plan{background:var(--paper);padding:2rem 1.75rem 2.25rem}
-  .plan-featured{background:#fff}
-  .plan-badge{font-family:var(--mono);font-size:.6rem;letter-spacing:.16em;text-transform:uppercase;color:var(--faint);display:block;margin-bottom:.65rem}
-  .plan-tier{font-family:var(--mono);font-size:.68rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:1.2rem}
-  .plan-price{margin-bottom:1.75rem;line-height:1}
-  .plan-amt{font-family:var(--mono);font-size:2.2rem;font-variant-numeric:tabular-nums;letter-spacing:-.03em}
-  .plan-per{font-family:var(--mono);font-size:.74rem;color:var(--muted)}
-  .plan-feats{list-style:none;padding:0;margin:0 0 1.85rem;font-style:italic}
-  .plan-feats li{font-size:.88rem;color:var(--muted);padding:.45rem 0;border-bottom:1px solid var(--hair)}
-  .plan-feats li:first-child{border-top:1px solid var(--hair)}
+.eyebrow {
+  font-family: var(--mono); font-size: .68rem; letter-spacing: .14em;
+  text-transform: uppercase; color: var(--accent); margin-bottom: 1.25rem;
+  display: block;
+}
+h2 {
+  font-size: clamp(1.8rem, 3vw, 2.6rem);
+  font-weight: 800; letter-spacing: -.03em; line-height: 1.1;
+  text-wrap: balance; margin-bottom: 1rem;
+}
+.section-sub {
+  font-size: 1rem; color: var(--muted); max-width: 42ch;
+  line-height: 1.7; margin-bottom: 3rem;
+}
 
-  /* ---- sources ---- */
-  .srcgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(13rem,1fr));gap:1.75rem 2.5rem;max-width:56rem}
-  .srcgrid h4{font-family:var(--mono);font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);font-weight:400;margin:0 0 .6rem}
-  .srcgrid ul{list-style:none;margin:0;padding:0;font-size:.88rem;color:var(--body)}
-  .srcgrid li{padding:.22rem 0}
+/* ── DEMO SECTION ── */
+.demo-tabs {
+  display: flex; gap: 0; margin-bottom: 1.5rem;
+  border: 1px solid var(--border); border-radius: var(--radius);
+  overflow: hidden; display: inline-flex;
+}
+.demo-tabs button {
+  font-family: var(--sans); font-size: .82rem; font-weight: 500;
+  padding: .6rem 1.25rem; background: transparent; border: none;
+  border-right: 1px solid var(--border); color: var(--muted);
+  cursor: pointer; transition: background .15s, color .15s;
+}
+.demo-tabs button:last-child { border-right: none; }
+.demo-tabs button:hover { color: var(--text); }
+.demo-tabs button[aria-selected="true"] { background: var(--accent-dim); color: var(--text); }
 
-  /* ---- cta ---- */
-  .cta{display:flex;flex-wrap:wrap;gap:.75rem;margin-top:2rem}
-  .btn{
-    font-family:var(--mono);font-size:.72rem;letter-spacing:.13em;text-transform:uppercase;
-    padding:.9rem 1.5rem;text-decoration:none;border:1px solid var(--ink);
-    transition:background .16s,color .16s;display:inline-block;cursor:pointer;
-  }
-  .btn-sm{padding:.55rem 1rem;font-size:.68rem}
-  .solid{background:var(--ink);color:var(--paper)}
-  .solid:hover{background:transparent;color:var(--ink)}
-  .ghost{background:transparent;color:var(--ink)}
-  .ghost:hover{background:var(--ink);color:var(--paper)}
+.model-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.model-card-head {
+  padding: 1.1rem 1.5rem;
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex; justify-content: space-between; align-items: center;
+  flex-wrap: wrap; gap: .5rem;
+}
+.model-card-title {
+  font-family: var(--mono); font-size: .72rem; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--text);
+}
+.model-card-meta { font-family: var(--mono); font-size: .66rem; color: var(--muted); }
+.model-card-body { padding: 1.5rem; }
 
-  /* ---- footer ---- */
-  footer{
-    border-top:1px solid var(--rule);padding:3rem 0 4rem;
-    font-family:var(--mono);font-size:.68rem;color:var(--faint);
-    display:flex;flex-wrap:wrap;gap:2.5rem 4rem;justify-content:space-between;
-  }
-  footer a{text-decoration:none}
-  footer a:hover{color:var(--ink)}
-  .footer-brand{display:flex;flex-direction:column;gap:.5rem}
-  .footer-brand-name{font-size:.76rem;letter-spacing:.2em;text-transform:uppercase;color:var(--ink);font-weight:500}
-  .footer-links{display:flex;flex-wrap:wrap;gap:2rem 3rem}
-  .footer-col{display:flex;flex-direction:column;gap:.6rem}
-  .footer-col-h{letter-spacing:.16em;text-transform:uppercase;font-size:.62rem;color:var(--ink);margin-bottom:.1rem}
-  .footer-legal{
-    border-top:1px solid var(--hair);margin-top:1.5rem;padding-top:1.25rem;
-    font-family:var(--mono);font-size:.64rem;color:var(--faint);
-  }
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; min-width: 460px; }
+th {
+  font-family: var(--mono); font-size: .6rem; letter-spacing: .14em;
+  text-transform: uppercase; color: var(--faint); font-weight: 400;
+  text-align: left; padding: .9rem .6rem .6rem 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+th.num, td.num { text-align: right; font-family: var(--mono); font-variant-numeric: tabular-nums; padding-right: 0; }
+th.num { padding-left: .75rem; }
+td {
+  padding: .9rem .6rem .9rem 0; border-bottom: 1px solid var(--border-subtle);
+  vertical-align: top; font-size: .88rem;
+}
+td.num { font-size: .84rem; font-family: var(--mono); }
+tbody tr:last-child td { border-bottom: none; }
+.cnote { display: block; font-size: .78rem; color: var(--muted); margin-top: .15rem; line-height: 1.5; }
 
-  /* ---- responsive ---- */
-  @media (max-width:860px){.topnav{display:none}}
-  @media (max-width:720px){
-    body{font-size:17px}
-    .shell{padding:0 1.15rem}
-    .railed{padding-left:0}
-    .railed::before{display:none}
-    .tick{position:static;display:block;margin-bottom:.9rem}
-    .tick::after{display:none}
-    header.top{padding-bottom:3rem}
-    section{padding:3.5rem 0}
-    .stats-strip{padding:2rem 0}
-    .stats-row{grid-template-columns:1fr;gap:1.75rem}
-    .topactions .btn{display:none}
-    .model-head,.model-body{padding-left:1.05rem;padding-right:1.05rem}
-    th.hide,td.hide{display:none}
-    td{font-size:.86rem}
-    .rej li{grid-template-columns:1fr;gap:.25rem}
-    .totals{gap:1.5rem}
-    .totals dd{font-size:1.2rem}
-    .plans{grid-template-columns:1fr;gap:0}
-    .footer-links{gap:1.75rem 2.5rem}
-  }
-  @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+.badge {
+  font-family: var(--mono); font-size: .58rem; letter-spacing: .1em;
+  text-transform: uppercase; padding: .2rem .4rem; border-radius: 4px; white-space: nowrap;
+}
+.b-retrieved { background: var(--green-dim); color: var(--green); }
+.b-derived   { background: var(--blue-dim);  color: #60A5FA; }
+.b-assumed   { background: var(--amber-dim); color: var(--amber); }
+
+tr.gate { background: rgba(245,158,11,.04); }
+
+.ctrl { display: flex; align-items: center; gap: .85rem; margin-top: .65rem; }
+input[type=range] {
+  -webkit-appearance: none; appearance: none;
+  width: 160px; height: 2px; background: var(--border); cursor: pointer; border-radius: 2px;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none;
+  width: 14px; height: 14px; background: var(--amber);
+  border-radius: 50%; cursor: pointer;
+  box-shadow: 0 0 8px rgba(245,158,11,.4);
+}
+input[type=range]::-moz-range-thumb {
+  width: 14px; height: 14px; background: var(--amber); border: none;
+  border-radius: 50%; cursor: pointer;
+}
+.readout { font-family: var(--mono); font-size: .78rem; color: var(--amber); min-width: 3rem; }
+
+.totals {
+  display: flex; flex-wrap: wrap; gap: 2rem;
+  padding-top: 1.5rem; border-top: 1px solid var(--border-subtle); margin-top: .5rem;
+}
+.totals dt { font-family: var(--mono); font-size: .6rem; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); margin-bottom: .35rem; }
+.totals dd { margin: 0; font-family: var(--mono); font-size: 1.4rem; font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
+.verdict { margin: 1.5rem 0 0; padding-top: 1.25rem; border-top: 1px solid var(--border-subtle); font-size: .9rem; color: var(--muted); }
+.verdict b { color: var(--text); font-weight: 600; }
+.cap { font-family: var(--mono); font-size: .66rem; color: var(--faint); line-height: 1.65; margin: 1rem 0 0; }
+
+/* ── REJECTION SECTION ── */
+.tally {
+  font-family: var(--mono); font-size: .72rem; letter-spacing: .04em; color: var(--muted);
+  padding: .85rem 0; border-top: 1px solid var(--border-subtle); border-bottom: 1px solid var(--border-subtle); margin-bottom: 1.5rem;
+}
+.tally b { color: var(--text); font-weight: 500; }
+.rej { list-style: none; padding: 0; margin: 0; max-width: 56rem; }
+.rej li {
+  display: grid; grid-template-columns: 14rem 1fr auto; gap: 1.5rem;
+  padding: .9rem 0; border-bottom: 1px solid var(--border-subtle);
+  font-size: .88rem; align-items: start;
+}
+.rej li:last-child { border-bottom: none; }
+.rej .d { font-family: var(--mono); font-size: .74rem; letter-spacing: .03em; }
+.rej .w { color: var(--muted); }
+.rej .v { font-family: var(--mono); font-size: .68rem; color: var(--faint); white-space: nowrap; }
+.more { font-family: var(--mono); font-size: .68rem; color: var(--faint); margin-top: 1rem; }
+
+/* ── STEPS ── */
+.steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); gap: 1.5rem; }
+.step {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 1.75rem;
+  transition: border-color .2s, transform .2s, box-shadow .2s;
+}
+.step:hover {
+  border-color: var(--faint); transform: translateY(-3px);
+  box-shadow: 0 8px 30px rgba(0,0,0,.3);
+}
+.step-num {
+  font-family: var(--mono); font-size: .64rem; letter-spacing: .14em;
+  text-transform: uppercase; color: var(--accent); display: block;
+  margin-bottom: 1rem;
+}
+.step h3 { font-size: .98rem; font-weight: 600; margin-bottom: .5rem; letter-spacing: -.01em; }
+.step p { font-size: .86rem; color: var(--muted); line-height: 1.6; margin: 0; }
+
+/* ── SOURCES ── */
+.srcgrid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(160px,1fr));
+  gap: 1px; background: var(--border-subtle);
+  border: 1px solid var(--border-subtle); border-radius: var(--radius); overflow: hidden;
+}
+.src-cell {
+  background: var(--surface); padding: 1.5rem;
+  transition: background .18s;
+}
+.src-cell:hover { background: var(--surface-2); }
+.src-cell h4 {
+  font-family: var(--mono); font-size: .64rem; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--accent); font-weight: 400; margin-bottom: .75rem;
+}
+.src-cell ul { list-style: none; font-size: .84rem; color: var(--muted); }
+.src-cell li { padding: .2rem 0; }
+
+/* ── PRICING ── */
+.plans {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(240px,1fr));
+  gap: 1.25rem; max-width: 860px; margin-top: 2.5rem;
+}
+.plan {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 2rem 1.75rem 2.25rem;
+  transition: border-color .2s, transform .2s, box-shadow .2s;
+}
+.plan:hover { border-color: var(--faint); transform: translateY(-3px); box-shadow: 0 12px 40px rgba(0,0,0,.35); }
+.plan-featured {
+  border-color: rgba(74,140,255,.4);
+  background: linear-gradient(160deg, #0E1520 0%, #0D1930 100%);
+  position: relative; overflow: hidden;
+}
+.plan-featured::before {
+  content: ''; position: absolute; top: -80px; right: -80px;
+  width: 220px; height: 220px;
+  background: radial-gradient(circle, rgba(74,140,255,.12) 0%, transparent 70%);
+  border-radius: 50%;
+}
+.plan-featured:hover { border-color: rgba(74,140,255,.6); }
+.plan-badge {
+  font-family: var(--mono); font-size: .6rem; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--accent); background: var(--accent-dim); border-radius: 100px;
+  padding: .25rem .7rem; display: inline-block; margin-bottom: .75rem;
+}
+.plan-tier { font-size: .82rem; font-weight: 500; color: var(--muted); display: block; margin-bottom: 1.25rem; }
+.plan-price { margin-bottom: 1.75rem; line-height: 1; }
+.plan-amt { font-family: var(--mono); font-size: 2.4rem; font-variant-numeric: tabular-nums; letter-spacing: -.04em; }
+.plan-per { font-size: .82rem; color: var(--muted); margin-left: .2rem; }
+.plan-feats { list-style: none; margin: 0 0 1.75rem; }
+.plan-feats li { font-size: .86rem; color: var(--muted); padding: .45rem 0; border-bottom: 1px solid var(--border-subtle); display: flex; align-items: center; gap: .6rem; }
+.plan-feats li:first-child { border-top: 1px solid var(--border-subtle); }
+.plan-feats li::before { content: ''; width: 5px; height: 5px; background: var(--accent); border-radius: 50%; flex-shrink: 0; opacity: .6; }
+
+/* ── FINAL CTA ── */
+.cta-section {
+  padding: 8rem 2rem;
+  text-align: center;
+  position: relative; overflow: hidden;
+  border-top: 1px solid var(--border-subtle);
+}
+.cta-section::before {
+  content: '';
+  position: absolute; top: -200px; left: 50%; transform: translateX(-50%);
+  width: 700px; height: 600px;
+  background: radial-gradient(circle, rgba(74,140,255,.1) 0%, transparent 65%);
+  border-radius: 50%;
+}
+.cta-section h2 { margin-bottom: 1rem; }
+.cta-section .section-sub { margin: 0 auto 2.5rem; }
+.cta-btns { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+
+/* ── FOOTER ── */
+footer {
+  border-top: 1px solid var(--border-subtle);
+  padding: 3.5rem 2rem 4rem;
+  font-size: .82rem; color: var(--muted);
+}
+.footer-inner {
+  max-width: 1120px; margin: 0 auto;
+  display: flex; flex-wrap: wrap; gap: 3rem; justify-content: space-between;
+}
+.footer-brand { display: flex; flex-direction: column; gap: .5rem; }
+.footer-brand-name { font-family: var(--mono); font-size: .78rem; letter-spacing: .2em; text-transform: uppercase; color: var(--text); font-weight: 500; }
+.footer-brand a:hover { color: var(--text); }
+.footer-links { display: flex; flex-wrap: wrap; gap: 2rem 3rem; }
+.footer-col { display: flex; flex-direction: column; gap: .6rem; }
+.footer-col-h { font-size: .7rem; letter-spacing: .14em; text-transform: uppercase; color: var(--text); margin-bottom: .2rem; }
+.footer-col a:hover { color: var(--text); }
+.footer-legal { max-width: 1120px; margin: 2rem auto 0; padding-top: 1.5rem; border-top: 1px solid var(--border-subtle); font-family: var(--mono); font-size: .66rem; color: var(--faint); }
+
+/* ── SCROLL ANIMATIONS ── */
+.anim {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity .65s ease, transform .65s ease;
+}
+.anim.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+.anim-children > * {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity .55s ease, transform .55s ease;
+}
+.anim-children.visible > *:nth-child(1) { transition-delay: .0s; }
+.anim-children.visible > *:nth-child(2) { transition-delay: .08s; }
+.anim-children.visible > *:nth-child(3) { transition-delay: .16s; }
+.anim-children.visible > *:nth-child(4) { transition-delay: .24s; }
+.anim-children.visible > *:nth-child(5) { transition-delay: .32s; }
+.anim-children.visible > *:nth-child(6) { transition-delay: .40s; }
+.anim-children.visible > * {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 900px) {
+  .hero-inner { grid-template-columns: 1fr; }
+  .hero-card-wrap { justify-content: flex-start; }
+  .hero-card { max-width: 100%; }
+  .nav-links { display: none; }
+}
+@media (max-width: 640px) {
+  .hero { padding: 110px 1.25rem 80px; }
+  .section { padding: 4.5rem 1.25rem; }
+  .stats-inner { grid-template-columns: 1fr; gap: 2rem; }
+  .rej li { grid-template-columns: 1fr; gap: .3rem; }
+  .rej .v { display: none; }
+  footer { padding: 3rem 1.25rem; }
+  .stats-strip { padding: 2.5rem 1.25rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+  .anim, .anim-children > * { opacity: 1 !important; transform: none !important; }
+}
 </style>
 </head>
 <body>
 
-<div class="shell">
-
-<header class="top">
-  <a href="#" class="mark">Med<span>levate</span></a>
-  <nav class="topnav">
-    <a href="#model">Model</a>
-    <a href="#judgment">Judgment</a>
-    <a href="#pricing">Pricing</a>
-    <a href="#sources">Sources</a>
-    <a href="#access">Access</a>
-  </nav>
-  <div class="topactions">
-    <a href="app.html" class="topact-login">Login</a>
-    <a href="app.html" class="btn solid btn-sm">Get started</a>
+<!-- NAV -->
+<nav id="nav">
+  <div class="nav-inner">
+    <a href="#" class="mark">Med<span>levate</span></a>
+    <div class="nav-links">
+      <a href="#model">Model</a>
+      <a href="#judgment">Judgment</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#sources">Sources</a>
+    </div>
+    <div class="nav-actions">
+      <a href="app.html" class="nav-login">Log in</a>
+      <a href="app.html" class="btn btn-primary">Get started</a>
+    </div>
   </div>
-</header>
+</nav>
 
-<div class="railed" style="padding-bottom:5.5rem">
-  <span class="tick">Thesis</span>
-  <h1>A market estimate is only as good as its <em>weakest assumption.</em></h1>
-  <div class="lede">
-    <p>Most sizing tools hand you a number and call it done. Medlevate shows how the number was built: every population count, price band, and adoption rate, each labeled by where it came from.</p>
-    <p>You know your disease area better than any tool does. If an assumption is wrong, change it. The model reruns and the recommendation updates.</p>
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-secondary-glow"></div>
+  <div class="hero-inner">
+    <div class="hero-text">
+      <div class="hero-eyebrow">For PIs, founders, and tech transfer</div>
+      <h1><span class="grad">Market intelligence</span> built for people who defend the number.</h1>
+      <p class="hero-sub">Every population count, price band, and adoption rate labeled by where it came from. If an assumption is wrong, you can change it — and the model reruns instantly.</p>
+      <div class="hero-ctas">
+        <a href="app.html" class="btn btn-primary btn-lg">Request access</a>
+        <a href="#model" class="btn btn-ghost btn-lg">See the model</a>
+      </div>
+    </div>
+    <div class="hero-card-wrap">
+      <div class="hero-card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Ceftazidime-avibactam — AMR</div>
+            <div class="card-meta" style="margin-top:.3rem">3 segments · payer × line of therapy × site</div>
+          </div>
+          <div class="live-badge">Live</div>
+        </div>
+        <div class="card-rows">
+          <div class="card-row">
+            <span class="card-row-label">First line · commercial · specialty</span>
+            <span class="card-row-val">184K<span class="badge-sm b-ret">retrieved</span></span>
+          </div>
+          <div class="card-row">
+            <span class="card-row-label">Second line · Medicare · community</span>
+            <span class="card-row-val">96.5K<span class="badge-sm b-ret">retrieved</span></span>
+          </div>
+          <div class="card-row">
+            <span class="card-row-label">Third line+ · commercial · academic</span>
+            <span class="card-row-val">31.2K<span class="badge-sm b-der">derived</span></span>
+          </div>
+          <div class="card-row" style="background: rgba(245,158,11,.06);">
+            <span class="card-row-label">Treated share (gate)</span>
+            <span class="card-row-val" style="color:var(--amber)">38%<span class="badge-sm b-ass">assumed</span></span>
+          </div>
+        </div>
+        <div class="card-totals">
+          <div>
+            <div class="card-total-label">TAM</div>
+            <div class="card-total-val">$247M</div>
+          </div>
+          <div>
+            <div class="card-total-label">SAM</div>
+            <div class="card-total-val">$77M</div>
+          </div>
+          <div>
+            <div class="card-total-label">SOM (Yr 3)</div>
+            <div class="card-total-val">$10.8M</div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
-</div>
+</section>
 
-</div><!-- /shell -->
-
-<!-- stats strip -->
+<!-- STATS -->
 <div class="stats-strip">
-<div class="shell">
-  <div class="stats-row">
-    <div>
-      <span class="stat-n">19+</span>
+  <div class="stats-inner anim-children">
+    <div class="stat">
+      <span class="stat-n" data-count="19" data-suffix="+">0</span>
       <span class="stat-l">Cited sources per report</span>
     </div>
-    <div>
-      <span class="stat-n">12,788</span>
+    <div class="stat">
+      <span class="stat-n" data-count="12788">0</span>
       <span class="stat-l">Federal demand signals indexed</span>
     </div>
-    <div>
-      <span class="stat-n">32</span>
+    <div class="stat">
+      <span class="stat-n" data-count="32">0</span>
       <span class="stat-l">Biomedical sub-expert profiles</span>
     </div>
   </div>
 </div>
-</div>
 
-<div class="shell">
+<!-- DEMO -->
+<section class="section" id="model">
+  <div class="section-inner">
+    <span class="eyebrow anim">Worked example</span>
+    <h2 class="anim">The segmentation shifts with the product.</h2>
+    <p class="section-sub anim">A drug going through payers looks nothing like a diagnostic sold to labs. Pick an archetype and see how the model changes.</p>
 
-<section id="model">
-  <div class="railed">
-    <span class="tick">01</span>
-    <p class="secnum">Worked example</p>
-    <h2>The segmentation has to change with the product.</h2>
-    <p class="sub">A drug going through payers looks nothing like a diagnostic sold to labs, or a research instrument bought on a grant. Pick a product type below and see how the model shifts.</p>
-
-    <div class="switch" role="tablist" aria-label="Product archetype">
+    <div class="demo-tabs anim" role="tablist" aria-label="Product archetype">
       <button role="tab" id="tab-rx" aria-selected="true" data-k="rx">Therapeutic</button>
       <button role="tab" id="tab-dx" aria-selected="false" data-k="dx">Diagnostic</button>
       <button role="tab" id="tab-tool" aria-selected="false" data-k="tool">Research tool</button>
     </div>
 
-    <div class="model">
-      <div class="model-head">
-        <span class="model-title" id="mTitle"></span>
-        <span class="model-meta" id="mMeta"></span>
+    <div class="model-card anim">
+      <div class="model-card-head">
+        <span class="model-card-title" id="mTitle"></span>
+        <span class="model-card-meta" id="mMeta"></span>
       </div>
-      <div class="model-body">
+      <div class="model-card-body">
         <div class="table-wrap">
           <table>
             <thead>
@@ -353,14 +729,12 @@
             <tbody id="rows"></tbody>
           </table>
         </div>
-
         <dl class="totals">
           <div><dt>Total addressable</dt><dd id="tam"></dd></div>
           <div><dt>Serviceable</dt><dd id="sam"></dd></div>
           <div><dt>Year-3 obtainable</dt><dd id="som"></dd></div>
           <div><dt>P10 – P90</dt><dd id="rng"></dd></div>
         </dl>
-
         <p class="verdict" id="verdict"></p>
         <p class="cap" id="cap"></p>
       </div>
@@ -368,161 +742,208 @@
   </div>
 </section>
 
-<section id="judgment">
-  <div class="railed">
-    <span class="tick">02</span>
-    <p class="secnum">Dimensions considered and rejected</p>
-    <h2>What got cut, and why.</h2>
-    <p class="sub">We only segment on things that actually change what a buyer pays or whether they buy at all. Race and ethnicity matters for equity research but doesn't move a diagnostic pricing model. Practice size collapses into site of care. Each report shows what got excluded and the reason.</p>
-
-    <p class="tally" id="tally"></p>
+<!-- JUDGMENT -->
+<section class="section" id="judgment" style="background:var(--bg-2)">
+  <div class="section-inner">
+    <span class="eyebrow anim">Dimensions considered and rejected</span>
+    <h2 class="anim">What got cut, and why.</h2>
+    <p class="section-sub anim">We only segment on variables that change what a buyer pays or whether they buy at all. Every report shows what was excluded and the reason.</p>
+    <p class="tally anim" id="tally"></p>
     <ul class="rej" id="rejlist"></ul>
-    <p class="more" id="rejmore"></p>
+    <p class="more anim" id="rejmore"></p>
   </div>
 </section>
 
-<section>
-  <div class="railed">
-    <span class="tick">03</span>
-    <p class="secnum">How a report is built</p>
-    <div class="steps">
+<!-- HOW IT WORKS -->
+<section class="section">
+  <div class="section-inner">
+    <span class="eyebrow anim">How a report is built</span>
+    <h2 class="anim">Four stages. Nothing hidden.</h2>
+    <p class="section-sub anim">Every step is auditable. If the logic doesn't hold, you'll see it.</p>
+    <div class="steps anim-children">
       <div class="step">
-        <span class="k">Classify</span>
+        <span class="step-num">01 Classify</span>
         <h3>Establish what it is</h3>
-        <p>Product type, who actually signs the purchase order, whether it goes through FDA at all. Get this wrong and everything else is wrong too, so it runs first.</p>
+        <p>Product type, who signs the purchase order, whether it goes through FDA at all. Get this wrong and everything else is wrong too.</p>
       </div>
       <div class="step">
-        <span class="k">Retrieve</span>
+        <span class="step-num">02 Retrieve</span>
         <h3>Find the denominator</h3>
-        <p>Prevalence registries, facility counts, grant awards, patents, published literature. What's worth pulling depends on the buyer. Every number keeps a reference to where it came from.</p>
+        <p>Prevalence registries, facility counts, grant awards, patents, literature. What's worth pulling depends on the buyer. Every number keeps a reference.</p>
       </div>
       <div class="step">
-        <span class="k">Derive</span>
+        <span class="step-num">03 Derive</span>
         <h3>Build the cells</h3>
-        <p>Pick the dimensions that actually change price or adoption and build a cell for each one. The math runs in code, not in a paragraph where it can't be checked.</p>
+        <p>Pick dimensions that change price or adoption and build a cell for each. The math runs in code, not in a paragraph where it can't be checked.</p>
       </div>
       <div class="step">
-        <span class="k">Contest</span>
+        <span class="step-num">04 Contest</span>
         <h3>Check it, then correct it</h3>
-        <p>If the numbers don't add up, the verifier says so. You can change any assumption you know better than we do, and the rest of the model adjusts.</p>
+        <p>If numbers don't hold, the verifier says so. Change any assumption you know better — the rest of the model adjusts immediately.</p>
       </div>
     </div>
   </div>
 </section>
 
-<section id="pricing">
-  <div class="railed">
-    <span class="tick">04</span>
-    <p class="secnum">Pricing</p>
-    <h2>Pick the level of depth your project needs.</h2>
-    <p class="sub">Every tier gives you the same thing: labeled sources, explicit assumptions, and a sensitivity ranking. The difference is how many reports you need and how far you want to dig.</p>
+<!-- SOURCES -->
+<section class="section" id="sources" style="background:var(--bg-2)">
+  <div class="section-inner">
+    <span class="eyebrow anim">Primary sources</span>
+    <h2 class="anim">Every number resolves to something you can open.</h2>
+    <p class="section-sub anim">Citations attach to the specific numbers they support when they're pulled — a source can't get separated from its claim.</p>
+    <div class="srcgrid anim-children">
+      <div class="src-cell"><h4>Population</h4><ul><li>CDC WONDER</li><li>SEER</li><li>NHANES · BRFSS</li><li>US Census ACS</li></ul></div>
+      <div class="src-cell"><h4>Care delivery</h4><ul><li>AHA Annual Survey</li><li>CMS Provider of Service</li><li>NPPES</li><li>CLIA registry</li></ul></div>
+      <div class="src-cell"><h4>Payer</h4><ul><li>CMS coverage data</li><li>Medicare Part B</li><li>Fee schedules</li></ul></div>
+      <div class="src-cell"><h4>Research funding</h4><ul><li>NIH RePORTER</li><li>NSF Awards</li><li>USASpending</li><li>NCSES HERD</li></ul></div>
+      <div class="src-cell"><h4>Regulatory · IP</h4><ul><li>openFDA</li><li>ClinicalTrials.gov</li><li>Google Patents</li><li>SEC EDGAR</li></ul></div>
+      <div class="src-cell"><h4>Literature</h4><ul><li>PubMed E-utilities</li><li>bioRxiv · medRxiv</li><li>OpenAlex</li></ul></div>
+    </div>
+  </div>
+</section>
 
-    <div class="plans">
+<!-- PRICING -->
+<section class="section" id="pricing">
+  <div class="section-inner">
+    <span class="eyebrow anim">Pricing</span>
+    <h2 class="anim">Pick the depth your project needs.</h2>
+    <p class="section-sub anim">Every tier: labeled sources, explicit assumptions, sensitivity ranking. The difference is how many reports and how far you want to dig.</p>
+    <div class="plans anim-children">
       <div class="plan">
         <span class="plan-tier">Researcher</span>
-        <div class="plan-price">
-          <span class="plan-amt">$20</span><span class="plan-per"> /month</span>
-        </div>
+        <div class="plan-price"><span class="plan-amt">$20</span><span class="plan-per">/month</span></div>
         <ul class="plan-feats">
           <li>3 reports per month</li>
           <li>Standard data latency</li>
           <li>Email support</li>
         </ul>
-        <a href="app.html" class="btn ghost">Get started</a>
+        <a href="app.html" class="btn btn-ghost" style="width:100%;justify-content:center">Get started</a>
       </div>
       <div class="plan plan-featured">
         <span class="plan-badge">Most popular</span>
         <span class="plan-tier">Professional</span>
-        <div class="plan-price">
-          <span class="plan-amt">$79</span><span class="plan-per"> /month</span>
-        </div>
+        <div class="plan-price"><span class="plan-amt">$79</span><span class="plan-per">/month</span></div>
         <ul class="plan-feats">
           <li>15 reports per month</li>
           <li>Real-time data updates</li>
           <li>Advanced competitive tracking</li>
           <li>Priority support</li>
         </ul>
-        <a href="app.html" class="btn solid">Start 14-day trial</a>
+        <a href="app.html" class="btn btn-primary" style="width:100%;justify-content:center">Start 14-day trial</a>
       </div>
       <div class="plan">
         <span class="plan-tier">Enterprise</span>
-        <div class="plan-price">
-          <span class="plan-amt">$299</span><span class="plan-per"> /month</span>
-        </div>
+        <div class="plan-price"><span class="plan-amt">$299</span><span class="plan-per">/month</span></div>
         <ul class="plan-feats">
           <li>Unlimited reports</li>
           <li>API access &amp; integrations</li>
           <li>White-labeling options</li>
           <li>Dedicated account manager</li>
         </ul>
-        <a href="app.html" class="btn ghost">Contact sales</a>
+        <a href="app.html" class="btn btn-ghost" style="width:100%;justify-content:center">Contact sales</a>
       </div>
     </div>
   </div>
 </section>
 
-<section id="sources">
-  <div class="railed">
-    <span class="tick">05</span>
-    <p class="secnum">Primary sources</p>
-    <h2>Every number resolves to something you can open.</h2>
-    <p class="sub">Citations attach to the specific numbers they support when they're pulled, so a source can't get separated from its claim. Anything we couldn't source is labeled as assumed and flagged in the sensitivity ranking.</p>
-    <div class="srcgrid">
-      <div><h4>Population</h4><ul><li>CDC WONDER</li><li>SEER</li><li>NHANES · BRFSS</li><li>US Census ACS</li></ul></div>
-      <div><h4>Care delivery</h4><ul><li>AHA Annual Survey</li><li>CMS Provider of Service</li><li>NPPES</li><li>CLIA registry</li></ul></div>
-      <div><h4>Payer</h4><ul><li>CMS coverage data</li><li>Medicare Part B utilization</li><li>Fee schedules</li></ul></div>
-      <div><h4>Research funding</h4><ul><li>NIH RePORTER</li><li>NSF Awards</li><li>USASpending</li><li>NCSES HERD</li></ul></div>
-      <div><h4>Regulatory · IP</h4><ul><li>openFDA</li><li>ClinicalTrials.gov</li><li>Google Patents</li><li>SEC EDGAR</li></ul></div>
-      <div><h4>Literature</h4><ul><li>PubMed E-utilities</li><li>bioRxiv · medRxiv</li></ul></div>
-    </div>
+<!-- CTA -->
+<div class="cta-section">
+  <span class="eyebrow anim" style="display:block;margin-bottom:1rem">Limited release</span>
+  <h2 class="anim">For people who have to defend the number in the room.</h2>
+  <p class="section-sub anim" style="margin:0 auto 2.5rem">Built for tech transfer offices, research PIs, and founders working on commercialization plans. If you want to stress-test a model, reach out.</p>
+  <div class="cta-btns anim">
+    <a href="app.html" class="btn btn-primary btn-lg">Request access</a>
+    <a href="#model" class="btn btn-ghost btn-lg">See the model</a>
   </div>
-</section>
+</div>
 
-<section id="access">
-  <div class="railed">
-    <span class="tick">06</span>
-    <h2>For people who have to defend the number in the room.</h2>
-    <p class="sub">Built for tech transfer offices, research PIs, and founders working on commercialization plans. We're in limited release right now. If you want to run a report and stress-test it, reach out.</p>
-    <div class="cta">
-      <a class="btn solid" href="app.html">Request access</a>
-      <a class="btn ghost" href="#model">See the model</a>
-    </div>
-  </div>
-</section>
-
+<!-- FOOTER -->
 <footer>
-  <div class="footer-brand">
-    <span class="footer-brand-name">Medlevate</span>
-    <span>St. Louis, Missouri</span>
-    <span><a href="mailto:hello@medlevate.com">hello@medlevate.com</a></span>
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <span class="footer-brand-name">Medlevate</span>
+      <span>St. Louis, Missouri</span>
+      <span><a href="mailto:hello@medlevate.com">hello@medlevate.com</a></span>
+    </div>
+    <div class="footer-links">
+      <div class="footer-col">
+        <span class="footer-col-h">Platform</span>
+        <a href="#model">Method</a>
+        <a href="#pricing">Pricing</a>
+        <a href="app.html">App</a>
+        <a href="#sources">Sources</a>
+      </div>
+      <div class="footer-col">
+        <span class="footer-col-h">Company</span>
+        <a href="#">About</a>
+        <a href="#">Documentation</a>
+        <a href="#">Careers</a>
+      </div>
+      <div class="footer-col">
+        <span class="footer-col-h">Legal</span>
+        <a href="privacy.html">Privacy Policy</a>
+        <a href="terms.html">Terms of Service</a>
+      </div>
+    </div>
   </div>
-  <div class="footer-links">
-    <div class="footer-col">
-      <span class="footer-col-h">Platform</span>
-      <a href="#model">Method</a>
-      <a href="#pricing">Pricing</a>
-      <a href="app.html">App</a>
-      <a href="#sources">Sources</a>
-    </div>
-    <div class="footer-col">
-      <span class="footer-col-h">Company</span>
-      <a href="#">About</a>
-      <a href="#">Documentation</a>
-      <a href="#">Careers</a>
-    </div>
-    <div class="footer-col">
-      <span class="footer-col-h">Legal</span>
-      <a href="privacy.html">Privacy Policy</a>
-      <a href="terms.html">Terms of Service</a>
-    </div>
-  </div>
+  <p class="footer-legal">© 2026 Medlevate. Illustrative figures · Not investment advice.</p>
 </footer>
 
-<p class="footer-legal">© 2025 Medlevate. Illustrative figures · Not investment advice.</p>
-
-</div><!-- /shell -->
-
 <script>
+/* ── SCROLL NAV ── */
+(function(){
+  var nav = document.getElementById('nav');
+  window.addEventListener('scroll', function(){
+    nav.classList.toggle('scrolled', window.scrollY > 20);
+  }, { passive: true });
+})();
+
+/* ── SCROLL ANIMATIONS ── */
+(function(){
+  var opts = { threshold: 0.08, rootMargin: '0px 0px -60px 0px' };
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(e.isIntersecting){
+        e.target.classList.add('visible');
+        io.unobserve(e.target);
+      }
+    });
+  }, opts);
+  document.querySelectorAll('.anim, .anim-children').forEach(function(el){
+    io.observe(el);
+  });
+})();
+
+/* ── STAT COUNTERS ── */
+(function(){
+  function animate(el){
+    var target = parseInt(el.dataset.count, 10);
+    var suffix = el.dataset.suffix || '';
+    var start = null;
+    var dur = 1400;
+    function step(ts){
+      if(!start) start = ts;
+      var p = Math.min((ts - start) / dur, 1);
+      var ease = 1 - Math.pow(1 - p, 3);
+      var val = Math.floor(ease * target);
+      el.textContent = val.toLocaleString() + (p >= 1 ? suffix : '');
+      if(p < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(e.isIntersecting){
+        e.target.querySelectorAll('[data-count]').forEach(animate);
+        io.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.3 });
+  var strip = document.querySelector('.stats-strip');
+  if(strip) io.observe(strip);
+})();
+
+/* ── MODEL DEMO ── */
 (function(){
   var M = {
     rx:{
@@ -546,9 +967,9 @@
       ],
       rejmore:'20 further dimensions rejected below threshold. Full list in the report appendix.',
       verdicts:{
-        low:'<b>Recommendation: narrow to a subpopulation.</b> Below roughly 25% treated share the broad-label economics stop working. Two recommendations fall away: primary-care detailing and open-formulary pursuit.',
+        low:'<b>Recommendation: narrow to a subpopulation.</b> Below roughly 25% treated share the broad-label economics stop working.',
         base:'<b>Recommendation: pursue broad label with payer-first sequencing.</b> The model supports contracting ahead of promotional spend.',
-        high:'<b>Recommendation: expand promotional footprint.</b> Above roughly 58% treated share, sales capacity rather than eligible population becomes the binding constraint.'
+        high:'<b>Recommendation: expand promotional footprint.</b> Above roughly 58% treated share, sales capacity becomes the binding constraint.'
       }
     },
     dx:{
@@ -572,7 +993,7 @@
       ],
       rejmore:'12 further dimensions rejected below threshold. Full list in the report appendix.',
       verdicts:{
-        low:'<b>Recommendation: lead with instrument-agnostic chemistry.</b> Below roughly 28% compatibility the install-base strategy falls apart and reagent-rental pricing stops working.',
+        low:'<b>Recommendation: lead with instrument-agnostic chemistry.</b> Below roughly 28% compatibility the install-base strategy falls apart.',
         base:'<b>Recommendation: hospital-lab beachhead, reference labs second.</b> Send-out displacement is the fastest path to volume.',
         high:'<b>Recommendation: go direct to reference labs first.</b> Above roughly 68% compatibility the concentrated high-volume segment is reachable without running an install campaign.'
       }
@@ -584,7 +1005,7 @@
       counts:'23 considered · 3 selected · 20 rejected',
       cells:[
         {n:'NIH · award >$750K · no incumbent tooling', note:'Best funded, nothing to displace.', u:1840, p:9400, b:'retrieved'},
-        {n:'NIH · award >$750K · existing in-house build', note:'Same budget, far harder sell. Switching cost, not price, is the barrier.', u:2610, p:9400, b:'retrieved'},
+        {n:'NIH · award >$750K · existing in-house build', note:'Same budget, far harder sell. Switching cost is the barrier.', u:2610, p:9400, b:'retrieved'},
         {n:'NSF · award $250–750K · no incumbent tooling', note:'Lower ceiling; core-facility bundling likely.', u:3120, p:4100, b:'derived'}
       ],
       gate:{label:'Share running long-duration instrumented work', note:'No source. This gate multiplies every cell and is the least-known number in the model.', v:24, min:8, max:60},
@@ -598,7 +1019,7 @@
       ],
       rejmore:'16 further dimensions rejected below threshold. Full list in the report appendix.',
       verdicts:{
-        low:'<b>Recommendation: narrow the wedge.</b> Below roughly 15% the base is too thin for a broad launch. Institutional site licensing and multi-agency expansion both drop out.',
+        low:'<b>Recommendation: narrow the wedge.</b> Below roughly 15% the base is too thin for a broad launch.',
         base:'<b>Recommendation: non-dilutive first.</b> The model supports an SBIR path to revenue. It does not support a priced equity round.',
         high:'<b>Recommendation: equity becomes defensible.</b> Above roughly 42% a priced round is worth the dilution, and sales capacity replaces market size as the constraint.'
       }
@@ -607,7 +1028,6 @@
 
   var key = 'rx';
   var $ = function(id){ return document.getElementById(id); };
-
   function usd(v){
     if(v >= 1e9) return '$' + (v/1e9).toFixed(1) + 'B';
     if(v >= 1e6) return '$' + (v/1e6).toFixed(1) + 'M';
@@ -649,9 +1069,9 @@
     m.rej.forEach(function(r){
       rl += '<li>'
           + '<span class="d">' + r[0] + '</span>'
-          + '<span class="w">' + r[1]
-          + (r[2] !== '—' ? ' <span style="font-style:normal;font-family:var(--mono);font-size:.72rem;color:var(--faint)">(' + r[2] + ' variance)</span>' : '')
-          + '</span></li>';
+          + '<span class="w">' + r[1] + '</span>'
+          + '<span class="v">' + (r[2] !== '—' ? r[2] + ' var.' : '—') + '</span>'
+          + '</li>';
     });
     $('rejlist').innerHTML = rl;
     $('rejmore').textContent = m.rejmore;
@@ -673,14 +1093,13 @@
     $('sam').textContent = usd(sam);
     $('som').textContent = usd(som);
     $('rng').textContent = usd(tam * 0.41) + ' – ' + usd(tam * 2.35);
-
     var span = m.gate.max - m.gate.min, pos = (g * 100 - m.gate.min) / span;
     $('verdict').innerHTML = pos < 0.28 ? m.verdicts.low : (pos > 0.72 ? m.verdicts.high : m.verdicts.base);
   }
 
-  Array.prototype.forEach.call(document.querySelectorAll('.switch button'), function(b){
+  Array.prototype.forEach.call(document.querySelectorAll('.demo-tabs button'), function(b){
     b.addEventListener('click', function(){
-      Array.prototype.forEach.call(document.querySelectorAll('.switch button'), function(x){
+      Array.prototype.forEach.call(document.querySelectorAll('.demo-tabs button'), function(x){
         x.setAttribute('aria-selected', x === b ? 'true' : 'false');
       });
       key = b.dataset.k; build();
