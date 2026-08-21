@@ -7787,14 +7787,29 @@ async function _submitQuestionsAndRun() {
   });
 
   const count = Object.keys(window.clarifyAnswers).length;
-  panel.innerHTML = `
-    <div style="padding:10px 16px;background:#f0fdf4;border:1px solid #059669;border-radius:4px;font-size:12px;color:#059669;font-weight:600">
-      ✓ ${count} answers recorded — generating your market analysis now…
-    </div>`;
+
+  // Keep questions visible — only freeze the submit button so users can retry if
+  // the backend fails without losing their answers.
+  const submitBtn = document.getElementById('q-submit-btn');
+  if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Generating analysis…'; }
+  panel.querySelector('#q-error-banner')?.remove();
 
   const runBtn = document.getElementById('run-btn');
   if (runBtn) runBtn.disabled = false;
   await runAnalysis();
+
+  // If the results area rendered an error, re-enable the submit button so the
+  // user can retry without having to redo all their answers.
+  const errEl = document.getElementById('results')?.querySelector('.err');
+  if (errEl) {
+    if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Generate Market Analysis →'; }
+    const banner = document.createElement('div');
+    banner.id = 'q-error-banner';
+    banner.style.cssText = 'padding:9px 14px;background:#fef2f2;border:1px solid #dc2626;border-radius:4px;font-size:12px;color:#dc2626;font-weight:600;margin-bottom:10px';
+    banner.textContent = '⚠ Report generation failed — your answers are saved. Click "Generate Market Analysis" to try again.';
+    const wrap = document.getElementById('q-submit-wrap');
+    if (wrap) wrap.before(banner); else panel.prepend(banner);
+  }
 }
 
 // Legacy function kept for backward compatibility
