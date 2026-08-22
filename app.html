@@ -1831,8 +1831,10 @@ function renderPIReport(r) {
 
     // Narrative intro — domain-aware to avoid clinical vocabulary for research tools
     if (_isResearchDomain) {
+      const _diConditionClean = (di.condition && !/not applicable|n\/a|non-clinical|no disease|infrastructure tool/i.test(di.condition))
+        ? di.condition : (r.product_name || 'this research tool');
       html += `<div class="narrative-block">
-        The institutional demand landscape for <strong>${di.condition || 'this product'}</strong> defines the opportunity size and go-to-market strategy. The data below establishes the buyer population and adoption environment.
+        The institutional demand landscape for <strong>${_diConditionClean}</strong> defines the opportunity size and go-to-market strategy. The data below establishes the buyer population and adoption environment.
       </div>`;
     } else {
       html += `<div class="narrative-block">
