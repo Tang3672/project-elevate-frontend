@@ -1916,7 +1916,7 @@ function renderPIReport(r) {
     let _msIntroProse;
     if (_isResearchDomain) {
       const _unitLabel = (ms.unit || 'labs').replace(/^funded\s+/i, '');
-      const _methodsStr = _msMethodNote || 'buyer population model × observed spend band';
+      const _methodsStr = (_msMethodNote || 'buyer population model × observed spend band').replace(/\.+$/, '');
       const _somSuffix = _somNode ? ` · SOM ${_somNode}` : '';
       _msIntroProse = `TAM is <strong><span class="mv" data-node="tam">${tamVal}</span></strong>, built bottom-up from ${_popNode ? _popNode + ' ' : ''}NIH-funded ${_unitLabel}${_spendNode ? ' at ' + _spendNode + '/unit' : ''} running instrumented experiments. SAM <strong><span class="mv" data-node="sam">${samVal}</span></strong>${_somSuffix} — applies reachability and adoption gates. Methodology: ${_methodsStr}.`;
     } else {
@@ -2033,7 +2033,7 @@ function renderPIReport(r) {
           <div class="ms-total-lbl" style="margin-bottom:8px">Provenance Waterfall — click any input value to adjust; TAM/SAM/SOM update live</div>
           <div class="ms-steps">`;
         _prov.waterfall.forEach(w => {
-          const rc = {TAM:'#6366f1', SAM:'#0891b2', SOM:'#059669'}[w.used_in_formula] || '#6b7280';
+          const rc = {TAM:'#6366f1',TAMassumed:'#6366f1', SAM:'#0891b2',SAMassumed:'#0891b2', SOM:'#059669',SOMassumed:'#059669'}[w.used_in_formula] || '#6b7280';
           const src = w.source_url
             ? `<a href="${w.source_url}" target="_blank">${w.source_name}</a>`
             : `<span style="color:var(--text-4)">${w.source_name || 'No source'}</span>`;
