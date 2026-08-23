@@ -7072,7 +7072,11 @@ async function downloadPDF() {
       subhead('Provenance waterfall');
       const _wFmt = (v,u)=>{
         if(v==null) return '-';
-        if((u||'').toLowerCase()==='usd') return '$'+Math.round(v/1e3)+'K';
+        if((u||'').toLowerCase()==='usd'){
+          if(v>=1e9) return '$'+(v/1e9).toFixed(1)+'B';
+          if(v>=1e6) return '$'+(v/1e6).toFixed(1)+'M';
+          return '$'+Math.round(v/1e3)+'K';
+        }
         if(Math.abs(v)<1) return (v*100).toFixed(0)+'%';
         return Number(v).toLocaleString();
       };
@@ -7229,10 +7233,14 @@ async function downloadPDF() {
     if (hasCL) {
       if(_clData.summary) para(_clData.summary);
       // Research tools use a different schema (overlap/where_you_win/switching_cost instead of approval_status/pipeline counts)
-      const isResearchCL = (_clData.competitors||[]).some(c=>c.overlap||c.where_you_win||c.switching_cost);
+      const isResearchCL = (_clData.competitors||[]).some(c=>c.overlap||c.where_you_win||c.switching_cost||c.key_differentiator);
+      const _pdfIncumbentCats = new Set(['status_quo','diy','incumbent','legacy','manual_workflow']);
       (_clData.competitors||[]).slice(0,12).forEach(c=>{
         if(isResearchCL){
-          para(clean(c.name)+(c.category?' ['+clean(c.category)+']':''), {bold:true,gap:0.5});
+          const _pdfIsIncumbent = c.incumbent || _pdfIncumbentCats.has((c.category||'').toLowerCase().replace(/[\s-]/g,'_'));
+          para(clean(c.name)+(c.category?' ['+clean(c.category)+']':''), {bold:true,gap:0.3});
+          para(_pdfIsIncumbent?'Incumbent / Status quo':'Challenger', {size:8.3,x:margin+4,w:contentW-4,color:SUB,gap:0.3});
+          if(c.key_differentiator) para('Differentiator: '+clean(c.key_differentiator), {size:9,x:margin+4,w:contentW-4,gap:0.3});
           if(c.overlap) para('Overlap: '+clean(c.overlap), {size:9,x:margin+4,w:contentW-4,gap:0.3});
           if(c.where_you_win) para('Advantage: '+clean(c.where_you_win), {size:9,x:margin+4,w:contentW-4,gap:0.3});
           if(c.where_you_lose) para('Disadvantage: '+clean(c.where_you_lose), {size:9,x:margin+4,w:contentW-4,color:SUB,gap:0.3});
@@ -7334,7 +7342,7 @@ async function downloadPDF() {
     }
 
     if (srcs.length){
-      heading(hasCL?8:7,'Sources & Citations');
+      heading(++_pSec,'Sources & Citations');
       srcs.forEach(s=>{
         para((s.number!=null?('['+s.number+'] '):'')+clean(s.name||''), {size:8.5, gap:0.3});
         if(s.url){ pdf.setTextColor(LINK[0],LINK[1],LINK[2]); pdf.setFont('helvetica','normal'); pdf.setFontSize(8);
