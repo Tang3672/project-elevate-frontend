@@ -2526,6 +2526,33 @@ function renderPIReport(r) {
     addToSources('Reimbursement pathway', r.market_access.reimbursement_source_url);
   }
 
+  // Add disease intelligence data point sources (The Transmitter, PubMed searches, CDC, etc.)
+  ((r.disease_intelligence && r.disease_intelligence.data_points) || []).forEach(function(dp) {
+    if (dp.source_url) addToSources(dp.source + (dp.year ? ' (' + dp.year + ')' : ''), dp.source_url);
+  });
+
+  // Add market sizing step sources
+  ((r.market_sizing && r.market_sizing.steps) || []).forEach(function(s) {
+    if (s.source_url) addToSources(s.source || 'Market sizing source', s.source_url);
+  });
+
+  // Add provenance waterfall sources
+  (((r.market_sizing_provenance || {}).waterfall) || []).forEach(function(w) {
+    if (w.source_url) addToSources(w.source_name || 'Market model source', w.source_url);
+  });
+
+  // Add adversarial review and strategic risk sources
+  ((r.adversarial_review) || []).forEach(function(a) {
+    if (a.source_url) addToSources(a.source || 'Adversarial review', a.source_url);
+  });
+
+  // Add value driver and evidence base sources
+  ((r.value_driver_ranking) || []).forEach(function(v) {
+    ((v.drivers || v.signals) || []).forEach(function(d) {
+      if (d.source_url) addToSources(d.source, d.source_url);
+    });
+  });
+
   // Renumber sequentially
   allSources.forEach(function(s, i) { s.number = i + 1; });
 
@@ -7234,9 +7261,17 @@ async function downloadPDF() {
       const url = p.url||p.source_url||(p.pmid?'https://pubmed.ncbi.nlm.nih.gov/'+p.pmid+'/':'');
       _addSrc((p.authors||'')+(p.year?' ('+p.year+')':'')+(p.title?'. '+p.title:'')+(p.journal?'. '+p.journal:''), url);
     });
-    (r.strategic_playbook||[]).forEach(s=>{ if(s.source_url) _addSrc((s.example||'')+' - '+(s.strategy||''), s.source_url); });
+    (r.strategic_playbook||[]).forEach(s=>{ if(s.source_url) _addSrc(s.example||'', s.source_url); });
     ((r.market_access||{}).buyer_segments||[]).forEach(b=>{ if(b.source_url) _addSrc((b.source||'')+' - '+(b.segment||b.segment_name||b.name||''), b.source_url); });
     if(r.market_access&&r.market_access.reimbursement_source_url) _addSrc('Reimbursement pathway', r.market_access.reimbursement_source_url);
+    // Add disease intelligence data point sources
+    ((r.disease_intelligence&&r.disease_intelligence.data_points)||[]).forEach(dp=>{ if(dp.source_url) _addSrc(dp.source+(dp.year?' ('+dp.year+')':''), dp.source_url); });
+    // Add market sizing step sources
+    ((r.market_sizing&&r.market_sizing.steps)||[]).forEach(s=>{ if(s.source_url) _addSrc(s.source||'Market sizing', s.source_url); });
+    // Add provenance waterfall sources
+    (((r.market_sizing_provenance||{}).waterfall)||[]).forEach(w=>{ if(w.source_url) _addSrc(w.source_name||'Market model', w.source_url); });
+    // Add adversarial review sources
+    (r.adversarial_review||[]).forEach(a=>{ if(a.source_url) _addSrc(a.source||'Adversarial review', a.source_url); });
     srcs.forEach((s,i)=>s.number=i+1);
 
     // §8 Strategic Intelligence — S-01…S-09
