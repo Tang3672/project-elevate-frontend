@@ -4600,7 +4600,8 @@ async function createWatchlistFromReport() {
   if (!currentUser) { openAuth('login'); return; }
   if (!lastReportForAlert) return;
   const token  = localStorage.getItem('pe_token');
-  const name   = document.getElementById('save-name').value.trim() || 'My Watchlist';
+  const _savedName = document.getElementById('save-name')?.value?.trim();
+  const name   = _savedName || (lastReportForAlert.product_name ? `Alert: ${lastReportForAlert.product_name}` : 'My Watchlist');
   const domain = lastReportForAlert.expert_domain || 'auto';
   const desc   = lastReportForAlert.idea_submitted || '';
   const kws    = (lastReportForAlert.disease_intelligence?.data_points || [])
@@ -4615,16 +4616,18 @@ async function createWatchlistFromReport() {
       })
     });
     if (!res.ok) throw new Error((await res.json()).detail);
-    const wl = await res.json();
+    await res.json();
     const btn = document.querySelector('.set-alert-btn');
     btn.textContent = '✓ Alert Set!';
     btn.style.background = 'var(--green)';
+    loadWatchlists();
+    loadUnreadCount();
     setTimeout(() => {
       document.getElementById('alert-bar').classList.remove('show');
       btn.textContent = 'Set Alert';
       btn.style.background = '';
     }, 2500);
-  } catch(e) { alert('Failed: ' + e.message); }
+  } catch(e) { alert('Failed to set alert: ' + e.message); }
 }
 
 async function loadWatchlists() {
@@ -4632,6 +4635,7 @@ async function loadWatchlists() {
   const token = localStorage.getItem('pe_token');
   try {
     const res = await fetch(`${API}/watchlists`, {headers:{'Authorization':`Bearer ${token}`}});
+    if (!res.ok) throw new Error((await res.json()).detail || `HTTP ${res.status}`);
     const wls = await res.json();
     if (!wls.length) {
       document.getElementById('wl-list').innerHTML = `<div class="empty"><div class="empty-icon">🔔</div><div class="empty-t">No watchlists yet</div><div class="empty-s">Create one above or click "Set Alert" after running a PI analysis.</div></div>`;
@@ -4640,7 +4644,9 @@ async function loadWatchlists() {
     const domainLabels = {
       antibiotic_amr:'💊 Antibiotic/AMR', oncology:'🔬 Oncology',
       cardiology:'❤️ Cardiology', neurology_cns:'🧠 Neuro/CNS',
-      metabolic_diabetes:'⚕️ Metabolic', mental_health:'🧩 Mental Health', auto:'🔍 Auto'
+      metabolic_diabetes:'⚕️ Metabolic', mental_health:'🧩 Mental Health', auto:'🔍 Auto',
+      research_tool_non_clinical:'🔬 Research Tool', research_infrastructure_saas:'🖥 Research SaaS',
+      lab_software:'🧪 Lab Software', life_sciences_research:'🔬 Life Sciences'
     };
     document.getElementById('wl-list').innerHTML = wls.map(w => `
       <div class="wl-card">
