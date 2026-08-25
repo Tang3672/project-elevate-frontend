@@ -513,10 +513,19 @@
   <div class="logo">
     <div class="logo-mark">
       <svg width="28" height="28" viewBox="-2 -2 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Medlevate">
-        <line x1="5"  y1="2" x2="5"  y2="30" stroke="#17181C" stroke-width="6"   stroke-linecap="butt"/>
-        <line x1="27" y1="2" x2="27" y2="30" stroke="#17181C" stroke-width="6"   stroke-linecap="butt"/>
-        <path d="M8,2 L16,15 L24,2" stroke="#17181C" stroke-width="2.5" stroke-linecap="butt" stroke-linejoin="round" fill="none"/>
-        <path d="M16,15 L11,19 M16,15 L21,30" stroke="#17181C" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+        <defs>
+          <clipPath id="mc">
+            <rect x="7" y="2" width="18" height="30"/>
+          </clipPath>
+        </defs>
+        <!-- thin strokes clipped so they start flush at stem-top y=2 -->
+        <g clip-path="url(#mc)">
+          <path d="M2,-5 L16,15 L30,-5" stroke="#17181C" stroke-width="2.5" stroke-linejoin="round" fill="none"/>
+          <path d="M16,15 L11,19 M16,15 L21,30" stroke="#17181C" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+        </g>
+        <!-- stems drawn on top to cover any edge near x=7-8 / x=24-25 -->
+        <line x1="5"  y1="2" x2="5"  y2="30" stroke="#17181C" stroke-width="6" stroke-linecap="butt"/>
+        <line x1="27" y1="2" x2="27" y2="30" stroke="#17181C" stroke-width="6" stroke-linecap="butt"/>
       </svg>
     </div>
     <span class="logo-name">Medlevate</span>
