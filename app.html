@@ -2489,13 +2489,16 @@ function renderPIReport(r) {
   // 3. Drop known market-research aggregators (CAGR/share data ≠ buyer population evidence)
   var _AGGREGATOR_RE = /mordor intelligence|grand view research|marketsandmarkets|allied market research|maximize market research|imarc group|fortune business insights|precedence research|global market insights/i;
   var allSources = (r.sources || []).filter(function(s) {
-    if (!s.url) return false;
-    var _path = s.url.replace(/^https?:\/\/[^/]+/, '').replace(/^\/+$/, '');
-    if (!_path) return false; // bare domain / homepage
+    if (!s.name && !s.url) return false; // completely empty entry
+    if (s.url) {
+      var _path = s.url.replace(/^https?:\/\/[^/]+/, '').replace(/^\/+$/, '');
+      if (!_path) return false; // bare domain / homepage with no path — not a useful link
+    }
     if (_AGGREGATOR_RE.test(s.name || '')) return false;
     return true;
   }).slice();
-  var seenUrls = new Set(allSources.map(function(s) { return s.url; }));
+  // seenUrls tracks only entries that have a URL; no-URL entries always pass addToSources
+  var seenUrls = new Set(allSources.map(function(s) { return s.url; }).filter(Boolean));
   var today = new Date().toISOString().slice(0,10);
 
   function addToSources(name, url) {
