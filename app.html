@@ -1949,7 +1949,11 @@ function renderPIReport(r) {
       .replace(/N_eligible/g,'N·D·T').replace(/N_prev/g,'N')
       .replace(/D_yield/g,'D').replace(/T_rate/g,'T').replace(/P_net/g,'P')
       .replace(/Bass_F\(5\)/g,'F₅').replace(/BLP_share/g,'σ');
-    html += `<div class="ms-formula"><strong>Formula:</strong> ${_cleanMsFormula}</div>`;
+    // Only show formula when TAM > 0 — avoid confusing cases where backend
+    // sets TAM=$0 (out-of-scope product) but formula retains template numbers
+    if (ms.total_addressable_market_usd > 0 && _cleanMsFormula) {
+      html += `<div class="ms-formula"><strong>Formula:</strong> ${_cleanMsFormula}</div>`;
+    }
 
     html += '<div class="ms-steps">';
     ms.steps.forEach(s => {
@@ -2496,9 +2500,13 @@ function renderPIReport(r) {
 
   function addToSources(name, url) {
     if (!url || url === '' || seenUrls.has(url)) return;
-    // Skip generic CDC PLACES links that don't provide specific evidence
-    if (url === 'https://www.cdc.gov/places' || url === 'https://chronicdata.cdc.gov') return;
+    // Skip generic CDC PLACES / chronic-data links that don't provide specific evidence
+    var _normUrl = url.replace(/\/+$/, '');
+    if (_normUrl === 'https://www.cdc.gov/places' || _normUrl === 'https://chronicdata.cdc.gov') return;
+    // Clean backend source-key prefixes from display names (e.g. "cdc_places: ..." → "...")
+    var _cleanName = (name || '').replace(/^[a-z_]+:\s*/i, '').trim() || name || '';
     seenUrls.add(url);
+    name = _cleanName;
     var nextNum = allSources.length + 1;
     allSources.push({ number: nextNum, name: name, url: url, accessed: today });
   }
@@ -2532,7 +2540,11 @@ function renderPIReport(r) {
 
   // Add disease intelligence data point sources (The Transmitter, PubMed searches, CDC, etc.)
   ((r.disease_intelligence && r.disease_intelligence.data_points) || []).forEach(function(dp) {
-    if (dp.source_url) addToSources(dp.source + (dp.year ? ' (' + dp.year + ')' : ''), dp.source_url);
+    if (dp.source_url) {
+      // Use dp.label or dp.metric as the human-readable name if dp.source looks like a code key
+      var _dpName = (dp.label || dp.metric || dp.source || '');
+      addToSources(_dpName + (dp.year ? ' (' + dp.year + ')' : ''), dp.source_url);
+    }
   });
 
   // Add market sizing step sources
@@ -3911,14 +3923,17 @@ function renderCompetitiveLandscape(data) {
 
   const stageIcon  = {approved:'✅', phase3:'🔵', phase2:'🟡', phase1:'⚪'};
   const stageLabel = {approved:'Approved', phase3:'Phase 3', phase2:'Phase 2', phase1:'Phase 1'};
-  const sc = {empty:'#059669','pre-launch':'#0891b2',monopoly:'#d97706',oligopoly:'#d97706',competitive:'#dc2626',crowded:'#dc2626'}[data.market_structure] || '#6366f1';
+  const _structColor = {empty:'#059669','pre-launch':'#0891b2',monopoly:'#d97706',oligopoly:'#d97706',competitive:'#dc2626',crowded:'#dc2626'};
+  const _structLabel = {empty:'No competitors','pre-launch':'Pre-launch',monopoly:'Monopoly',oligopoly:'Oligopoly',competitive:'Competitive',crowded:'Crowded'};
+  const sc = _structColor[data.market_structure] || '#6366f1';
   const mktStruct = data.market_structure || '';
+  const mktStructDisplay = _structLabel[mktStruct] || mktStruct;
   const approvedCount = data.approved_count != null ? data.approved_count : '';
   const pipelineCount = data.pipeline_count != null ? data.pipeline_count : '';
 
   let html = `<div style="margin-bottom:16px">
     <div style="display:flex;gap:10px;align-items:center;margin-bottom:12px;flex-wrap:wrap">
-      ${mktStruct ? `<span style="font-size:11px;font-weight:700;padding:3px 9px;background:${sc}22;color:${sc};border:1px solid ${sc}44;border-radius:2px;text-transform:uppercase">${mktStruct}</span>` : ''}
+      ${mktStruct ? `<span style="font-size:11px;font-weight:700;padding:3px 9px;background:${sc}22;color:${sc};border:1px solid ${sc}44;border-radius:2px;text-transform:uppercase">${mktStructDisplay}</span>` : ''}
       ${(approvedCount !== '' || pipelineCount !== '') ? `<span style="font-size:12px;color:var(--text-3)">${approvedCount !== '' ? approvedCount + ' approved' : ''}${approvedCount !== '' && pipelineCount !== '' ? ' · ' : ''}${pipelineCount !== '' ? pipelineCount + ' in pipeline' : ''}</span>` : ''}
     </div>
     <div style="font-size:13px;color:var(--text-2);line-height:1.6;margin-bottom:16px">${data.competitive_summary || ''}</div>`;
