@@ -2491,12 +2491,18 @@ function renderPIReport(r) {
   var allSources = (r.sources || []).filter(function(s) {
     if (!s.name && !s.url) return false; // completely empty entry
     if (s.url) {
+      var _normU = s.url.replace(/\/+$/, '');
       var _path = s.url.replace(/^https?:\/\/[^/]+/, '').replace(/^\/+$/, '');
-      if (!_path) return false; // bare domain / homepage with no path — not a useful link
+      if (!_path) return false; // bare domain / homepage — not a useful link
+      // Skip generic CDC PLACES aggregate URLs
+      if (_normU === 'https://www.cdc.gov/places' || _normU === 'https://chronicdata.cdc.gov') return false;
     }
     if (_AGGREGATOR_RE.test(s.name || '')) return false;
     return true;
-  }).slice();
+  }).map(function(s) {
+    // Strip backend source-key prefixes from names (e.g. "cdc_places: ..." → "...")
+    return Object.assign({}, s, { name: (s.name || '').replace(/^[a-z_]+:\s*/i, '').trim() || s.name || '' });
+  });
   // seenUrls tracks only entries that have a URL; no-URL entries always pass addToSources
   var seenUrls = new Set(allSources.map(function(s) { return s.url; }).filter(Boolean));
   var today = new Date().toISOString().slice(0,10);
