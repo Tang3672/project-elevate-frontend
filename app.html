@@ -1888,8 +1888,8 @@ function renderPIReport(r) {
       var pmidBadge = p.pmid ? '<span style="background:var(--blue-pale);color:var(--blue);font-family:var(--display);font-size:10px;font-weight:700;padding:1px 6px;margin-right:6px">PMID ' + p.pmid + '</span>' : '';
       html += '<div style="padding:10px 0;border-bottom:1px solid var(--border)">';
       html += pmidBadge + link;
-      html += '<div style="font-family:var(--body);font-size:12px;font-weight:600;color:var(--text);margin-top:4px">' + p.title + '</div>';
-      html += '<div style="font-family:var(--body);font-size:11px;color:var(--text-3);margin-top:2px">' + p.authors + ' &middot; <em>' + p.journal + '</em> &middot; ' + p.year + '</div>';
+      html += '<div style="font-family:var(--body);font-size:12px;font-weight:600;color:var(--text);margin-top:4px">' + (p.title || 'Untitled') + '</div>';
+      html += '<div style="font-family:var(--body);font-size:11px;color:var(--text-3);margin-top:2px">' + (p.authors || 'Unknown authors') + (p.journal ? ' &middot; <em>' + p.journal + '</em>' : '') + (p.year ? ' &middot; ' + p.year : '') + '</div>';
       if (p.relevance) {
         html += '<div style="font-family:var(--body);font-size:11px;color:var(--blue);margin-top:4px;padding:4px 8px;background:var(--blue-pale);border-left:3px solid var(--blue)">Grant relevance: ' + p.relevance + '</div>';
       }
@@ -2507,7 +2507,7 @@ function renderPIReport(r) {
   if (r.literature_citations && r.literature_citations.length) {
     r.literature_citations.forEach(function(p) {
       var url = p.url || p.source_url || (p.pmid ? 'https://pubmed.ncbi.nlm.nih.gov/' + p.pmid + '/' : '');
-      var name = p.authors + ' (' + p.year + '). ' + p.title + '. ' + p.journal;
+      var name = (p.authors||'Unknown authors') + (p.year ? ' (' + p.year + ')' : '') + '. ' + (p.title||'Untitled') + (p.journal ? '. ' + p.journal : '');
       addToSources(name, url);
     });
   }
@@ -2601,15 +2601,16 @@ function renderPIReport(r) {
     html += '<div class="sdiv"><span class="sdiv-lbl">Sources & Citations (' + allSources.length + ')</span><div class="sdiv-line"></div></div>';
     html += '<div style="background:var(--bg-3);border:1px solid var(--border);padding:14px 16px;margin-bottom:16px">';
     allSources.forEach(function(s) {
+      var _shortUrl = s.url ? s.url.replace(/^https?:\/\/(www\.)?/,'').slice(0,80) + (s.url.length > 84 ? '…' : '') : '';
       var link = s.url
-        ? '<a href="' + s.url + '" target="_blank" style="color:var(--blue);text-decoration:none;font-size:11px">' + s.url + '</a>'
+        ? '<a href="' + s.url + '" target="_blank" style="color:var(--blue);text-decoration:none;font-size:11px;word-break:break-all">' + _shortUrl + '</a>'
         : '<span style="font-size:11px;color:var(--text-4)">No URL available</span>';
-      html += '<div style="display:grid;grid-template-columns:28px 1fr;gap:8px;padding:7px 0;border-bottom:1px solid var(--border)">';
+      html += '<div style="display:grid;grid-template-columns:28px 1fr;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);min-width:0">';
       html += '<span style="font-family:var(--display);font-size:12px;font-weight:700;color:var(--blue);padding-top:1px">[' + s.number + ']</span>';
-      html += '<div>';
-      html += '<div style="font-family:var(--body);font-size:12px;font-weight:500;color:var(--text-2);margin-bottom:2px">' + s.name + '</div>';
+      html += '<div style="min-width:0">';
+      html += '<div style="font-family:var(--body);font-size:12px;font-weight:500;color:var(--text-2);margin-bottom:2px">' + (s.name || '') + '</div>';
       html += link;
-      if (s.accessed) html += '<span style="font-family:var(--body);font-size:10px;color:var(--text-4);margin-left:8px">· Accessed ' + s.accessed + '</span>';
+      if (s.accessed) html += '<div style="font-family:var(--body);font-size:10px;color:var(--text-4);margin-top:2px">Accessed ' + s.accessed + '</div>';
       html += '</div></div>';
     });
     html += '</div>';
@@ -6822,13 +6823,22 @@ function prefillFromDiscovery(disease) {
 <script src="/js/market-model.js" defer></script>
 <script>
 async function downloadPDF() {
-  const btn = document.querySelector('[onclick="downloadPDF()"]');
+  // Find whichever PDF button was clicked (panel button preferred over hidden save-bar button)
+  const allBtns = Array.from(document.querySelectorAll('[data-export-pdf]'));
+  const btn = allBtns.find(b => b.offsetParent !== null) || allBtns[0] || null;
   const origText = btn ? btn.textContent : '';
   if (btn) { btn.textContent = 'Generating...'; btn.disabled = true; }
 
+  // Guard: jsPDF CDN must have loaded
+  if (!window.jspdf || !window.jspdf.jsPDF) {
+    alert('PDF library failed to load. Please refresh the page and try again.');
+    if (btn) { btn.textContent = origText; btn.disabled = false; }
+    return;
+  }
+
   try {
     const reportEl = document.getElementById('results');
-    if (!reportEl || reportEl.querySelector('.empty')) {
+    if (!reportEl || reportEl.querySelector('.empty:not([data-not-empty])')) {
       alert('Please run an analysis first.');
       if (btn) { btn.textContent = origText; btn.disabled = false; }
       return;
@@ -7356,7 +7366,13 @@ async function downloadPDF() {
 
     footer();
     const filename = (cond||'Medlevate').replace(/[^a-zA-Z0-9 ]/g,'').trim().replace(/\s+/g,'-').slice(0,50) + '-' + _genDate.toISOString().slice(0,10) + '.pdf';
-    pdf.save(filename);
+    // Blob-URL download is more reliable than pdf.save() across browsers/OS
+    const blob = pdf.output('blob');
+    const _dlUrl = URL.createObjectURL(blob);
+    const _dlA = document.createElement('a');
+    _dlA.href = _dlUrl; _dlA.download = filename;
+    document.body.appendChild(_dlA); _dlA.click(); document.body.removeChild(_dlA);
+    setTimeout(() => URL.revokeObjectURL(_dlUrl), 2000);
   } catch(e) {
     console.error('PDF error:', e);
     alert('PDF generation failed: ' + e.message);
