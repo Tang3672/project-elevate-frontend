@@ -7380,7 +7380,7 @@ async function downloadPDF() {
     }
 
     if (srcs.length){
-      heading(++_pSec,'Sources & Citations');
+      ensure(16); y+=3; pdf.setDrawColor(BLUE[0],BLUE[1],BLUE[2]); pdf.setLineWidth(0.5); pdf.line(margin,y,pageW-margin,y); y+=5.5; pdf.setTextColor(DARK[0],DARK[1],DARK[2]); pdf.setFont('helvetica','bold'); pdf.setFontSize(13); pdf.text('Sources & Citations', margin, y); y+=8;
       srcs.forEach(s=>{
         para((s.number!=null?('['+s.number+'] '):'')+clean(s.name||''), {size:8.5, gap:0.3});
         if(s.url){ pdf.setTextColor(LINK[0],LINK[1],LINK[2]); pdf.setFont('helvetica','normal'); pdf.setFontSize(8);
