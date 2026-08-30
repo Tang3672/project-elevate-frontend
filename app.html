@@ -1671,6 +1671,11 @@ function renderPIReport(r) {
   const _reportDomain = (r.domain || '').toLowerCase();
   const _isResearchDomain = _reportDomain.includes('research') || _reportDomain === 'lab_software';
 
+  // Inline citation linking — walk the report and replace [N] markers with
+  // anchor links pointing to #src-N in the bibliography. Safe to apply broadly
+  // because [N] patterns only appear in text that was processed by source_formatter.
+  if (r.sources && r.sources.length) r = _applyCitLinks(r);
+
   // B-09: sync header subtitle with report type
   const _lsEl = document.getElementById('logo-sub');
   if (_lsEl) _lsEl.textContent = _isResearchDomain ? 'Commercialization Intelligence' : 'Market Intelligence';
@@ -2626,7 +2631,7 @@ function renderPIReport(r) {
       var link = s.url
         ? '<a href="' + s.url + '" target="_blank" style="color:var(--blue);text-decoration:none;font-size:11px;word-break:break-all">' + _shortUrl + '</a>'
         : '<span style="font-size:11px;color:var(--text-4)">No URL available</span>';
-      html += '<div style="display:grid;grid-template-columns:28px 1fr;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);min-width:0">';
+      html += '<div id="src-' + s.number + '" style="display:grid;grid-template-columns:28px 1fr;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);min-width:0;scroll-margin-top:80px">';
       html += '<span style="font-family:var(--display);font-size:12px;font-weight:700;color:var(--blue);padding-top:1px">[' + s.number + ']</span>';
       html += '<div style="min-width:0">';
       html += '<div style="font-family:var(--body);font-size:12px;font-weight:500;color:var(--text-2);margin-bottom:2px">' + (s.name || '') + '</div>';
@@ -5694,6 +5699,30 @@ function _linkSource(text) {
   const match = _SOURCE_URLS.find(([pattern]) => pattern.test(text));
   if (!match) return text;
   return `<a href="${match[1]}" target="_blank" rel="noopener" style="color:var(--blue);text-decoration:underline dotted;text-underline-offset:2px">${text}</a>`;
+}
+
+// Citation linker — converts [N] superscripts in report text to anchor links
+// that jump to the corresponding bibliography entry (#src-N).
+const _SKIP_CIT_KEYS = new Set([
+  'url','source_url','pmid','doi','report_id','sub_expert_id','expert_domain',
+  'product_type','validated_at','status','severity','category','agent',
+  'signal_type','geographic_scope','source','source_record_id',
+]);
+function _linkCit(text) {
+  if (!text || typeof text !== 'string') return text;
+  return text.replace(/\[(\d+)\]/g, (_, n) =>
+    `<a href="#src-${n}" style="color:var(--blue);font-weight:700;font-size:.85em;text-decoration:none;vertical-align:super;line-height:0" title="Jump to source ${n}">[${n}]</a>`
+  );
+}
+function _applyCitLinks(obj) {
+  if (!obj || typeof obj !== 'object') return obj;
+  if (Array.isArray(obj)) return obj.map(_applyCitLinks);
+  const out = {};
+  for (const k of Object.keys(obj)) {
+    const v = obj[k];
+    out[k] = (!_SKIP_CIT_KEYS.has(k) && typeof v === 'string') ? _linkCit(v) : _applyCitLinks(v);
+  }
+  return out;
 }
 
 
