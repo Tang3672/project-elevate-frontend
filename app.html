@@ -1601,7 +1601,7 @@ function buildVerificationBadgesHTML(r) {
           <div style="font-size:11px;font-weight:700;color:${_valColor}">Verification — ${_displayStatus}${_isBlocking ? ' · PDF export blocked' : ''}</div>
           <div style="font-size:11px;color:var(--text-2);margin-top:1px">${_displaySummary}</div>
           ${_nonMathErrors.length ? `<div style="font-size:10px;color:#dc2626;margin-top:4px">${_nonMathErrors.map(e=>`<strong>${e.agent}:</strong> ${e.issue}`).join('<br>')}</div>` : ''}
-          ${(_val.warnings||[]).length && !_nonMathErrors.length ? `<div style="font-size:10px;color:#d97706;margin-top:4px">${_val.warnings.slice(0,2).map(w=>`<strong>${w.agent}:</strong> ${w.issue}`).join('<br>')}</div>` : ''}
+          ${(_val.warnings||[]).length && !_nonMathErrors.length ? `<div style="font-size:10px;color:#d97706;margin-top:4px">${_val.warnings.map(w=>`<strong>${w.agent}:</strong> ${w.issue}`).join('<br>')}</div>` : ''}
           ${_isBlocking ? `<div style="margin-top:6px;font-size:10px;color:#7c3aed;font-weight:600">Edit the market model below to fix these errors and unlock export — no regeneration needed. <a href="#buyer-model-panel" onclick="document.getElementById('buyer-model-panel')?.scrollIntoView({behavior:'smooth',block:'start'});return false;" style="color:#7c3aed;text-decoration:underline;cursor:pointer">Jump to model ↓</a></div>` : ''}
         </div>
       </div>` : '';
@@ -7032,7 +7032,7 @@ async function downloadPDF() {
       ensure(10); y+=3;
       para(_vIcon+' Verification: '+clean(_val.summary||''), {bold:true, size:9, gap:0.5});
       (_val.errors||[]).forEach(e=>para('  '+clean(e.agent)+': '+clean(e.issue), {size:8.3,color:SUB,gap:0.3}));
-      (_val.warnings||[]).slice(0,3).forEach(w=>para('  '+clean(w.agent)+': '+clean(w.issue), {size:8.3,color:SUB,gap:0.3}));
+      (_val.warnings||[]).forEach(w=>para('  '+clean(w.agent)+': '+clean(w.issue), {size:8.3,color:SUB,gap:0.3}));
     }
     if (_trust.citation_support_score!=null) {
       const _pctTrust = Math.round(_trust.citation_support_score*100);
