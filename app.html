@@ -1791,7 +1791,7 @@ function renderPIReport(r) {
   if (r.expert_panel && (r.expert_panel.panels||[]).length) {
     html += `<div style="margin-bottom:28px">
       <div style="font-family:var(--display);font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--text-3);margin-bottom:4px">Expert Panel — Independent Mixture-of-Experts Analysis</div>
-      <div style="font-size:11px;color:var(--text-3);margin-bottom:10px">Three specialist models each ran a separate, independently-grounded analysis before the report was synthesized.</div>
+      <div style="font-size:11px;color:var(--text-3);margin-bottom:10px">${(function(){var _n=(r.expert_panel.panels||[]).length;var _w=({1:'One specialist model ran a',2:'Two specialist models each ran a',3:'Three specialist models each ran a'})[_n]||(_n+' specialist models each ran a');return _w+' separate, independently-grounded analysis before the report was synthesized.'+(_n<3?' Panels that do not apply to this product type are skipped rather than scored against an irrelevant rubric.':'');})()}</div>
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1px;background:var(--border)">`;
     r.expert_panel.panels.forEach(p => {
       let fields = '';
@@ -2590,12 +2590,14 @@ function renderPIReport(r) {
   if (allSources.length) {
     var _catOf = function(url) {
       var u = (url || '').toLowerCase();
-      if (/fda\.gov|accessdata\.fda|federalregister/.test(u)) return 'Regulatory (FDA)';
+      // dailymed is a drug-label (regulatory) source but lives under nih.gov, so it
+      // must be matched before the nih.gov funding catch-all below.
+      if (/fda\.gov|accessdata\.fda|federalregister|dailymed/.test(u)) return 'Regulatory (FDA)';
       if (/clinicaltrials\.gov/.test(u)) return 'Clinical Trials';
-      if (/cdc\.gov|seer\.cancer|who\.int|ahrq|census\.gov/.test(u)) return 'Epidemiology';
+      if (/cdc\.gov|seer\.cancer|who\.int|ahrq|census\.gov|healthdata\.org|vizhub/.test(u)) return 'Epidemiology';
       if (/pubmed|ncbi\.nlm|doi\.org|nejm|thelancet|jamanetwork|semanticscholar|biorxiv|medrxiv|openalex/.test(u)) return 'Literature';
-      if (/cms\.gov|medicaid|medicare/.test(u)) return 'Reimbursement (CMS)';
-      if (/sec\.gov|reporter\.nih|grants\.gov|usaspending|nih\.gov/.test(u)) return 'Funding / Financial';
+      if (/cms\.gov|medicaid|medicare|ashp\.org/.test(u)) return 'Reimbursement (CMS)';
+      if (/sec\.gov|reporter\.nih|grants\.gov|usaspending|sbir\.gov|nih\.gov/.test(u)) return 'Funding / Financial';
       if (/patents\.google|uspto|lens\.org/.test(u)) return 'Patents / IP';
       return 'Other';
     };
